@@ -1,6 +1,6 @@
 # 0011 · Professional briefing workspace
 
-Date: 2026-11-01. Status: implemented; publication evidence is recorded after deployment.
+Date: 2026-11-01. Status: implemented and published; see [deployment evidence](../deployment.md).
 
 ## Context
 
