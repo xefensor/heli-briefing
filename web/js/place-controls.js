@@ -23,7 +23,7 @@ export function mountPlaceControls({ getCurrent, onChoose }) {
       group.hidden = points.length === 0;
       signature = next;
     }
-    const current = getCurrent(), saved = points.find(point => point.id === placeId(current));
+    const current = getCurrent(), saved = points.find(point => point.id === placeId(current) && point.name === current.name);
     select.querySelector('[value="custom"]').hidden = Boolean(saved) || current.place !== 'custom';
     select.querySelector('[value="custom"]').textContent = current.name;
     select.value = saved?.id || current.place;
