@@ -1,6 +1,6 @@
 # Contributing
 
-Read [AGENTS.md](AGENTS.md) and the [product brief](docs/product-brief.md) first. The project is currently documenting requirements, research and integration choices before rebuilding the application.
+Read [AGENTS.md](AGENTS.md) and the [product brief](docs/product-brief.md) first. The repository contains the published evaluation application and its research, integration decisions and release evidence.
 
 ## Changes
 
@@ -23,4 +23,4 @@ A forecast that differs from the weather encountered is not automatically a pars
 
 Summarise and link research; do not copy articles, forum threads, manuals or screenshots into the repository without verified permission. Dataset licensing and the project's own licence are separate decisions. The project licence is still open.
 
-No credentials are required for the documentation checks. Application development commands and environment requirements will be documented when the stack is selected.
+No credentials are required for the documentation checks. Use `npm test`, `npm run build` and the development commands in the [deployment guide](docs/deployment.md). Application tests do not require live provider access.

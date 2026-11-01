@@ -3,6 +3,7 @@ import {formatNumber,formatTime,formatCoordinates,reportState} from './briefing.
 import {nearestTimeIndex} from './weather.js';
 import {satelliteState} from './satellite.js';
 import {routeText} from './route.js';
+import {cameraState} from './cameras.js';
 
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
 const value=(number,unit='',digits=0)=>finite(number)?`${formatNumber(number,digits)}${unit?' '+unit:''}`:'—';
@@ -14,6 +15,7 @@ export function sourceReview(snapshot,{mode='full'}={}) {
  const now=Date.parse(snapshot.createdAt), selected=Date.parse(snapshot.state.time), rows=[];
  if(mode==='full'){
   if(snapshot.route?.rows?.length){const route=snapshot.route,missing=route.loading||route.rows.some(row=>!row.passageAt||row.samples.some(sample=>sample.status!=='available'||sample.stale)||row.ceiling.status!=='available'||row.ceiling.stale);rows.push({name:'Trasa',tone:missing?'warn':'neutral',text:`${route.rows.length} bodů${missing?' · neúplné / starší vzorky nebo probíhající obnova':' · zachycené bodové vzorky'}`});}
+  if(snapshot.route?.rows?.length>=2&&!snapshot.route.section)rows.push({name:'Řez / terén',tone:'warn',text:'Řez nebyl před uložením načten nebo právě probíhala jeho obnova; zachyceny jsou pouze bodové vzorky.'});
   const f=snapshot.forecast,i=f?nearestTimeIndex(f.times,snapshot.state.time):-1;
   const missing=i<0||['wind','temperature','visibility'].some(key=>!finite(f?.hourly?.[key]?.[i]));
   rows.push({name:f?.label||'Předpověď',tone:!f||missing||f.transport?.stale?'warn':'neutral',text:!f?'Nedostupná':missing?'Vybraný vzorek má chybějící hodnoty':f.transport?.stale?'Starší data po chybě obnovy':`Hodinový vzorek ${stamp(f.times[i],snapshot.state.timezone)}`});
@@ -30,6 +32,13 @@ export function sourceReview(snapshot,{mode='full'}={}) {
   if(other){const i=nearestTimeIndex(other.times,snapshot.state.time);rows.push({name:`Porovnání ${other.label}`,tone:i<0||other.transport?.stale?'warn':'neutral',text:i<0?'Pro vybraný čas není vzorek':`${stamp(other.times[i],snapshot.state.timezone)}${other.transport?.stale?' · starší data po chybě obnovy':''}`});}
   const cloud=snapshot.clouds;
   rows.push({name:'ICON-D2 CEILING',tone:cloud?.status==='available'&&!cloud.stale?'neutral':'warn',text:cloud?.status==='available'?`${value(cloud.valueMsl,'m MSL')}${cloud.stale?' · starší běh / obnova nepotvrzena':''}`:'Pro bod/čas není hodnota dostupná'});
+  const cameras=array(snapshot.cameras?.items), good=cameras.filter(item=>cameraState(item,now)==='available').length;
+  rows.push({name:'Kamery ČHMÚ',tone:good===3&&!snapshot.cameras?.transportError?'neutral':'warn',text:`${good} / 3 aktuálních rámců · nezávislé na budoucím čase${snapshot.cameras?.transportError?' · obnova nepotvrzena':''}`});
+  const swl=snapshot.charts?.swl, swlValid=Boolean(swl?.imageDataUrl)&&selected>=Date.parse(swl.validFrom)&&selected<Date.parse(swl.validTo);
+  rows.push({name:'SWL ČHMÚ',tone:swlValid&&swl.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:swlValid?`Vložená mapa pokrývá čas přehledu${swl.status==='stale'?' · obnova nepotvrzena':''}`:'Vložená mapa není dostupná nebo nepokrývá čas přehledu'});
+  const low=snapshot.charts?.selectedLow;
+  rows.push({name:'Nízká oblačnost ČHMÚ',tone:low?.imageDataUrl&&snapshot.charts?.lowCloud?.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:low?.imageDataUrl?`Mapa ${stamp(low.validAt,snapshot.state.timezone)} · vydání neposkytnuto`:'Pro vybraný čas není vložená mapa'});
+  if(snapshot.route?.section){const section=snapshot.route.section, missing=section.rows.filter(row=>!row.validAt||row.stale||row.error).length;rows.push({name:'Řez / terén',tone:missing||section.terrain.status!=='available'?'warn':'neutral',text:`${section.rows.length} sloupců${missing?` · ${missing} neúplných / starších`:''} · terén ${section.terrain.values.filter(finite).length} / ${section.terrain.values.length} · m Bpv, oddělený od MSL`});}
   const sat=satelliteState(snapshot.satellite,now);
   rows.push({name:'Satelit',tone:sat.status==='available'?'neutral':'warn',text:sat.image?`${stamp(snapshot.satellite.observedAt,snapshot.state.timezone)}${sat.status==='stale'?' · starší snímek':''}`:'Snímek není dostupný'});
  }
@@ -70,6 +79,10 @@ export function formatBriefingText(snapshot,{mode='full'}={}){
   if(snapshot.comparison)lines.push('','POROVNÁVACÍ MODEL',...selectedForecastLines({...snapshot,forecast:snapshot.comparison}));
   const cloud=snapshot.clouds;lines.push(`Samostatný ICON-D2 CEILING: ${cloud?.status==='available'?value(cloud.valueMsl,'m MSL'):'nedostupný'} · vzorek ${stamp(cloud?.validAt,zone)}. Není pozorovaný ceiling ani AGL.`);
   lines.push(...routeText(snapshot.route,zone));
+  if(snapshot.route?.section){const section=snapshot.route.section;lines.push('',`ŘEZ · ${section.label} · ${section.rows.length} sloupců`, `Terén ČÚZK: ${section.terrain.values.filter(finite).length} / ${section.terrain.values.length} vzorků m Bpv; oddělený od meteorologického MSL. Není analýzou překážek.`);}
+  lines.push('', 'KAMERY ČHMÚ',...array(snapshot.cameras?.items).map(item=>`${item.name} · ${stamp(item.observedAt,zone)} · ${cameraState(item,Date.parse(snapshot.createdAt))}`));
+  const swl=snapshot.charts?.swl, low=snapshot.charts?.selectedLow;
+  lines.push(`SWL ČHMÚ: ${stamp(swl?.validFrom,zone)} – ${stamp(swl?.validTo,zone)} · vydáno ${stamp(swl?.issuedAt,zone)} · obraz ${swl?.imageDataUrl?'vložen v HTML':'nedostupný'}`,`Nízká oblačnost ČHMÚ: ${stamp(low?.validAt,zone)} · čas vydání neposkytnut · obraz ${low?.imageDataUrl?'vložen v HTML':'nedostupný'}`);
  }
  lines.push('','REGIONÁLNÍ ORIGINÁLNÍ ZPRÁVY');
  for(const station of stations(snapshot))lines.push('',station,bulletin(snapshot,'metar',station),bulletin(snapshot,'taf',station));

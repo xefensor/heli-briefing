@@ -1,50 +1,19 @@
 # Roadmap
 
-The repository began with documentation and now has a published v0.2 evaluation application. Later stages describe work and acceptance gates; their presence does not mean every proposed feature is complete. See [deployment](deployment.md) for dated test/browser/publication evidence and [decision 0005](decisions/0005-complete-briefing-data.md) for the implemented v0.2 scope.
+The repository began with documentation and now has a published evaluation application. Later stages describe work and acceptance gates; their presence does not mean every proposed feature is complete. See [deployment](deployment.md) for dated test/browser/publication evidence and [decision 0005](decisions/0005-complete-briefing-data.md) for the implemented initial v0.2 scope.
 
 ## Current delivery status
 
-- [x] Publish the first static evaluation on GitHub Pages and verify real ALADIN values, eight charts, ČÚZK map tiles and a timestamped ČHMÚ radar image.
-- [x] Implement v0.2 automatic age/refresh monitoring with hidden/offline handling and retained inspection time.
-- [x] Add independently labelled native ICON-D2 ceiling data with actual model/run/validity, missing-value handling and per-run ingestion caching; ingest 49 valid times and 6,693 regional native cells.
-- [x] Add conservative structured METAR summaries, explicit TAF periods and twelve-hour station METAR history.
-- [x] Add a two-hour, up-to-twenty-four-frame observed radar sequence with honest gaps.
-- [x] Add frozen report preview, HTML briefing export and up to ten browser-local archives.
-- [x] Pass 105 local tests and selected desktop/390 px browser checks; publish v0.2 successfully through GitHub Pages.
-- [ ] Capture browser file-download completion and validate the preparation/output workflow with the intended pilot.
+The current evaluation scope is implemented: coordinated forecast and comparison graphs; point/route vertical weather profiles; separate ČÚZK terrain; genuine regional reports/history; radar/satellite; three timestamped cameras; SWL/low-cloud charts; astronomy; saved places; notes and frozen full/compact output. See [decision 0010](decisions/0010-route-section-and-visual-evidence.md), the [release checklist](release-checklist.md) and [deployment evidence](deployment.md).
 
-These additions preserve the substantial graphs, direct evidence access and coordinated controls. Appropriate professional production provider access and pilot workflow validation remain separate work. Integrated cameras and full vertical route profiles remain open scope. A point profile and one satellite product are implemented in the current extension below.
+- [x] Build the complete bounded evaluation scope, with source/datum/time validation and honest failures.
+- [x] Preserve substantial graphs and original evidence while refining readable desktop/mobile controls.
+- [x] Prepare operational support/outage/retention guidance and the intended-pilot acceptance script.
+- [ ] Complete the intended pilot's preparation/output acceptance on their actual devices.
+- [ ] Configure professional provider access appropriate to actual use and authorized aeronautical redistribution where requested.
+- [ ] Obtain the owner's project licence decision.
 
-## Current extension
-
-- [x] Add a model-coordinated six-level point profile with height/terrain masking and provider interpolation labels.
-- [x] Add bounded timestamped EUMETSAT GeoColour imagery and enlarged inspection.
-- [x] Include both in frozen output and open the preview when preparing a briefing.
-- [x] Verify and publish the extension; see [decision 0006](decisions/0006-point-profile-and-satellite.md).
-
-## Handoff refinement
-
-- [x] Retain full briefing output and add a compact original-report pack.
-- [x] Add captured-source review and plain-text/manual-copy handoff.
-- [x] Refine the preparation area, preview controls and printable appendices.
-- [x] Publish and record final browser/print-layout checks; see [decision 0007](decisions/0007-briefing-handoff.md).
-
-The whole project remains **incomplete**. Check the remaining feature/access/validation items below; a finished iteration is not a claim that the product is fully complete.
-
-## Point and time continuity
-
-- [x] Add direct coordinate entry and named browser-local points in the global location selector.
-- [x] Preserve live mode across reload while keeping copied inspection links explicitly pinned.
-- [x] Publish and record final verification, including versioned application assets; see [decision 0008](decisions/0008-saved-points-and-time-continuity.md).
-
-## Route-point briefing
-
-- [x] Add up to six route points, independent departure and user-entered leg times with honest timing gaps.
-- [x] Coordinate main/comparison models, native ceiling, discrete charts, map connectors and frozen full output.
-- [x] Check timing/failure cases and selected desktop/mobile interactions locally.
-- [x] Publish and record live verification; see [decision 0009](decisions/0009-route-point-weather.md).
-
-Continuous weather/terrain sections and actual pilot validation remain separate open work.
+The whole professional project remains **incomplete** at these external gates. Do not treat the historical stages below as a requirement to repeat completed engineering or add every research proposal. Native file-save/print verification must retain the actual evidence and environment limitations in the deployment guide.
 
 ## Foundation
 

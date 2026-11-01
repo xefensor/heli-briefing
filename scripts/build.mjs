@@ -15,6 +15,10 @@ await rm(temporary, { recursive: true, force: true });
 await mkdir(temporary, { recursive: true });
 await cp(source, temporary, { recursive: true, dereference: false });
 const assetVersion = await versionAssets(temporary);
+for (const name of ['cameras', 'charts']) {
+  try { await readFile(join(temporary, 'data', `${name}.json`)); }
+  catch(error) { if(error.code !== 'ENOENT') throw error; await mkdir(join(temporary,'data'),{recursive:true}); await writeFile(join(temporary,'data',`${name}.json`),JSON.stringify(name==='cameras'?{schemaVersion:1,status:'unavailable',items:[]}:{schemaVersion:1,swl:{status:'unavailable'},lowCloud:{status:'unavailable',frames:[]}})); }
+}
 try {
   await readFile(join(temporary, 'data', 'clouds.json'));
 } catch (error) {

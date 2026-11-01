@@ -2,6 +2,7 @@ import { ROUTE_KEY, ROUTE_LIMIT, normalizeRoutePlan, routeSchedule, loadRouteFor
 import { fetchForecast } from './weather.js';
 import { formatTime, formatCoordinates, formatNumber, toDateTimeInput, fromDateTimeInput } from './briefing.js';
 import { escapeHtml as esc } from './charts.js';
+import { mountSection } from './section-controls.js';
 
 export function mountRouteWorkspace({ getContext, getChoices, getClouds, onInspect, onGeometry, onMap }) {
   const $ = id => document.getElementById(id);
@@ -12,6 +13,7 @@ export function mountRouteWorkspace({ getContext, getChoices, getClouds, onInspe
     if (raw !== null) { if (raw.length > 12000) throw new Error(); plan = normalizeRoutePlan(JSON.parse(raw)); }
   } catch { writable = false; storageMessage = 'Uloženou trasu nelze přečíst. Původní záznam nepřepisujeme; nové úpravy budou dočasné.'; }
   const models = () => { const state = getContext(); return [state.model, ...(state.compare && state.compare !== state.model ? [state.compare] : [])]; };
+  const section = mountSection({ getSchedule: () => invalidDeparture ? [] : routeSchedule(plan), getModel: () => getContext().model, getZone: () => getContext().timezone });
   const key = () => JSON.stringify([plan, models()]);
   const setMessage = text => { $('route-feedback').textContent = text; };
   function save() {
@@ -19,8 +21,9 @@ export function mountRouteWorkspace({ getContext, getChoices, getClouds, onInspe
     try { localStorage.setItem(ROUTE_KEY, JSON.stringify(plan)); storageMessage = ''; }
     catch { storageMessage = 'Trasu se nepodařilo uložit v prohlížeči; pracuješ s dočasnou kopií.'; }
   }
-  function bundle() { return captureRoute(plan, models(), results, { ...getClouds(), loading }); }
+  function bundle() { return { ...captureRoute(plan, models(), results, { ...getClouds(), loading }), section: section.snapshot() }; }
   function renderOutput() {
+    section.sync();
     const source = getClouds();
     displaySignature = JSON.stringify([getContext().timezone, source.clouds?.retrievedAt, source.clouds?.runTime, source.cloudError, $('route-data').clientWidth]);
     const availableWidth = $('route-data').clientWidth || 720;
@@ -125,5 +128,5 @@ export function mountRouteWorkspace({ getContext, getChoices, getClouds, onInspe
     const point = routeSchedule(plan)[Number(button.dataset.routeInspect)]; if (point) onInspect(point);
   });
   renderEditor(); updateChoices(); renderOutput();
-  return { refresh, points: () => plan.points, snapshot() { if (invalidDeparture && plan.points.length) throw new Error('Oprav plánovaný odlet trasy před zachycením briefingu.'); return plan.points.length ? bundle() : null; }, stop() { sequence++; controller?.abort(); clearTimeout(legTimer); loading = false; }, sync() { updateChoices(); if (key() !== signature) void refresh(); else { const source = getClouds(); if (JSON.stringify([getContext().timezone, source.clouds?.retrievedAt, source.clouds?.runTime, source.cloudError, $('route-data').clientWidth]) !== displaySignature) renderOutput(); } } };
+  return { refresh, points: () => plan.points, snapshot() { if (invalidDeparture && plan.points.length) throw new Error('Oprav plánovaný odlet trasy před zachycením briefingu.'); return plan.points.length ? bundle() : null; }, stop() { sequence++; controller?.abort(); clearTimeout(legTimer); section.stop(); loading = false; }, sync() { updateChoices(); if (key() !== signature) void refresh(); else { const source = getClouds(); if (JSON.stringify([getContext().timezone, source.clouds?.retrievedAt, source.clouds?.runTime, source.cloudError, $('route-data').clientWidth]) !== displaySignature) renderOutput(); } } };
 }

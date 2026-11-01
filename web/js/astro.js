@@ -55,8 +55,16 @@ export function getAstronomy({ lat, lon, date = new Date() }) {
   const alwaysUp = sunTimes.alwaysUp === true;
   const alwaysDown = sunTimes.alwaysDown === true;
 
+  const profile = { times: [], sunAltitude: [], moonAltitude: [] };
+  for (let index = 0; index <= 96; index++) {
+    const sample = new Date(dayStart.getTime() + index * HOUR_MS / 2);
+    profile.times.push(sample.toISOString());
+    profile.sunAltitude.push(SunCalc.getPosition(sample, lat, lon).altitude);
+    profile.moonAltitude.push(SunCalc.getMoonPosition(sample, lat, lon).altitude);
+  }
   return {
     selectedInstant: instant,
+    profile,
     dayTimeZone: 'UTC',
     dayStart,
     dayEnd,

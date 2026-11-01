@@ -59,6 +59,8 @@ Owner instruction, 2026-11-01: before each substantial iteration check all three
 
 Every final progress report must explicitly state whether the whole agreed project is complete. Distinguish finishing an iteration from finishing the project, list the material remaining work and state unverified output or operational checks honestly. Do not describe research proposals as owner-approved requirements or claim complete delivery merely because tests/deployment passed.
 
+Owner instruction, 2026-11-01: continue through the whole buildable backlog and verification rather than ending after a feature checkpoint. Stop only at a concrete dependency requiring access or an owner/pilot decision; name it precisely and leave implementation, documentation and publication reviewable. Read the [release checklist](docs/release-checklist.md) for the current boundary.
+
 ## Validation and completion
 
 For documentation changes, run `python3 scripts/check_docs.py` and `git diff --check` when a local Git checkout is available. Check links, terminology, proposal status and dated claims. Network source checks are deliberate research actions, not part of routine CI.

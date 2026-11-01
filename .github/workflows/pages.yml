@@ -40,6 +40,25 @@ jobs:
         run: python3 scripts/check_docs.py
       - name: Refresh aviation report snapshot
         run: python3 scripts/update_aviation.py --output web/data/aviation.json
+      - name: Restore last genuine camera and chart images
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            .cache/cameras
+            .cache/charts
+          key: imagery-${{ hashFiles('scripts/update_cameras.py', 'scripts/update_charts.py') }}-${{ github.run_id }}
+          restore-keys: imagery-${{ hashFiles('scripts/update_cameras.py', 'scripts/update_charts.py') }}-
+      - name: Refresh licensed camera and aviation-chart snapshots
+        run: |
+          python3 scripts/update_cameras.py --output web/data/cameras.json --cache-dir .cache/cameras
+          python3 scripts/update_charts.py --output web/data/charts.json --cache-dir .cache/charts
+      - name: Retain genuine imagery for explicit stale fallback
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            .cache/cameras
+            .cache/charts
+          key: imagery-${{ hashFiles('scripts/update_cameras.py', 'scripts/update_charts.py') }}-${{ github.run_id }}
       - name: Discover advertised satellite frame
         id: satellite-frame
         shell: bash

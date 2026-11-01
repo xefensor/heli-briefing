@@ -54,7 +54,7 @@ The following jobs are recommendations for the rebuild. LKCS and LKHS are useful
 
 “Now” and a future time are viewing or flight contexts within the same product. They are not a decision to create two separate, sparsely populated applications. A linked timeline is one possible interaction pattern; Xef has not approved it as the final solution.
 
-The first route implementation is recorded in [decision 0009](decisions/0009-route-point-weather.md): optional points, a separate departure time, user-entered leg durations, point-sampled forecasts and captured full output. This is an implementation choice under the continuing build instruction; it does not validate the final pilot workflow or provide a continuous terrain/weather section.
+The first route implementation is recorded in [decision 0009](decisions/0009-route-point-weather.md): optional points, a separate departure time, user-entered leg durations, point-sampled forecasts and captured full output. The subsequent [decision 0010](decisions/0010-route-section-and-visual-evidence.md) implements distance-sampled vertical weather sections, separate Bpv terrain, timestamped cameras and integrated charts. These implementation choices do not validate the final pilot workflow.
 
 ## Decisions still required
 

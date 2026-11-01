@@ -13,6 +13,7 @@ Start with the product brief, then follow the evidence and implementation constr
 | [Data integrity](data/integrity.md) | Time, units, vertical references, missing values, report validity and failure handling. |
 | [Native cloud heights](data/cloud-heights.md) | Implemented DWD native-grid CEILING ingestion, MSL definition, regional coverage, timestamps and verified sample. |
 | [Architecture](architecture.md) | Proposed responsibilities and data contracts without selecting an application stack. |
+| [Release checklist and support](release-checklist.md) | Current completion boundary, pilot acceptance script, source outages, retention and external dependencies. |
 | [Roadmap](roadmap.md) | Work stages, dependencies and evidence required to move forward. |
 | [Build and deployment](deployment.md) | Current static application commands, GitHub Pages setup, report refresh and provider access limits. |
 | [First-build hosting decision](decisions/0004-github-pages-first-build.md) | Browser-native implementation, owner-selected GitHub Pages and the deployment-time data path. |

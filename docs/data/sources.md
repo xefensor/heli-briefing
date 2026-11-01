@@ -149,3 +149,8 @@ See [decision 0006](../decisions/0006-point-profile-and-satellite.md) for the ch
 ## Implemented route-point extension · 2026-11-01
 
 [Decision 0009](../decisions/0009-route-point-weather.md) records the bounded point-weather route view and its separate primary-source recheck of Open-Meteo coordinates, preceding-hour gust/rain definitions and hosted-service terms. It uses the existing explicit models and native ceiling crop with user-entered passage times, per-point source metadata, at most two simultaneous route requests and honest missing coverage. It does not add continuous corridor weather, a terrain dataset or professional provider access. Current data licensing/access boundaries above remain in force.
+
+
+## Route/visual-evidence completion · 2026-11-01
+
+[Decision 0010](../decisions/0010-route-section-and-visual-evidence.md) supersedes the earlier camera/full-route implementation gaps above. It records the current primary-source checks, exact endpoints, sampled camera ownership, ČHMÚ website CC BY 4.0 grant, image-time binding and native ČÚZK Bpv terrain contract. The implementation includes three cameras and website SWL/low-cloud imagery; it does not extend that grant to third-party cameras or the separate SWIM API. Pressure-level wind/temperature/RH sections use the existing explicit forecast model; separately referenced terrain does not supply a clearance or obstacle assessment. Professional forecast access and aeronautical redistribution remain external dependencies.

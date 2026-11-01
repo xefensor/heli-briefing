@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ARCHIVE_KEY, ARCHIVE_MAX_ITEMS, ArchiveError, createBriefingSnapshot, renderBriefingHtml, renderBriefingText, briefingFilename, listBriefings, saveBriefing, loadBriefing, deleteBriefing } from '../web/js/archive.js';
+import { ARCHIVE_KEY, ARCHIVE_MAX_ITEMS, fitDatabaseArchive, ArchiveError, createBriefingSnapshot, renderBriefingHtml, renderBriefingText, briefingFilename, listBriefings, saveBriefing, loadBriefing, deleteBriefing } from '../web/js/archive.js';
 
 const state = { name: 'Planá · České Budějovice', lat: 48.9463, lon: 14.4294, model: 'aladin', compare: 'icon', time: '2026-11-01T14:30:00.000Z', hours: 24, timezone: 'UTC' };
 const times = ['2026-11-01T14:00:00.000Z', '2026-11-01T15:00:00.000Z', '2026-11-01T16:00:00.000Z'];
@@ -260,4 +260,14 @@ test('full text keeps the comparison model and its stale state separate',()=>{
  const text=renderBriefingText(createBriefingSnapshot(input));
  assert.match(text,/POROVNÁVACÍ MODEL/);assert.match(text,/Porovnání ICON-D2:.*starší data/);assert.match(text,/ICON-D2 · hodinový vzorek/);
  assert.doesNotMatch(renderBriefingText(createBriefingSnapshot(input),{mode:'reports'}),/POROVNÁVACÍ MODEL/);
+});
+
+
+test('database archive keeps a complete image-rich snapshot beyond localStorage and prunes atomically',()=>{
+ const large=createBriefingSnapshot({...base(),notes:'x'.repeat(3_000_000)});
+ assert.equal(fitDatabaseArchive(large,[])[0].notes.length,3_000_000);
+ const records=Array.from({length:8},(_,index)=>createBriefingSnapshot({...base(),createdAt:`2026-11-01T14:0${index}:00.000Z`,notes:'x'.repeat(3_000_000)}));
+ const kept=fitDatabaseArchive(records.at(-1),records.slice(0,-1));
+ assert.equal(kept.length,6);assert.equal(kept[0].id,records.at(-1).id);assert.equal(records.length,8);
+ assert.throws(()=>fitDatabaseArchive(createBriefingSnapshot({...base(),notes:'x'.repeat(20_000_001)}),records),error=>error.code==='too-large');
 });

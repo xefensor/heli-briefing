@@ -4,17 +4,13 @@ A helicopter weather and briefing workspace for a South Bohemian professional pi
 
 The goal is to bring a regional weather picture, detailed graphs, local observations and source comparison into a coherent interface with few repeated actions. Information depth and simple interaction are both requirements.
 
-**Status:** v0.2 evaluation [published on GitHub Pages](https://xefensor.github.io/heli-briefing/), with deployment confirmed on **1 November 2026**. Source in `web/` uses browser-native JavaScript modules, HTML, CSS and SVG charts. The rebuild is guided by research into pilot needs, aviation interfaces and data sources. The pilot-authored original supplies context and candidate information needs; its features and workflow remain open to redesign. Pilot validation, the exact reporting schedule and some data agreements remain open.
+**Status:** v0.3 evaluation implementation. [Open Heli Briefing](https://xefensor.github.io/heli-briefing/). Browser-native JavaScript, HTML, CSS and SVG charts; GitHub Pages hosting and scheduled collectors. See [deployment evidence](docs/deployment.md) and the [release checklist](docs/release-checklist.md) for what is verified and what still requires access or pilot review.
 
-**Latest interface pass:** larger type, aligned full-width forecast rows, a larger regional map, direct section navigation and a distance-sorted station comparison above readable complete reports. See [design and validation](docs/design.md#implemented-readability-pass--1-november-2026).
+The workspace combines eight aligned forecast graphs, explicit ALADIN / ICON-D2 / ECMWF comparison, a six-level point profile, native ICON-D2 CEILING, original METAR/TAF/SIGMET, station history, observed radar playback, GeoColour satellite imagery, three timestamped ČHMÚ cameras, SWL and low-cloud charts. Saved points and a single viewing time reduce repeated setup. An optional six-point route has its own departure and leg times, coordinated point comparison, weather sections and separately referenced ČÚZK terrain.
 
-**v0.2 includes:** an independently labelled native ICON-D2 ceiling diagnostic, conservative structured reports and twelve-hour METAR history, a two-hour radar sequence, automatic freshness checks, a report-output preview and frozen HTML export with browser-local archives. [Release evidence and verification limits](docs/deployment.md) distinguish passing tests, browser checks and publication. The published extension adds a six-level point profile, independent GeoColour satellite imagery and preview-first output; [implementation and validation](docs/decisions/0006-point-profile-and-satellite.md). Integrated cameras and full route cross-sections remain future scope.
+Prepare a briefing to capture the available data, notes and images in a standalone HTML file, or use the compact METAR/TAF pack and text copy. Missing feeds, unsupported fields and stale data remain visible. Professional provider access and intended-pilot validation remain external release gates; this public evaluation is not a claim of operational readiness.
 
-**Current handoff refinement:** full briefing and compact original-report output, captured-source review, copyable text and clearer print appendices. [Scope and verification](docs/decisions/0007-briefing-handoff.md). The whole project remains incomplete; route/camera/access and pilot/output validation work is still open.
-
-**Point and time refinement:** direct coordinate entry, named browser-local points and live-mode reload continuity; [scope and verification](docs/decisions/0008-saved-points-and-time-continuity.md).
-
-**Route-point briefing:** up to six points, independent departure, user-entered passage timing, coordinated model comparison, discrete weather charts and frozen route output. [Scope and verification](docs/decisions/0009-route-point-weather.md). Continuous terrain/route cross-sections remain open.
+The [three studies](docs/README.md) guide the product; the original pilot-authored page supplies context rather than a fixed specification. The latest [implementation decision](docs/decisions/0010-route-section-and-visual-evidence.md) records source rights, section sampling and image provenance.
 
 ## Start here
 

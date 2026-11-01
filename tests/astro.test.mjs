@@ -83,3 +83,14 @@ test('phase names wrap and invalid inputs are rejected', () => {
   assert.throws(() => getAstronomy({ lat: 91, lon: 14, date: new Date() }), RangeError);
   assert.throws(() => getAstronomy({ lat: null, lon: 14, date: new Date() }), RangeError);
 });
+
+
+test('two-day calculated profile preserves UTC chronology and selected-instant context',()=>{
+ const a=at('2026-10-25T02:30:00Z');
+ assert.equal(a.profile.times.length,97);
+ assert.equal(a.profile.times[0],'2026-10-25T00:00:00.000Z');
+ assert.equal(a.profile.times.at(-1),'2026-10-27T00:00:00.000Z');
+ assert.equal(a.profile.sunAltitude[5],a.sunAltitude);
+ assert.equal(a.profile.moonAltitude[5],a.moonAltitude);
+ assert.ok(a.profile.sunAltitude.every(value=>Number.isFinite(value)&&Math.abs(value)<=90));
+});

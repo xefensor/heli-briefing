@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [Hosting decision](decisions/0004-github-pages-first-build.md) · [v0.2 data scope](decisions/0005-complete-briefing-data.md)
 
-The v0.2 evaluation is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. The browser application/build has no npm installation step or application framework dependency. Native GRIB ingestion uses separately installed, pinned Python decoder packages.
+The evaluation is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. The browser application/build has no npm installation step or application framework dependency. Native GRIB ingestion uses separately installed, pinned Python decoder packages.
 
 The first v0.2 publication was confirmed on **2026-11-01**: [workflow run 41317467329](https://github.com/xefensor/heli-briefing/actions/runs/41317467329) successfully built and deployed source commit [`bdec823f38f8e310207b91214a5b9ec3afd07b6c`](https://github.com/xefensor/heli-briefing/commit/bdec823f38f8e310207b91214a5b9ec3afd07b6c). The earlier [v0.1 workflow](https://github.com/xefensor/heli-briefing/actions/runs/41315499572) remains historical publication evidence.
 
@@ -90,3 +90,23 @@ The satellite workflow now restores the last genuine snapshot with pinned `actio
 ## Versioned application assets · 1 November 2026
 
 The static build keeps `index.html`, `build-info.json` and runtime `data/` snapshots at the root. It moves scripts, styles and vendored files together into `assets/<content-version>/`, preserving relative module imports and rewriting HTML asset URLs. The version covers application assets and HTML, excluding weather snapshots; scheduled weather-only updates therefore preserve the same application URLs. `build-info.json` records `assetVersion` as well as commit/build time. This prevents releases from deliberately reusing identical asset URLs after code changes; it does not claim to control every browser or CDN cache. See [decision 0008](decisions/0008-saved-points-and-time-continuity.md).
+
+
+## Complete evaluation scope · 1 November 2026
+
+[Decision 0010](decisions/0010-route-section-and-visual-evidence.md) completes the buildable evaluation backlog with route wind/temperature/RH sections, separate DMR 5G terrain, three ČHMÚ-authored cameras, SWL/low-cloud charts and a two-day calculated astronomy graph. Local checks passed **169 tests (127 JavaScript, 42 Python)**, a static build and relative documentation checks. Current support, retention, intended-pilot acceptance and external gates are in the [release checklist](release-checklist.md).
+
+The workflow runs the bounded camera and chart collectors alongside the existing report/native-cloud/satellite collectors. Generated `web/data/cameras.json`, `charts.json` and `charts/` are ignored. Browser code receives only generated snapshots/static images; neither provider credentials nor third-party camera API keys are embedded. Restore/save caches retain original image/source times after failure. Website APIs are not contracted provider interfaces.
+
+```sh
+python3 scripts/update_cameras.py --output web/data/cameras.json --cache-dir .cache/cameras
+python3 scripts/update_charts.py --output web/data/charts.json --cache-dir .cache/charts
+```
+
+Actual collection returned three 1600×1200 cameras, an SWL PNG (2339×1654), and fifteen low-cloud PNGs. Other advertised future low-cloud frames remained explicitly unavailable. Local browser checks loaded the camera/chart images, a 17-column ALADIN route section and **257/257** actual Bpv terrain samples between Planá and Kvilda. Arrow-key section inspection changed the exact numeric sample. Low-cloud activation disabled and removed observed radar rather than overlaying the two products.
+
+Desktop content width equalled scroll width (1348 px); the 390 px mobile iframe retained 375 px content width without page overflow. Its output dialog measured 335 px client/scroll width and about 509 px document height. Full-output checks embedded satellite, three cameras, SWL, low-cloud and the selected radar raster as data images with no automatic remote image requests. The image-rich snapshot exposed the old localStorage size limit. It now saves atomically in IndexedDB with a ten-record / 20 MB serialized budget; a browser reload confirmed the new snapshot and the copied legacy record. Browsers without IndexedDB retain the five-megabyte legacy path. Compact output retained nine original-report station entries and copied 3,396 characters in the sampled check. Tests cover both storage budgets and non-overwrite behavior.
+
+The supported cloud-browser download check timed out waiting for its native download event and returned no file path. The normal print action exposed no native output artifact. These are **unverified native save/print checks**, not evidence that the HTML payload is invalid or that target-browser delivery works. The complete HTML preview, embedded images, copy, archive persistence and deterministic offline-content checks passed. Actual target-device file reopen/PDF acceptance remains on the pilot checklist. No browser-internal downloads page, alternate browser driver or sandbox bypass was used.
+
+Publication and public-HTTPS verification for this scope are recorded below after the actual deployment completes.

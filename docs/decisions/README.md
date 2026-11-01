@@ -23,6 +23,8 @@ The next continuity refinement is [saved points and live/pinned navigation](0008
 
 The first bounded route capability is [route-point weather and independent departure time](0009-route-point-weather.md).
 
+The route section, ČÚZK terrain, timestamped cameras and integrated SWL/low-cloud products are recorded in [decision 0010](0010-route-section-and-visual-evidence.md).
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |
@@ -42,6 +44,6 @@ The first bounded route capability is [route-point weather and independent depar
 
 ## Open
 
-The primary user, initial South Bohemian context, browser-native implementation and GitHub Pages publication are established. Exact reporting cadence, additional operation-specific needs, extended geography, validated final interface layout, integrated cameras and further satellite products, full vertical route profiles, future backend/storage, code/documentation licence, professional provider access and remaining redistribution agreements remain open. Browser file-download completion and pilot preparation/output validation remain separate checks.
+The primary user, initial South Bohemian context, browser-native implementation and GitHub Pages publication are established. Exact reporting cadence, additional operation-specific needs, extended geography, validated final interface layout, further satellite products and future private-access backend/storage, code/documentation licence, professional provider access and remaining redistribution agreements remain open. Browser file-download completion and pilot preparation/output validation remain separate checks.
 
 Use the [decision template](template.md) for a substantial new decision. Record date, status, context, choice, consequences and supporting sources. Mark a superseded decision and link its replacement instead of silently rewriting history.

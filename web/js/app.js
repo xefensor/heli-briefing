@@ -1,3 +1,4 @@
+import { renderAstronomyChart } from './astronomy-view.js';
 import {renderProfile, profileAt} from './profile.js';
 import {renderSatellite, satelliteState} from './satellite.js';
 import { MODELS, fetchForecast, nearestTimeIndex } from './weather.js';
@@ -7,6 +8,7 @@ import { formatNumber as num, formatTime as clock, ageLabel, reportState, toDate
 import { mountPlaceControls } from './place-controls.js';
 import { mountRouteWorkspace } from './route-controls.js';
 import { readPlaces } from './places.js';
+import { mountImagery } from './imagery-controls.js';
 import { renderMetarSummary, renderTafPeriods } from './report-views.js';
 import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
@@ -50,6 +52,9 @@ let pointMarker = null;
 let radarLayer = null;
 let stationsLayer = null;
 let routeLayer = null;
+let lowCloudLayer = null;
+let lowCloudPath = null;
+let preparing = false;
 let loadError = null;
 let loading = false;
 let compareError = null;
@@ -99,6 +104,18 @@ const routeWorkspace = mountRouteWorkspace({ getContext: () => state,
   onMap: points => { if (map && points.length) map.fitBounds(points.map(point => [point.lat, point.lon]), { padding: [25, 25], maxZoom: 11 }); $('region-panel').scrollIntoView({ behavior: 'smooth' }); },
 });
 
+const imagery = mountImagery({ getContext: () => state, onLowCloud: showLowCloudMap });
+function showLowCloudMap(frame, focus = false) {
+  if (!map || !window.L) return;
+  if (!frame?.imagePath) { lowCloudLayer?.remove(); lowCloudLayer = null; lowCloudPath = null; $('map-layer-note').textContent = ''; return; }
+  if (frame.imagePath !== lowCloudPath) {
+    lowCloudLayer?.remove(); $('radar-toggle').checked = false; stopRadar(); radarLayer?.remove(); renderRadar();
+    lowCloudLayer = window.L.imageOverlay(frame.imagePath, [[47.766666666667,10.5],[51.366666666667,20.316666666667]], {opacity:.75,alt:`Předpověď nízké oblačnosti ČHMÚ pro ${fullTime(frame.validAt)}`,attribution:'Nízká oblačnost: ČHMÚ · CC BY 4.0'}).addTo(map); lowCloudPath = frame.imagePath;
+  }
+  $('map-layer-note').textContent = `PŘEDPOVĚĎ ČHMÚ nízké oblačnosti · mapa pro ${fullTime(frame.validAt)} · radar je vypnutý. Výšky podle legendy v hFT AMSL.`;
+  if (focus) $('region-panel').scrollIntoView({behavior:'smooth'});
+}
+
 function writeUrl() {
   const url = new URL(location.href);
   url.search = sharedSearch(state, { live: liveMode });
@@ -109,6 +126,7 @@ function writeUrl() {
 function updateControls() {
   placeControls.update();
   routeWorkspace.sync();
+  imagery.sync();
   document.querySelectorAll('[data-model]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.model === state.model)));
   document.querySelectorAll('[data-hours]').forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.hours) === state.hours)));
   if (document.activeElement !== $('inspection-time')) $('inspection-time').value = toDateTimeInput(state.time, state.timezone);
@@ -228,7 +246,8 @@ function renderCharts() {
 function renderAstronomy() {
   const astro = getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) });
   const event = (time) => time ? clock(time.toISOString(), state.timezone) : 'bez události';
-  $('astronomy').innerHTML = `<div class="light-grid">${[['Svítání · civilní', astro.dawn], ['Východ Slunce', astro.sunrise], ['Západ Slunce', astro.sunset], ['Soumrak · civilní', astro.dusk]].map(([label, value]) => `<div class="light-item"><span class="label">${label}</span><strong>${event(value)}</strong></div>`).join('')}</div><p class="panel-meta">Délka dne ${v(astro.dayLengthHours, 'h', 1)} · Slunce nyní ve vybraném čase ${v(astro.sunAltitude, '°', 1)}${astro.alwaysUp ? ' · Slunce celý den nad obzorem' : astro.alwaysDown ? ' · Slunce celý den pod obzorem' : ''}.</p><details class="report-details"><summary>Měsíc a podrobnosti</summary><div class="light-grid"><div class="light-item"><span class="label">Fáze</span><strong>${esc(astro.phaseLabel)}</strong></div><div class="light-item"><span class="label">Osvětlená část kotouče</span><strong>${v(astro.moonFraction * 100, '%')}</strong></div><div class="light-item"><span class="label">Východ Měsíce</span><strong>${event(astro.moonrise)}</strong></div><div class="light-item"><span class="label">Západ Měsíce</span><strong>${event(astro.moonset)}</strong></div></div><p class="chart-caption">Výška Měsíce ${v(astro.moonAltitude, '°', 1)}. Osvětlený podíl kotouče není měření světla na zemi.</p></details><p class="chart-caption">Výpočty SunCalc pro den ${clock(astro.dayStart.toISOString(), 'UTC', true).split(' ')[0]} UTC; události zobrazeny v ${state.timezone === 'UTC' ? 'UTC' : 'českém místním čase'}. Polohy odpovídají času přehledu.</p>`;
+  const moonOpen = Boolean($('astronomy').querySelector('details[open]'));
+  $('astronomy').innerHTML = `<div class="light-grid">${[['Svítání · civilní', astro.dawn], ['Východ Slunce', astro.sunrise], ['Západ Slunce', astro.sunset], ['Soumrak · civilní', astro.dusk]].map(([label, value]) => `<div class="light-item"><span class="label">${label}</span><strong>${event(value)}</strong></div>`).join('')}</div><p class="panel-meta">Délka dne ${v(astro.dayLengthHours, 'h', 1)} · Slunce nyní ve vybraném čase ${v(astro.sunAltitude, '°', 1)}${astro.alwaysUp ? ' · Slunce celý den nad obzorem' : astro.alwaysDown ? ' · Slunce celý den pod obzorem' : ''}.</p><details class="report-details"${moonOpen ? ' open' : ''}><summary>Měsíc a podrobnosti</summary><div class="light-grid"><div class="light-item"><span class="label">Fáze</span><strong>${esc(astro.phaseLabel)}</strong></div><div class="light-item"><span class="label">Osvětlená část kotouče</span><strong>${v(astro.moonFraction * 100, '%')}</strong></div><div class="light-item"><span class="label">Východ Měsíce</span><strong>${event(astro.moonrise)}</strong></div><div class="light-item"><span class="label">Západ Měsíce</span><strong>${event(astro.moonset)}</strong></div></div><p class="chart-caption">Výška Měsíce ${v(astro.moonAltitude, '°', 1)}. Osvětlený podíl kotouče není měření světla na zemi.</p></details><p class="chart-caption">Výpočty SunCalc pro den ${clock(astro.dayStart.toISOString(), 'UTC', true).split(' ')[0]} UTC; události zobrazeny v ${state.timezone === 'UTC' ? 'UTC' : 'českém místním čase'}. Polohy odpovídají času přehledu.</p>${renderAstronomyChart(astro,state.time,state.timezone,plotWidth('astronomy'))}`;
 }
 
 function renderReportFreshness() {
@@ -551,14 +570,15 @@ function downloadBriefing(snapshot, mode='full') {
   setTimeout(() => URL.revokeObjectURL(href), 60000);
 }
 
-function renderArchive() {
+async function renderArchive() {
   try {
-    const items = listBriefings();
+    const items = await listBriefings();
     $('archive-list').innerHTML = items.length ? items.map(item => `<article class="archive-item"><div class="archive-item-title">${esc(item.title)}</div><p class="archive-item-meta">Uloženo ${esc(fullTime(item.createdAt))} · data a poznámky zachyceny v souboru</p><div class="archive-buttons"><button class="button button-quiet" type="button" data-archive-open="${esc(item.id)}">Zobrazit</button><button class="button button-quiet" type="button" data-archive-download="${esc(item.id)}">Stáhnout HTML</button><button class="button button-quiet" type="button" data-archive-remove="${esc(item.id)}" aria-label="Odstranit místní briefing ${esc(item.title)}">Odebrat z prohlížeče</button></div></article>`).join('') : '<p class="muted">Zatím žádný uložený briefing.</p>';
   } catch (error) { $('archive-status').textContent = error.message; }
 }
 
-function saveCurrentBriefing() {
+async function saveCurrentBriefing() {
+  if (preparing) return;
   stopRadar();
   if (loading) { $('archive-status').textContent = 'Předpověď se právě obnovuje. Počkej na dokončení a potom ulož briefing.'; return; }
   const radar = aviation?.radar;
@@ -573,13 +593,18 @@ function saveCurrentBriefing() {
     capturedAviation.radar.selectedFrame = frame;
   }
   try {
-    const snapshot = createBriefingSnapshot({ state: {...state, historyStation}, route: routeWorkspace.snapshot(), forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
+    preparing = true;
+    $('prepare-output').disabled = true; $('save-briefing').disabled = true;
+    $('archive-status').textContent = 'Připravuji zachycený briefing a obrazové zdroje…';
+    const baseSnapshot = createBriefingSnapshot({ state: {...state, historyStation}, route: routeWorkspace.snapshot(), forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
+    const capturedImages = await imagery.capture(baseSnapshot.state.time);
+    const snapshot = createBriefingSnapshot({...baseSnapshot, ...capturedImages, createdAt:new Date().toISOString()});
     let storageError = null;
-    try { saveBriefing(snapshot); } catch (error) { storageError = error.message; }
+    try { await saveBriefing(snapshot); } catch (error) { storageError = error.message; }
     openPreview(snapshot);
     $('archive-status').textContent = `Briefing zachycen ${fullTime(snapshot.createdAt)} a otevřen k prohlédnutí. HTML stáhneš nebo vytiskneš z náhledu. ${storageError ? `Místní archiv: ${storageError}` : 'Kopie je uložena také v tomto prohlížeči.'}${radar && !imageMatches ? ' Vybraný radarový obraz není vložen; zachovány jsou jeho čas a zdroj.' : ''}`;
     renderArchive();
-  } catch (error) { $('archive-status').textContent = `Briefing se nepodařilo uložit: ${error.message}`; }
+  } catch (error) { $('archive-status').textContent = `Briefing se nepodařilo uložit: ${error.message}`; } finally { preparing = false; $('prepare-output').disabled = false; $('save-briefing').disabled = false; }
 }
 
 function tickFreshness(nowMs, status) {
@@ -648,6 +673,7 @@ function choosePlace(lat, lon, name, place = 'custom') {
   loadForecast();
 }
 
+$('radar-toggle').addEventListener('change',()=>{if($('radar-toggle').checked) imagery.hideLowCloud();});
 $('models').addEventListener('click', (event) => {
   const model = event.target.closest('[data-model]')?.dataset.model;
   if (!model || model === state.model) return;
@@ -730,14 +756,14 @@ $('history-station').addEventListener('change', event => { historyStation = even
 $('report-view').addEventListener('click', event => { const view = event.target.closest('[data-report-view]')?.dataset.reportView; if (!['both', 'summary', 'raw'].includes(view)) return; reportView = view; persist('report-view', view); updateControls(); renderReports(); });
 $('save-briefing').addEventListener('click', saveCurrentBriefing);
 $('prepare-output').addEventListener('click',saveCurrentBriefing);
-$('archive-list').addEventListener('click', event => {
+$('archive-list').addEventListener('click', async event => {
   try {
     const openId = event.target.closest('[data-archive-open]')?.dataset.archiveOpen;
     const downloadId = event.target.closest('[data-archive-download]')?.dataset.archiveDownload;
     const removeId = event.target.closest('[data-archive-remove]')?.dataset.archiveRemove;
-    if (openId) { const snapshot=loadBriefing(openId); if (!snapshot) throw new Error('Briefing už není v archivu.'); openPreview(snapshot); }
-    if (downloadId) { const snapshot = loadBriefing(downloadId); if (!snapshot) throw new Error('Briefing už není v archivu.'); downloadBriefing(snapshot); }
-    if (removeId) { deleteBriefing(removeId); renderArchive(); $('archive-status').textContent = 'Místní kopie odebrána. Již stažený soubor zůstává zachován.'; }
+    if (openId) { const snapshot=await loadBriefing(openId); if (!snapshot) throw new Error('Briefing už není v archivu.'); openPreview(snapshot); }
+    if (downloadId) { const snapshot = await loadBriefing(downloadId); if (!snapshot) throw new Error('Briefing už není v archivu.'); downloadBriefing(snapshot); }
+    if (removeId) { await deleteBriefing(removeId); await renderArchive(); $('archive-status').textContent = 'Místní kopie odebrána. Již stažený soubor zůstává zachován.'; }
   } catch (error) { $('archive-status').textContent = error.message; }
 });
 $('satellite-enlarge').addEventListener('click',()=>{renderSatellitePanel();$('satellite-large').innerHTML=$('satellite').innerHTML;$('satellite-dialog').showModal();});
@@ -769,7 +795,7 @@ monitor = createMonitor({
     if (reason === 'manual') radarFailures.clear();
     const tasks = [];
     if (refreshForecast) { tasks.push(loadForecast(true, signal).then(result => ['forecast', result])); void routeWorkspace.refresh(reason === 'manual'); }
-    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadClouds(true, signal), loadSatellite(true, signal)]).then(([reports, native, image]) => ['aviation', reports.ok && native.ok && image.ok ? { ok: true } : { ok: false, error: reports.error || native.error || image.error }]));
+    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadClouds(true, signal), loadSatellite(true, signal), imagery.refresh(true, signal)]).then(([reports, native, image, extra]) => ['aviation', reports.ok && native.ok && image.ok && extra.ok ? { ok: true } : { ok: false, error: reports.error || native.error || image.error || extra.error }]));
     return Object.fromEntries(await Promise.all(tasks));
   },
 });
