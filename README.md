@@ -10,6 +10,8 @@ The goal is to bring a regional weather picture, detailed graphs, local observat
 
 **v0.2 includes:** an independently labelled native ICON-D2 ceiling diagnostic, conservative structured reports and twelve-hour METAR history, a two-hour radar sequence, automatic freshness checks, a report-output preview and frozen HTML export with browser-local archives. [Release evidence and verification limits](docs/deployment.md) distinguish passing tests, browser checks and publication. The published extension adds a six-level point profile, independent GeoColour satellite imagery and preview-first output; [implementation and validation](docs/decisions/0006-point-profile-and-satellite.md). Integrated cameras and full route cross-sections remain future scope.
 
+**Current handoff refinement:** full briefing and compact original-report output, captured-source review, copyable text and clearer print appendices. [Scope and verification](docs/decisions/0007-briefing-handoff.md). The whole project remains incomplete; route/camera/access and pilot/output validation work is still open.
+
 ## Start here
 
 - [Documentation index](docs/README.md)

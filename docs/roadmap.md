@@ -22,6 +22,15 @@ These additions preserve the substantial graphs, direct evidence access and coor
 - [x] Include both in frozen output and open the preview when preparing a briefing.
 - [x] Verify and publish the extension; see [decision 0006](decisions/0006-point-profile-and-satellite.md).
 
+## Handoff refinement
+
+- [x] Retain full briefing output and add a compact original-report pack.
+- [x] Add captured-source review and plain-text/manual-copy handoff.
+- [x] Refine the preparation area, preview controls and printable appendices.
+- [ ] Publish and record final browser/print-layout checks; see [decision 0007](decisions/0007-briefing-handoff.md).
+
+The whole project remains **incomplete**. Check the remaining feature/access/validation items below; a finished iteration is not a claim that the product is fully complete.
+
 ## Foundation
 
 - [x] Capture the owner requirements and separate recommendations from decisions.

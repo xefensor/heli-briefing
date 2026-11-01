@@ -17,6 +17,8 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 
 The next implemented capability decision is [point profile, satellite and preview-first handoff](0006-point-profile-and-satellite.md). Publication and browser checks are recorded there.
 
+The continuing handoff and UX work is recorded in [decision 0007](0007-briefing-handoff.md), including the required three-study review and explicit completion reporting.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |

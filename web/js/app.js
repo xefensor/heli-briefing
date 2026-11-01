@@ -9,7 +9,7 @@ import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
 import { createMonitor } from './monitor.js';
 import { fetchClouds, queryClouds, CLOUD_STATUS_LABELS } from './clouds.js';
-import { createBriefingSnapshot, renderBriefingHtml, briefingFilename, saveBriefing, listBriefings, loadBriefing, deleteBriefing } from './archive.js';
+import { createBriefingSnapshot, renderBriefingHtml, renderBriefingText, briefingFilename, saveBriefing, listBriefings, loadBriefing, deleteBriefing } from './archive.js';
 
 const $ = (id) => document.getElementById(id);
 const plotWidth = (id, offset = 32) => Math.max(320, Math.min(1000, ($(id)?.clientWidth || 720) - offset));
@@ -64,6 +64,7 @@ let radarPlaying = false;
 let radarTimer = null;
 let reportView = 'both';
 let previewSnapshot = null;
+let previewMode = 'full';
 let satellite = null;
 let satelliteError = null;
 let satelliteSequence = 0;
@@ -497,12 +498,31 @@ function renderClouds() {
   $('cloud-chart').innerHTML = renderChart({ times: indices.map(item => item.time), series: [{ label: 'ICON-D2 · CEILING', color: 'var(--chart-amber)', unit: 'm MSL', values: indices.map(item => result.series.values[item.index]) }], selectedTime: state.time, timezone: state.timezone, width: plotWidth('cloud-chart'), height: 210, yLabel: 'm MSL', min: 0 });
 }
 
-function downloadBriefing(snapshot) {
-  const html = renderBriefingHtml(snapshot);
+function updatePreview() {
+  if (!previewSnapshot) return;
+  const when=iso=>`${clock(iso,previewSnapshot.state.timezone,true)} ${previewSnapshot.state.timezone==='UTC'?'UTC':'CZ'}`;
+  $('preview-context').textContent=`${previewSnapshot.state.name} · přehled ${when(previewSnapshot.state.time)} · zachyceno ${when(previewSnapshot.createdAt)} · zdroje se v tomto náhledu neobnovují`;
+  $('preview-feedback').textContent=previewMode==='reports'?'Výpis obsahuje originální METAR, TAF a SIGMET včetně platnosti a chybějících zpráv.':'Celý briefing obsahuje grafy, pozorování, obrazové zdroje a poznámky. Přesná hodinová příloha zůstává v HTML, standardní tisk ji vynechá.';
+  $('copy-fallback').hidden=true;
+  $('preview-print').disabled=true;
+  $('saved-preview-frame').srcdoc=renderBriefingHtml(previewSnapshot,{mode:previewMode});
+  document.querySelectorAll('[data-output-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.outputMode===previewMode)));
+}
+function openPreview(snapshot) {
+  previewSnapshot=snapshot;previewMode='full';updatePreview();
+  $('saved-preview').showModal();
+}
+$('saved-preview-frame').addEventListener('load',()=>{
+  const body=$('saved-preview-frame').contentDocument?.body;
+  $('preview-print').disabled=!body||body.classList.contains('reports-only')!==(previewMode==='reports');
+});
+
+function downloadBriefing(snapshot, mode='full') {
+  const html = renderBriefingHtml(snapshot,{mode});
   const href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = href;
-  link.download = briefingFilename(snapshot);
+  link.download = briefingFilename(snapshot,{mode});
   document.body.append(link);
   link.click();
   link.remove();
@@ -531,12 +551,10 @@ function saveCurrentBriefing() {
     capturedAviation.radar.selectedFrame = frame;
   }
   try {
-    const snapshot = createBriefingSnapshot({ state, forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
+    const snapshot = createBriefingSnapshot({ state: {...state, historyStation}, forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
     let storageError = null;
     try { saveBriefing(snapshot); } catch (error) { storageError = error.message; }
-    previewSnapshot=snapshot;
-    $('saved-preview-frame').srcdoc=renderBriefingHtml(snapshot);
-    $('saved-preview').showModal();
+    openPreview(snapshot);
     $('archive-status').textContent = `Briefing zachycen ${fullTime(snapshot.createdAt)} a otevřen k prohlédnutí. HTML stáhneš nebo vytiskneš z náhledu. ${storageError ? `Místní archiv: ${storageError}` : 'Kopie je uložena také v tomto prohlížeči.'}${radar && !imageMatches ? ' Vybraný radarový obraz není vložen; zachovány jsou jeho čas a zdroj.' : ''}`;
     renderArchive();
   } catch (error) { $('archive-status').textContent = `Briefing se nepodařilo uložit: ${error.message}`; }
@@ -684,12 +702,13 @@ $('radar-latest').addEventListener('click', () => { stopRadar(); radarIndex = -1
 $('history-station').addEventListener('change', event => { historyStation = event.target.value; renderHistory(); });
 $('report-view').addEventListener('click', event => { const view = event.target.closest('[data-report-view]')?.dataset.reportView; if (!['both', 'summary', 'raw'].includes(view)) return; reportView = view; persist('report-view', view); updateControls(); renderReports(); });
 $('save-briefing').addEventListener('click', saveCurrentBriefing);
+$('prepare-output').addEventListener('click',saveCurrentBriefing);
 $('archive-list').addEventListener('click', event => {
   try {
     const openId = event.target.closest('[data-archive-open]')?.dataset.archiveOpen;
     const downloadId = event.target.closest('[data-archive-download]')?.dataset.archiveDownload;
     const removeId = event.target.closest('[data-archive-remove]')?.dataset.archiveRemove;
-    if (openId) { previewSnapshot = loadBriefing(openId); if (!previewSnapshot) throw new Error('Briefing už není v archivu.'); $('saved-preview-frame').srcdoc = renderBriefingHtml(previewSnapshot); $('saved-preview').showModal(); }
+    if (openId) { const snapshot=loadBriefing(openId); if (!snapshot) throw new Error('Briefing už není v archivu.'); openPreview(snapshot); }
     if (downloadId) { const snapshot = loadBriefing(downloadId); if (!snapshot) throw new Error('Briefing už není v archivu.'); downloadBriefing(snapshot); }
     if (removeId) { deleteBriefing(removeId); renderArchive(); $('archive-status').textContent = 'Místní kopie odebrána. Již stažený soubor zůstává zachován.'; }
   } catch (error) { $('archive-status').textContent = error.message; }
@@ -697,7 +716,14 @@ $('archive-list').addEventListener('click', event => {
 $('satellite-enlarge').addEventListener('click',()=>{renderSatellitePanel();$('satellite-large').innerHTML=$('satellite').innerHTML;$('satellite-dialog').showModal();});
 $('satellite-close').addEventListener('click',()=>$('satellite-dialog').close());
 $('preview-close').addEventListener('click', () => $('saved-preview').close());
-$('preview-download').addEventListener('click', () => { if (previewSnapshot) downloadBriefing(previewSnapshot); });
+$('preview-download').addEventListener('click', () => { if (previewSnapshot) downloadBriefing(previewSnapshot,previewMode); });
+$('output-mode').addEventListener('click',event=>{const mode=event.target.closest('[data-output-mode]')?.dataset.outputMode;if(!['full','reports'].includes(mode)||mode===previewMode)return;previewMode=mode;updatePreview();});
+$('preview-copy').addEventListener('click',async()=>{
+  if(!previewSnapshot)return;
+  const text=renderBriefingText(previewSnapshot,{mode:previewMode});
+  try{await navigator.clipboard.writeText(text);$('preview-feedback').textContent='Text zachyceného briefingu zkopírován. Sám se neaktualizuje.';}
+  catch{$('copy-fallback').hidden=false;$('copy-text').value=text;$('copy-text').focus();$('copy-text').select();$('copy-text').scrollTop=0;$('preview-feedback').textContent='Prohlížeč nepovolil přístup ke schránce. Zkopíruj vybraný text ručně.';}
+});
 $('preview-print').addEventListener('click', () => $('saved-preview-frame').contentWindow?.print());
 $('cloud-chart').addEventListener('click', event => { const time = event.target.closest('[data-time]')?.dataset.time; if (time) selectTime(time); });
 window.addEventListener('beforeprint', () => { stopRadar(); $('print-notes').textContent = $('notes').value; updateControls(); });

@@ -53,6 +53,12 @@ Use the three research tracks—[pilot needs](docs/research/pilot-needs.md), [av
 - Keep private account details, API keys, signed URLs, tokens and raw sensitive logs out of this public repository. Use an example environment file with placeholders when configuration becomes necessary.
 - Use the GitHub connector when the user requests it. Preserve the existing branch head and use non-forced or guarded ref updates; do not reset history to resolve a conflict.
 
+## Required iteration practice
+
+Owner instruction, 2026-11-01: before each substantial iteration check all three studies—pilot needs, interface references and data sources—and connect the chosen change to them. Refine UX alongside functionality; preserve the agreed information depth. Record any relevant current-source recheck separately from rereading the studies.
+
+Every final progress report must explicitly state whether the whole agreed project is complete. Distinguish finishing an iteration from finishing the project, list the material remaining work and state unverified output or operational checks honestly. Do not describe research proposals as owner-approved requirements or claim complete delivery merely because tests/deployment passed.
+
 ## Validation and completion
 
 For documentation changes, run `python3 scripts/check_docs.py` and `git diff --check` when a local Git checkout is available. Check links, terminology, proposal status and dated claims. Network source checks are deliberate research actions, not part of routine CI.

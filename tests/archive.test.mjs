@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ARCHIVE_KEY, ARCHIVE_MAX_ITEMS, ArchiveError, createBriefingSnapshot, renderBriefingHtml, briefingFilename, listBriefings, saveBriefing, loadBriefing, deleteBriefing } from '../web/js/archive.js';
+import { ARCHIVE_KEY, ARCHIVE_MAX_ITEMS, ArchiveError, createBriefingSnapshot, renderBriefingHtml, renderBriefingText, briefingFilename, listBriefings, saveBriefing, loadBriefing, deleteBriefing } from '../web/js/archive.js';
 
 const state = { name: 'Planá · České Budějovice', lat: 48.9463, lon: 14.4294, model: 'aladin', compare: 'icon', time: '2026-11-01T14:30:00.000Z', hours: 24, timezone: 'UTC' };
 const times = ['2026-11-01T14:00:00.000Z', '2026-11-01T15:00:00.000Z', '2026-11-01T16:00:00.000Z'];
@@ -221,4 +221,35 @@ test('new point profile and satellite evidence stay frozen and embedded without 
  const snapshot=createBriefingSnapshot(input);input.forecast.profile.levels[0].wind[0]=80;input.satellite.observedAt='2026-11-02T00:00:00Z';
  const html=renderBriefingHtml(snapshot);assert.equal(snapshot.forecast.profile.levels[0].wind[0],0);assert.equal(snapshot.satellite.observedAt,'2026-11-01T14:00:00Z');
  assert.match(html,/Výškový profil/);assert.match(html,/Satelitní obraz/);assert.match(html,/EUMETSAT \/ NASA/);assert.match(html,/src="data:image\/png;base64,/);assert.doesNotMatch(html,/<img[^>]+src="https?:/);
+});
+
+test('compact report output retains missing, expired and raw evidence without silently including forecasts',()=>{
+ const input=base();input.aviation.taf.items[0].validFrom='2026-10-30T12:00:00Z';input.aviation.taf.items[0].issuedAt='2026-10-30T11:00:00Z';input.aviation.taf.items[0].validTo='2026-10-31T12:00:00Z';input.aviation.metar.missingStations=['LKCS'];
+ const snapshot=createBriefingSnapshot(input),html=renderBriefingHtml(snapshot,{mode:'reports'});
+ assert.match(html,/reports-only/);assert.match(html,/LKCS/);assert.match(html,/zpráva v balíčku není dostupná/);assert.match(html,/Po platnosti/);assert.match(html,/TAF LKPR/);
+ assert.doesNotMatch(html,/<svg|Satelitní obraz|Přesná hodinová data předpovědi/);
+ assert.match(briefingFilename(snapshot,{mode:'reports'}),/-metar-taf\.html$/);
+ assert.throws(()=>renderBriefingHtml(snapshot,{mode:'fake'}),/Neznámý/);
+});
+
+test('copyable text preserves sample time, zero, missing values and frozen report status',()=>{
+ const snapshot=createBriefingSnapshot(base());
+ const text=renderBriefingText(snapshot);
+ assert.match(text,/hodinový vzorek 1\.11\.2026 14:00 UTC/);assert.match(text,/Vítr 10 m: 0 kt/);assert.match(text,/nízká oblačnost 0 %/);
+ assert.match(text,/TAF LKPR/);assert.match(text,/Sám se neaktualizuje/);
+ assert.equal(renderBriefingText(snapshot),text);
+ const reports=renderBriefingText(snapshot,{mode:'reports'});assert.doesNotMatch(reports,/MODELOVÝ VZOREK/);
+});
+
+test('handoff warnings survive export while markup in notes and source errors stays escaped',()=>{
+ const input=base();input.notes='<img src=x onerror=alert(1)>';input.sourceErrors={aviation:'<script>offline</script>'};input.forecast.transport.stale=true;
+ const html=renderBriefingHtml(createBriefingSnapshot(input));
+ assert.match(html,/Stav zachycených zdrojů/);assert.match(html,/Starší data po chybě obnovy/);assert.match(html,/&lt;script&gt;offline/);assert.doesNotMatch(html,/<script>|<img src=x/);
+ assert.match(html,/<details class="exact-appendix">/);
+});
+
+test('source review flags malformed and future collection times without relabelling raw bulletins',()=>{
+ const input=base();input.aviation.metar.retrievedAt='bad';input.aviation.taf.retrievedAt='2026-11-02T00:00:00Z';
+ const text=renderBriefingText(createBriefingSnapshot(input),{mode:'reports'});
+ assert.match(text,/čas stažení chybí \/ není platný/);assert.match(text,/budoucí čas stažení/);assert.match(text,/011400Z/);
 });
