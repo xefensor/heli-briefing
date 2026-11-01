@@ -2,7 +2,9 @@
 
 [Documentation index](README.md) · [Hosting decision](decisions/0004-github-pages-first-build.md)
 
-The first implementation targets GitHub Pages. Static source lives in `web/`; generated deployment output lives in ignored `dist/`. There is no installation step or application framework dependency.
+The first evaluation version is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. There is no installation step or application framework dependency.
+
+Publication was confirmed on **2026-11-01**: [workflow run 41315499572](https://github.com/xefensor/heli-briefing/actions/runs/41315499572) completed its build and deployment for source commit [`51e42778f2d5bfd4f36db30c771db85fdf9adeb3`](https://github.com/xefensor/heli-briefing/commit/51e42778f2d5bfd4f36db30c771db85fdf9adeb3) and returned the live URL above. The live page was opened and its real aviation-report/radar snapshot loaded. This verifies publication and snapshot loading; comprehensive forecast-browser behaviour and pilot usability are separate checks.
 
 ## Local checks and build
 
@@ -19,7 +21,7 @@ Serve `dist/` through an HTTP server to inspect the browser application. Opening
 
 ## GitHub Pages setup
 
-An owner with repository administration access must enable **Settings → Pages → Build and deployment → Source: GitHub Actions** once. The linked [settings page](https://github.com/xefensor/heli-briefing/settings/pages) is the relevant repository configuration.
+GitHub Pages is enabled for this repository. When recreating this setup in another repository, an owner with administration access must select **Settings → Pages → Build and deployment → Source: GitHub Actions** once. The linked [settings page](https://github.com/xefensor/heli-briefing/settings/pages) is the current repository configuration.
 
 The `Deploy briefing to GitHub Pages` workflow runs on application changes to `main`, by manual dispatch, and at minutes 7, 27 and 47 each hour. It tests the application, checks documentation links, retrieves a bounded aviation-report snapshot, builds the static artifact, then deploys it through the `github-pages` environment. Periodic retrieval does not modify the source branch. The environment's returned URL and a successful deployment establish publication; an expected URL alone does not.
 

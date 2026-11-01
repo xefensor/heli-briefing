@@ -4,7 +4,7 @@ A helicopter weather and briefing workspace for a South Bohemian professional pi
 
 The goal is to bring a regional weather picture, detailed graphs, local observations and source comparison into a coherent interface with few repeated actions. Information depth and simple interaction are both requirements.
 
-**Status:** first evaluation implementation in `web/`, using browser-native JavaScript modules, HTML, CSS and SVG charts. GitHub Pages is the owner-selected publishing target; initial setup found Pages disabled, and publication must be verified from a successful deployment. The rebuild is guided by research into pilot needs, aviation interfaces and data sources. The pilot-authored original supplies context and candidate information needs; its features and workflow remain open to redesign. Pilot validation, the exact reporting schedule and some data agreements remain open.
+**Status:** first evaluation version [published on GitHub Pages](https://xefensor.github.io/heli-briefing/), with deployment confirmed on **1 November 2026**. Source in `web/` uses browser-native JavaScript modules, HTML, CSS and SVG charts. The rebuild is guided by research into pilot needs, aviation interfaces and data sources. The pilot-authored original supplies context and candidate information needs; its features and workflow remain open to redesign. Pilot validation, the exact reporting schedule and some data agreements remain open.
 
 ## Start here
 
@@ -41,7 +41,7 @@ git diff --check
 
 ## Data and licensing
 
-The first build uses an Open-Meteo forecast adapter for ČHMÚ ALADIN, DWD ICON and ECMWF, a collected AviationWeather.gov report snapshot and ČHMÚ radar metadata. Sources retain their own identities, validity periods and reuse conditions. Model forecasts, measurements and calculated astronomy are different products. Real data requests and a published site still need runtime verification; no provider uptime or forecast-skill guarantee is implied.
+The first build uses an Open-Meteo forecast adapter for ČHMÚ ALADIN, DWD ICON and ECMWF, a collected AviationWeather.gov report snapshot and ČHMÚ radar metadata. Sources retain their own identities, validity periods and reuse conditions. Model forecasts, measurements and calculated astronomy are different products. Publication and live report/radar snapshot loading were checked; comprehensive browser behaviour and pilot usability require separate validation. No provider uptime or forecast-skill guarantee is implied.
 
 Open-Meteo's free hosted API is used for this open-source evaluation version under its applicable terms. Professional/commercial production use needs appropriate provider access. Any private API key requires a server-side adapter or ingestion service; it cannot be kept secret on GitHub Pages.
 

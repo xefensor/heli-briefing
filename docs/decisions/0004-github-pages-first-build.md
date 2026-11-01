@@ -2,7 +2,7 @@
 
 Date: 2026-11-01
 
-Status: accepted implementation choice; publication must be verified separately
+Status: accepted and implemented; first evaluation publication confirmed 2026-11-01
 
 ## Context
 
@@ -22,10 +22,14 @@ Use the official GitHub Pages artifact and deployment actions, pinned to verifie
 - Forecast and report failures must remain visible. Reports are periodically retrieved snapshots, not a live browser connection to AWC; scheduled jobs can run late or stop.
 - Open-Meteo's free hosted API is used for this open-source evaluation version under its applicable terms. Production professional/commercial use requires suitable provider access and a server-side design for any private credentials. A paid subscription has not been purchased or configured.
 - Provider rights and operational suitability remain separate from technical publication. Existing source limitations and data-integrity rules continue to apply.
-- Initial GitHub Pages enablement is an administration setting. The ordinary Actions `GITHUB_TOKEN` cannot enable it through `configure-pages`; an authorised owner must select GitHub Actions as the publishing source when the repository does not already have Pages enabled. Do not invent a secret or request excessive workflow permissions to bypass this.
+- GitHub Pages is now enabled for this repository. Initial enablement for a new repository remains an administration setting: the ordinary Actions `GITHUB_TOKEN` cannot enable it through `configure-pages`. An authorised owner must select GitHub Actions as the publishing source when needed. Do not invent a secret or request excessive workflow permissions to bypass this.
 - Source preparation, a successful build, a pushed commit and a successful Pages deployment are distinct states. Record the returned deployment URL and verification result before saying the site is published.
 
 See [deployment](../deployment.md), [source access](../data/sources.md) and [data integrity](../data/integrity.md).
+
+## Publication evidence
+
+On 2026-11-01, [workflow run 41315499572](https://github.com/xefensor/heli-briefing/actions/runs/41315499572) successfully built and deployed source commit [`51e42778f2d5bfd4f36db30c771db85fdf9adeb3`](https://github.com/xefensor/heli-briefing/commit/51e42778f2d5bfd4f36db30c771db85fdf9adeb3), returning [the live evaluation site](https://xefensor.github.io/heli-briefing/). The live page and real aviation-report/radar snapshot loaded. This establishes publication and snapshot loading, not comprehensive browser verification, local forecast accuracy or validated pilot usability. Professional production access remains subject to the provider and server-side requirements above.
 
 ## Sources
 
