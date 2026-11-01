@@ -1,0 +1,30 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local work and generated output
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+tmp/
+
+# Downloaded provider datasets and temporary archives
+*.grb
+*.grb2
+*.grib
+*.grib2
+*.bz2
+*.h5
+*.hdf5
+*.tar.gz
+*.zip

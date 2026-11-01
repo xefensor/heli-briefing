@@ -1,0 +1,38 @@
+name: Data problem
+description: Report missing, stale, incorrectly processed or incorrectly displayed data.
+title: "Data: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong?
+      description: Distinguish missing data, stale data, wrong units or times, a height-reference issue, and forecast disagreement.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Provider and product
+      placeholder: ČHMÚ METAR, ALADIN visibility, ICON-D2 ceiling, radar, camera
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Location or station
+      description: Include coordinates or a station identifier when relevant.
+  - type: textarea
+    id: timing
+    attributes:
+      label: Times and model
+      description: Include selected time and timezone, model/domain, issue or run time, observation or capture time, validity and retrieval time where known.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and expected result
+      description: Link the original source or attach a small redacted sample. Remove credentials, signed URLs and private operational details.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the version or commit, device/browser and relevant controls if an application is involved.
