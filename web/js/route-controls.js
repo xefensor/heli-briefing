@@ -70,6 +70,7 @@ export function mountRouteWorkspace({ getContext, getChoices, getClouds, onInspe
         if (id !== sequence) return;
         results = loaded.results;
         if (loaded.limited) { retryUntil = Math.max(Date.now() + 60000, Date.parse(loaded.retryAt) || 0); setMessage('Zdroj omezuje požadavky; další body jsou označené jako nedostupné.'); }
+        else await section.refresh(force);
       } catch (error) { if (id === sequence && error.name !== 'AbortError') setMessage(error.message); }
       finally { if (id === sequence) { loading = false; renderOutput(); } }
     })();

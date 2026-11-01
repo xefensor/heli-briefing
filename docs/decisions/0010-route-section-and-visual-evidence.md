@@ -14,7 +14,7 @@ The owner directed work to continue through the buildable backlog rather than en
 
 ## Choice
 
-A route section samples the explicit primary forecast model at up to 17 positions, including the route nodes, and each position's planned passage time. Great-circle position and planned time are interpolated along direct legs; weather is not interpolated between samples. Up to two forecast requests run concurrently. A rate-limit response stops queued work; changing geometry, timing or model invalidates the previous section. The optional section starts with one explicit load action, then follows route/model edits. Existing point comparison remains available without loading the section.
+A route section samples the explicit primary forecast model at up to 17 positions, including the route nodes, and each position's planned passage time. Great-circle position and planned time are interpolated along direct legs; weather is not interpolated between samples. Up to two forecast requests run concurrently. A rate-limit response stops queued work; changing geometry, timing or model invalidates the previous section. The optional section starts with one explicit load action, then follows route/model edits and the existing route weather refresh cycle. A manual route/global refresh forces new forecast requests; unchanged terrain retains its genuine earlier retrieval time. Existing point comparison remains available without loading the section.
 
 Three scatter sections show wind, temperature and RH at the six qualified pressure levels. Numbers use actual distance and MSL heights. Provider-interpolated levels and below-API-terrain masks remain identified. ECMWF's unsupported profile is not supplied from another model. RH is not cloud or icing.
 
