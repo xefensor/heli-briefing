@@ -29,7 +29,7 @@ The output choices are implementation decisions under the owner's continued-buil
 
 ## Verification
 
-124 tests passed (90 JavaScript, 34 Python), including frozen text, missing/expired reports, source-time anomalies, filename/mode guards and escaping. Build and relative documentation checks passed.
+125 tests passed (91 JavaScript, 34 Python), including frozen text, missing/expired reports, source-time anomalies, filename/mode guards and escaping. Build and relative documentation checks passed.
 
 Local browser checks verified a nine-station compact pack, missing/expired content, mode switching and clipboard denial with a working manual-copy fallback; ordinary copy yielded 3,412 characters from the captured sample. The full preview retained all eight forecast charts and supporting data. A 390 px iframe showed no dialog overflow (335 px client/scroll widths) and retained a 508 px document viewport in the measured portrait view. Publication is recorded below after verification.
 

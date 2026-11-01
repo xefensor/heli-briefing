@@ -253,3 +253,11 @@ test('source review flags malformed and future collection times without relabell
  const text=renderBriefingText(createBriefingSnapshot(input),{mode:'reports'});
  assert.match(text,/čas stažení chybí \/ není platný/);assert.match(text,/budoucí čas stažení/);assert.match(text,/011400Z/);
 });
+
+
+test('full text keeps the comparison model and its stale state separate',()=>{
+ const input=base();input.comparison.transport.stale=true;
+ const text=renderBriefingText(createBriefingSnapshot(input));
+ assert.match(text,/POROVNÁVACÍ MODEL/);assert.match(text,/Porovnání ICON-D2:.*starší data/);assert.match(text,/ICON-D2 · hodinový vzorek/);
+ assert.doesNotMatch(renderBriefingText(createBriefingSnapshot(input),{mode:'reports'}),/POROVNÁVACÍ MODEL/);
+});

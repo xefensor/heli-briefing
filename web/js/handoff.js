@@ -24,6 +24,8 @@ export function sourceReview(snapshot,{mode='full'}={}) {
   if(array(feed?.missingStations).length)rows.at(-1).tone='warn';
  }
  if(mode==='full'){
+  const other=snapshot.comparison;
+  if(other){const i=nearestTimeIndex(other.times,snapshot.state.time);rows.push({name:`Porovnání ${other.label}`,tone:i<0||other.transport?.stale?'warn':'neutral',text:i<0?'Pro vybraný čas není vzorek':`${stamp(other.times[i],snapshot.state.timezone)}${other.transport?.stale?' · starší data po chybě obnovy':''}`});}
   const cloud=snapshot.clouds;
   rows.push({name:'ICON-D2 CEILING',tone:cloud?.status==='available'&&!cloud.stale?'neutral':'warn',text:cloud?.status==='available'?`${value(cloud.valueMsl,'m MSL')}${cloud.stale?' · starší běh / obnova nepotvrzena':''}`:'Pro bod/čas není hodnota dostupná'});
   const sat=satelliteState(snapshot.satellite,now);
@@ -63,6 +65,7 @@ export function formatBriefingText(snapshot,{mode='full'}={}){
  if(snapshot.notes?.trim())lines.push('','POZNÁMKY',snapshot.notes.trim());
  if(mode==='full'){
   lines.push('','MODELOVÝ VZOREK',...selectedForecastLines(snapshot));
+  if(snapshot.comparison)lines.push('','POROVNÁVACÍ MODEL',...selectedForecastLines({...snapshot,forecast:snapshot.comparison}));
   const cloud=snapshot.clouds;lines.push(`Samostatný ICON-D2 CEILING: ${cloud?.status==='available'?value(cloud.valueMsl,'m MSL'):'nedostupný'} · vzorek ${stamp(cloud?.validAt,zone)}. Není pozorovaný ceiling ani AGL.`);
  }
  lines.push('','REGIONÁLNÍ ORIGINÁLNÍ ZPRÁVY');
