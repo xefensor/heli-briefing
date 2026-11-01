@@ -35,7 +35,7 @@ The whole project remains **incomplete**. Check the remaining feature/access/val
 
 - [x] Add direct coordinate entry and named browser-local points in the global location selector.
 - [x] Preserve live mode across reload while keeping copied inspection links explicitly pinned.
-- [ ] Publish and record final verification; see [decision 0008](decisions/0008-saved-points-and-time-continuity.md).
+- [x] Publish and record final verification, including versioned application assets; see [decision 0008](decisions/0008-saved-points-and-time-continuity.md).
 
 ## Foundation
 

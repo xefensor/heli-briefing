@@ -2,7 +2,7 @@
 
 Date: 2026-11-01
 
-Status: core iteration published; final asset-version deployment pending
+Status: implemented and published; whole project incomplete
 
 ## Context and three-study review
 
@@ -47,8 +47,8 @@ The editor keeps frequent use in one existing dropdown. Supporting entry/managem
 - Narrow-screen check: 390 px QA viewport, 375 px content; dialog client and scroll widths match with no horizontal overflow. Input autofocus and stacked actions were visually inspected.
 - Deterministic checks cover coordinate validation/zero, storage denial/quota/corruption/version handling, coordinate collisions, capacity without eviction, edit/delete/undo, time serialization and repeated-hour absolute instants.
 - All 137 local tests passed (103 JavaScript and 34 Python); build emitted 30 static files; documentation checker passed for 26 tracked Markdown files. Pinned-time temporary-point selection and pinned reload were also confirmed in the local browser.
-- Initial publication run [41326998280](https://github.com/xefensor/heli-briefing/actions/runs/41326998280) succeeded. Live HTTPS checks confirmed point save/recall across reload, live mode retained, timestamp-bearing clipboard sharing without pinning the sender, eight forecast charts and nine regional station rows. Final versioned-asset publication and alias verification will be recorded after completion.
-- Build regressions verify every HTML asset and local module import resolves after relocation, and data-only changes leave the asset version stable while module changes change it. Native download/print verification and actual pilot validation remain outstanding.
+- Initial publication run [41326998280](https://github.com/xefensor/heli-briefing/actions/runs/41326998280) succeeded. Live HTTPS checks confirmed point save/recall across reload, live mode retained, timestamp-bearing clipboard sharing without pinning the sender, eight forecast charts and nine regional station rows. Final application commit `547b819e9b08c397a179a22d09197606851a960e` published successfully in [run 41327773505](https://github.com/xefensor/heli-briefing/actions/runs/41327773505). The live page then referenced `assets/49c5c33a0a3c9132257b/` for scripts/styles. Selecting the built-in Šumava point retained its own option and title while the differently named saved point at the same coordinates remained separately available; live mode was retained.
+- Build regressions verify every HTML asset and local module import resolves after relocation, and data-only changes leave the asset version stable while module changes change it. Native download/print verification and actual pilot validation remain outstanding. Clipboard-denial fallback is implemented but was not forced in this pass; successful HTTPS link copying was verified. Keyboard Enter saved an edited point locally while preserving pinned time, and Escape dismissed the native editor.
 
 ## Whole-project status
 
