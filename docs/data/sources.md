@@ -144,3 +144,8 @@ For each changed source, record the check date, product/version, relevant URL, l
 ## Implemented point profile and satellite extension · 2026-11-01
 
 See [decision 0006](../decisions/0006-point-profile-and-satellite.md) for the checked Open-Meteo pressure-level documentation, provider interpolation labels, actual payload samples and the product-specific EUMETSAT GeoColour licence. The bounded GeoColour collector preserves the advertised/requested frame time independently of retrieval. It produces a generated static snapshot with EUMETSAT/NASA credit; cameras and full route profiles remain open. Current provider documentation explicitly identifies ICON-D2 925/800 hPa as interpolation, superseding the earlier unresolved derivation note for these fields.
+
+
+## Implemented route-point extension · 2026-11-01
+
+[Decision 0009](../decisions/0009-route-point-weather.md) records the bounded point-weather route view and its separate primary-source recheck of Open-Meteo coordinates, preceding-hour gust/rain definitions and hosted-service terms. It uses the existing explicit models and native ceiling crop with user-entered passage times, per-point source metadata, at most two simultaneous route requests and honest missing coverage. It does not add continuous corridor weather, a terrain dataset or professional provider access. Current data licensing/access boundaries above remain in force.

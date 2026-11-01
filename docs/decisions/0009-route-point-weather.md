@@ -2,7 +2,7 @@
 
 Date: 2026-11-01
 
-Status: implemented locally; publication verification pending
+Status: implemented and published; whole project incomplete
 
 ## Context and three-study review
 
@@ -42,9 +42,17 @@ Keep typed leg inputs stable while recalculating. Update their plan values immed
 - All 149 deterministic tests passed (115 JavaScript and 34 Python); the static build contains 32 files. New checks cover midnight/DST, unknown/invalid timings, coordinate/model mismatches, null/zero, absent-hour gaps, stale data, bounded/deduplicated requests, rate limits, cancellation, escaping and archived-route context.
 - Local browser: entered Planá–Kvilda with 25 user-supplied minutes; passage 2 November 07:25 CZ selected the explicitly labelled 07:00 hourly sample. Real ICON-D2 and ECMWF values differed and remained separately labelled. Main **Teď** changed the inspection clock without changing departure.
 - Invalid departure hid the route values, and correcting it restored the actual samples. Invalid fractional duration removed downstream times. Reordering cleared durations, and undo restored the previous 25-minute plan. The existing map contained one dashed connector and two route circle markers.
-- Switching main model to ALADIN immediately changed route source labels/loading states without relabelling retained ECMWF comparison data. Publication/live confirmation remains pending.
+- Switching main model to ALADIN immediately changed route source labels/loading states without relabelling retained ECMWF comparison data. The public-site source check below confirms the published ALADIN/ICON-D2 path.
 - 390 px mobile QA (375 px document): route-data client and scroll widths both 321 px; both SVGs used a 321-unit width. Editor controls were visually checked. This is selected browser QA, not a complete accessibility/device assessment.
 - Frozen preview included both route point cards. Copied full text included plan/source times and selected values; compact report output contained no route cards. Native download completion and browser print/PDF saving remain unverified.
+
+## Publication and live verification
+
+Application commit `d9c68c66a988d6ca391a2629a749efb0611bb1fc` published successfully in [GitHub Pages run 41330538086](https://github.com/xefensor/heli-briefing/actions/runs/41330538086). Documentation CI also passed. The public page loaded the new asset version `e780f7f15b0374e89fe7`.
+
+Live HTTPS checks confirmed creating/restoring a two-point Planá–Kvilda route with 25 entered minutes and a separate 2 November 07:00 CZ departure. Pressing **Teď** retained that departure while the main inspection clock followed 1 November's current time. All eight main forecast SVGs and two route SVGs remained present. At Kvilda passage 07:25, the explicitly labelled 07:00 samples showed ALADIN visibility 3.0 km and ICON-D2 1.1 km; the native ceiling was separately labelled 1,219 m MSL from the 15:00 UTC run. These are observed sample values, not model-skill evidence or a forecast guarantee.
+
+The live frozen preview contained both route cards and the copied full text contained route timing/data. The final build contained 32 files; all 149 tests and the 27-file local documentation check passed. Native download completion, native browser print/PDF saving and actual pilot workflow validation remain unverified.
 
 ## Whole-project status
 
