@@ -49,7 +49,7 @@ Use the three research tracks—[pilot needs](docs/research/pilot-needs.md), [av
 - Large GRIB/HDF5 ingestion requires a suitable background process. Do not assume browser code or a small request-time function can decode an entire regional model on demand.
 - Do not select a framework, database, hosting provider, paid subscription or project licence merely to fill an empty file. Record the concrete reason and decision status.
 - Respect source-specific attribution and redistribution rights. Public display does not establish an open API or permission to rehost images and datasets.
-- Open-Meteo's free hosted service supports this open-source evaluation under its applicable terms. Do not represent it as configured professional/commercial production access. Recheck provider access terms before that transition.
+- Open-Meteo's free hosted service is used for this evaluation under its applicable terms; the project's own licence remains an owner decision. Do not represent it as configured professional/commercial production access. Recheck provider access terms before that transition.
 - Keep private account details, API keys, signed URLs, tokens and raw sensitive logs out of this public repository. Use an example environment file with placeholders when configuration becomes necessary.
 - Use the GitHub connector when the user requests it. Preserve the existing branch head and use non-forced or guarded ref updates; do not reset history to resolve a conflict.
 
