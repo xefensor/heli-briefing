@@ -13,6 +13,17 @@ await readFile(join(source, 'index.html'), 'utf8');
 await rm(temporary, { recursive: true, force: true });
 await mkdir(temporary, { recursive: true });
 await cp(source, temporary, { recursive: true, dereference: false });
+try {
+  await readFile(join(temporary, 'data', 'clouds.json'));
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+  await mkdir(join(temporary, 'data'), { recursive: true });
+  await writeFile(join(temporary, 'data', 'clouds.json'), `${JSON.stringify({
+    schemaVersion: 1, status: 'unavailable', model: 'ICON-D2', product: 'CEILING',
+    units: 'm MSL', points: [], frames: [], runTime: null, retrievedAt: null,
+    error: 'Nativní sběr nebyl při tomto sestavení proveden.',
+  })}\n`);
+}
 await writeFile(join(temporary, '.nojekyll'), '');
 await writeFile(join(temporary, 'build-info.json'), `${JSON.stringify({
   builtAt: new Date().toISOString(),

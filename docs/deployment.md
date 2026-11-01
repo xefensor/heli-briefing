@@ -1,10 +1,10 @@
 # Build and publish
 
-[Documentation index](README.md) · [Hosting decision](decisions/0004-github-pages-first-build.md)
+[Documentation index](README.md) · [Hosting decision](decisions/0004-github-pages-first-build.md) · [v0.2 data scope](decisions/0005-complete-briefing-data.md)
 
-The first evaluation version is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. There is no installation step or application framework dependency.
+The first evaluation version is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. The browser application/build has no npm installation step or application framework dependency. Native GRIB ingestion uses separately installed, pinned Python decoder packages.
 
-Publication was confirmed on **2026-11-01**: [workflow run 41315499572](https://github.com/xefensor/heli-briefing/actions/runs/41315499572) completed its build and deployment for source commit [`51e42778f2d5bfd4f36db30c771db85fdf9adeb3`](https://github.com/xefensor/heli-briefing/commit/51e42778f2d5bfd4f36db30c771db85fdf9adeb3) and returned the live URL above. The live page was opened and its real aviation-report/radar snapshot loaded. This verifies publication and snapshot loading; comprehensive forecast-browser behaviour and pilot usability are separate checks.
+Publication was confirmed on **2026-11-01**: [workflow run 41315499572](https://github.com/xefensor/heli-briefing/actions/runs/41315499572) completed its build and deployment for source commit [`51e42778f2d5bfd4f36db30c771db85fdf9adeb3`](https://github.com/xefensor/heli-briefing/commit/51e42778f2d5bfd4f36db30c771db85fdf9adeb3) and returned the live URL above. The live check confirmed real ALADIN values, eight rendered charts, ČÚZK map tiles and the ČHMÚ radar image. The deployed aviation snapshot carried a 14:18 UTC retrieval time. This is the verified v0.1 baseline; v0.2 changes below remain in progress until their own tests and deployment are recorded. Pilot usability remains unvalidated.
 
 ## Local checks and build
 
@@ -17,13 +17,28 @@ python3 scripts/update_aviation.py --output web/data/aviation.json
 node scripts/build.mjs
 ```
 
+For the v0.2 native cloud snapshot, install its decoder in an isolated environment and collect before building:
+
+```sh
+python3 -m venv .venv-clouds
+.venv-clouds/bin/python -m pip install --requirement requirements-clouds.txt
+.venv-clouds/bin/python scripts/update_clouds.py --cache-dir .cache/clouds --output web/data/clouds.json
+npm run build
+```
+
+`requirements-clouds.txt` pins ecCodes and its binary libraries. Browser code and deterministic tests remain independent of that decoder; tests that inspect live GRIB products are separate integration checks. `python3 scripts/update_clouds.py --cache-key` uses only the standard library to discover the newest complete native model run.
+
+The generated regional `web/data/clouds.json` is ignored by Git. Pages builds collect it before packaging; a local build without an ingested file emits an explicit unavailable product. No synthetic seed weather is committed. The browser revalidates stable snapshot URLs so unchanged regional data can use HTTP cache validators instead of downloading the entire crop every five minutes.
+
 Serve `dist/` through an HTTP server to inspect the browser application. Opening the files directly with `file://` is unsuitable for JavaScript modules and snapshot requests. `build-info.json` records the build time and, in Actions, the source commit. It is not weather freshness metadata.
 
 ## GitHub Pages setup
 
 GitHub Pages is enabled for this repository. When recreating this setup in another repository, an owner with administration access must select **Settings → Pages → Build and deployment → Source: GitHub Actions** once. The linked [settings page](https://github.com/xefensor/heli-briefing/settings/pages) is the current repository configuration.
 
-The `Deploy briefing to GitHub Pages` workflow runs on application changes to `main`, by manual dispatch, and at minutes 7, 27 and 47 each hour. It tests the application, checks documentation links, retrieves a bounded aviation-report snapshot, builds the static artifact, then deploys it through the `github-pages` environment. Periodic retrieval does not modify the source branch. The environment's returned URL and a successful deployment establish publication; an expected URL alone does not.
+The `Deploy briefing to GitHub Pages` workflow runs on application changes to `main`, by manual dispatch, and at minutes 7, 27 and 47 each hour. It tests the application, checks documentation links, retrieves a bounded aviation-report snapshot and, in the v0.2 workflow, collects the native cloud diagnostic before building and deploying through the `github-pages` environment. Periodic retrieval does not modify the source branch. The environment's returned URL and a successful deployment establish publication; an expected URL alone does not.
+
+Native cloud caching uses `.cache/clouds` with a key containing the actual complete DWD run identifier and a hash of the collector/requirements. There is no workflow-run suffix or fallback to a different model-run cache. A cached assembled crop can be reused across twenty-minute deployments without downloading the full GRIB fields again. Run discovery failure is handled explicitly: skip the cache restore and let the collector publish its honest stale/unavailable state. Decoder installation errors remain build failures. The decoder runs in `.venv-clouds`; the isolated environment and downloaded intermediates are not published.
 
 The workflow has no provider secrets. Repository access is read-only; the deployment job additionally receives Pages write and OIDC token permissions. Initial enablement is not attempted with the Actions token because GitHub requires separate administration-capable access for that operation. No broader token should be pasted into the repository or client code.
 
@@ -36,6 +51,16 @@ The workflow has no provider secrets. Repository access is read-only; the deploy
 - A warning after an hour without a successful report-snapshot retrieval reflects three scheduled update periods, not a legal report-age limit. TAF validity is evaluated against the inspected time; METAR age remains relative to the actual clock. Unknown or expired products remain explicit.
 - Upstream failures must produce explicit failure state. Previously retrieved content may be retained only with its original retrieval time and a stale/error indicator. No invented reports or weather values are allowed.
 - GitHub schedules are best-effort. They may run late, and public-repository schedules may be disabled after inactivity. Read the displayed retrieval and product times; do not treat the configured twenty-minute interval as a freshness guarantee.
+
+## v0.2 runtime behaviour being implemented
+
+- While the page is active, a thirty-second tick updates ages. Forecast requests are due every ten minutes and report/radar/cloud snapshot checks every five minutes. Hidden/offline pages pause network activity and check again on return. A pinned inspection time is retained across refreshes; a live viewing mode may advance with the clock. Polling more often does not make the deployment snapshots newer.
+- The native cloud layer comes from DWD ICON-D2 `CEILING` on its native mesh, cropped to the documented South Bohemian region. Its own model/run/validity remains visible even when another point-forecast model is selected. Values are metres MSL for the nonconvective greater-than-50% cloud diagnostic, not observed ceiling. Missing native values remain undefined and must not be labelled clear sky.
+- Structured METAR summaries preserve missing fields, visibility bounds and raw text. TAF change periods are displayed explicitly rather than flattened into an overall permission to fly. A twelve-hour METAR history remains tied to each reporting station and actual observation time.
+- The radar sequence holds up to twenty-four observed frames over two hours with acquisition times. Missing frames or incomplete history remain explicit. Animation does not imply a radar forecast.
+- A frozen HTML export captures the current briefing context and available data without making later live requests. Up to ten local archives are intended for the same browser; local storage is not an account or server backup. Preserve source/run/validity/retrieval metadata and missing-data states in exports.
+
+These are v0.2 implementation targets. Update this status only after the corresponding checks and deployed behaviour are confirmed.
 
 ## Provider access before professional production
 

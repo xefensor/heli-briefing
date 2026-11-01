@@ -11,6 +11,7 @@ Start with the product brief, then follow the evidence and implementation constr
 | [Interface references](research/interface-references.md) | Documented patterns from helicopter and aviation tools, with source and illustration dates. |
 | [Data sources](data/sources.md) | Provider catalogue, access routes, licensing, coverage, parameters and sampled availability. |
 | [Data integrity](data/integrity.md) | Time, units, vertical references, missing values, report validity and failure handling. |
+| [Native cloud heights](data/cloud-heights.md) | Implemented DWD native-grid CEILING ingestion, MSL definition, regional coverage, timestamps and verified sample. |
 | [Architecture](architecture.md) | Proposed responsibilities and data contracts without selecting an application stack. |
 | [Roadmap](roadmap.md) | Work stages, dependencies and evidence required to move forward. |
 | [Build and deployment](deployment.md) | Current static application commands, GitHub Pages setup, report refresh and provider access limits. |

@@ -1,6 +1,18 @@
 # Roadmap
 
-The repository starts with documentation. Later stages describe proposed work and acceptance gates; their presence does not mean implementation is complete.
+The repository began with documentation and now has a published v0.1 evaluation application. Later stages describe work and acceptance gates; their presence does not mean implementation is complete. See [deployment](deployment.md) for dated verification and [decision 0005](decisions/0005-complete-briefing-data.md) for the v0.2 scope currently being implemented.
+
+## Current delivery status
+
+- [x] Publish the first static evaluation on GitHub Pages and verify real ALADIN values, eight charts, ČÚZK map tiles and a timestamped ČHMÚ radar image.
+- [ ] Complete v0.2 automatic age/refresh monitoring with hidden/offline handling and retained inspection time.
+- [ ] Add independently labelled native ICON-D2 ceiling data with actual model/run/validity, missing-value handling and per-run ingestion caching.
+- [ ] Add conservative structured METAR summaries, explicit TAF periods and twelve-hour station METAR history.
+- [ ] Add a two-hour, up-to-twenty-four-frame observed radar sequence with honest gaps.
+- [ ] Add frozen HTML briefing export and up to ten browser-local archives.
+- [ ] Verify the complete v0.2 data path, missing/error states and published behaviour before marking the release complete.
+
+These additions preserve the substantial graphs, direct evidence access and coordinated controls. Appropriate professional production provider access and pilot workflow validation remain separate work.
 
 ## Foundation
 
@@ -65,5 +77,5 @@ Formal operational suitability or approval is not established by a source being 
 3. What geography, regional report set and forecast horizon best support the confirmed South Bohemian preparation role?
 4. Which raw datasets are worth direct ingestion, and where does an aggregator offer enough value?
 5. Which camera, aviation-chart, NOTAM and airspace reuse agreements are needed?
-6. Which application stack and hosting can support the validated data path?
+6. Which additional backend/ingestion infrastructure is justified beyond the selected static GitHub Pages first build?
 7. What project licence and release audience should apply?

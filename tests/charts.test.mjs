@@ -1,5 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+
+test('observations can show individual samples without connecting unmeasured intervals', () => {
+  const html = renderChart({ times: ['2026-11-01T10:00:00Z', '2026-11-01T12:00:00Z', '2026-11-01T13:00:00Z'], series: [{ label: 'Observed', values: [0, null, 3], pointsOnly: true }] });
+  assert.equal((html.match(/class="chart-observation"/g) || []).length, 2);
+  assert.ok(!html.includes('class="chart-line"'));
+});
 import { renderChart, buildTimeTicks, niceTicks, indexFromPointer, escapeHtml } from '../web/js/charts.js';
 
 const hours = (start, count) => Array.from({ length: count }, (_, index) => new Date(Date.parse(start) + index * 3600000).toISOString());

@@ -11,6 +11,8 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 .venv/
+.venv-clouds/
+web/data/clouds.json
 node_modules/
 dist/
 build/

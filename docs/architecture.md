@@ -1,6 +1,6 @@
 # Proposed architecture
 
-**Status: proposed.** The application framework, hosting, storage and deployment approach are open. This describes the responsibilities needed to deliver the product requirements without inheriting a previous prototype's technical choices.
+**Status: broader architecture proposed; static implementation exists.** [Decision 0004](decisions/0004-github-pages-first-build.md) records the current browser-module application and GitHub Pages host. [Decision 0005](decisions/0005-complete-briefing-data.md) records the next data and briefing capabilities. The responsibilities below also cover future private-provider access, route processing and storage; their presence does not mean those services have been implemented.
 
 ## Responsibilities
 

@@ -1,0 +1,4 @@
+# Native DWD GRIB decoding is isolated from the dependency-free browser app.
+eccodes==2.50.0
+eccodeslib==2.50.0.33
+eckitlib==2.5.0.33

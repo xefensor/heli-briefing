@@ -143,6 +143,11 @@ export function renderChart({
 
   const lines = series.map((item, seriesIndex) => {
     const seriesColor = color(item.color, seriesIndex);
+    if (item.pointsOnly) {
+      const dots = times.map((_, index) => finite(item.values?.[index])
+        ? `<circle class="chart-observation" cx="${x(instants[index])}" cy="${y(item.values[index])}" r="3" fill="${seriesColor}"/>` : '').join('');
+      return `<g class="chart-series" data-series="${escapeHtml(item.key || seriesIndex)}"><title>${escapeHtml(item.label || item.key || '')}</title>${dots}</g>`;
+    }
     const segments = [];
     let segment = [];
     for (let index = 0; index < times.length; index += 1) {

@@ -8,6 +8,7 @@ on:
       - 'scripts/**'
       - 'tests/**'
       - 'package.json'
+      - 'requirements-clouds.txt'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
   schedule:
@@ -39,6 +40,32 @@ jobs:
         run: python3 scripts/check_docs.py
       - name: Refresh aviation report snapshot
         run: python3 scripts/update_aviation.py --output web/data/aviation.json
+      - name: Discover complete native cloud run
+        id: cloud-run
+        shell: bash
+        run: |
+          if cloud_run=$(python3 scripts/update_clouds.py --cache-key); then
+            if [[ ! "$cloud_run" =~ ^icon-d2-ceiling-native-v[0-9]+-[0-9]{10}$ ]]; then
+              echo 'Unexpected native cloud cache identifier' >&2
+              exit 1
+            fi
+            printf 'run=%s\navailable=true\n' "$cloud_run" >> "$GITHUB_OUTPUT"
+          else
+            printf 'available=false\n' >> "$GITHUB_OUTPUT"
+            echo '::warning::Native cloud run discovery failed; collector will publish an explicit stale or unavailable state.'
+          fi
+      - name: Restore native cloud run cache
+        if: steps.cloud-run.outputs.available == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/clouds
+          key: clouds-run-${{ steps.cloud-run.outputs.run }}-${{ hashFiles('scripts/update_clouds.py', 'requirements-clouds.txt') }}
+      - name: Install isolated native GRIB decoder
+        run: |
+          python3 -m venv .venv-clouds
+          .venv-clouds/bin/python -m pip install --disable-pip-version-check --requirement requirements-clouds.txt
+      - name: Refresh native cloud diagnostic
+        run: .venv-clouds/bin/python scripts/update_clouds.py --cache-dir .cache/clouds --output web/data/clouds.json
       - name: Build static site
         run: node scripts/build.mjs
       - name: Upload Pages artifact
