@@ -165,6 +165,19 @@ export function parseSharedState(search) {
   return result;
 }
 
+/** Live navigation omits an instant; a copied inspection link always pins it. */
+export function sharedSearch(state, { live = false } = {}) {
+  const params = new URLSearchParams({ lat: state.lat.toFixed(5), lon: state.lon.toFixed(5), name: state.name,
+    model: state.model, compare: state.compare, hours: String(state.hours), timezone: state.timezone });
+  if (!live) params.set('time', new Date(state.time).toISOString());
+  return params.toString();
+}
+
+export function formatCoordinates(lat, lon, digits = 4) {
+  if (![lat, lon].every(value => typeof value === 'number' && Number.isFinite(value)) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return '—';
+  return `${Math.abs(lat).toFixed(digits)}° ${lat < 0 ? 'S' : 'N'}, ${Math.abs(lon).toFixed(digits)}° ${lon < 0 ? 'W' : 'E'}`;
+}
+
 export function haversineKm(aLat, aLon, bLat, bLon) {
   const values = [aLat, aLon, bLat, bLon];
   if (!values.every(value => typeof value === 'number' && Number.isFinite(value)) ||

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   formatNumber, formatTime, ageLabel, reportState, toDateTimeInput,
-  fromDateTimeInput, parseSharedState, haversineKm,
+  fromDateTimeInput, parseSharedState, sharedSearch, formatCoordinates, haversineKm,
 } from '../web/js/briefing.js';
 
 const now = Date.parse('2026-11-01T12:00:00Z');
@@ -92,4 +92,32 @@ test('shared comparison accepts supported models and omits self-comparison', () 
   assert.deepEqual(parseSharedState('?model=icon&compare=invalid'), { model: 'icon' });
   assert.deepEqual(parseSharedState('?model=invalid&compare=ecmwf'), { compare: 'ecmwf' });
   assert.deepEqual(parseSharedState('?compare='), {});
+});
+
+test('live navigation reloads without a pinned instant while preserving context', () => {
+  const state = { lat: 48.9463, lon: 14.4294, name: 'Planá', model: 'icon', compare: 'ecmwf', hours: 72, timezone: 'UTC', time: '2026-11-01T12:00:00Z' };
+  const live = parseSharedState(sharedSearch(state, { live: true }));
+  assert.equal(live.time, undefined);
+  assert.equal(live.model, state.model);
+  assert.equal(live.compare, state.compare);
+  assert.equal(live.hours, state.hours);
+  assert.equal(live.lat, state.lat);
+  assert.equal(live.timezone, state.timezone);
+  const copied = parseSharedState(sharedSearch(state));
+  assert.equal(copied.time, '2026-11-01T12:00:00.000Z');
+  assert.deepEqual({ ...copied, time: undefined }, { ...live, time: undefined });
+});
+
+test('pinned links preserve the second repeated Prague hour as an absolute instant', () => {
+  const state = { lat: 49, lon: 14, name: '<Bod & světlo>', model: 'aladin', compare: '', hours: 48, timezone: 'Europe/Prague', time: '2026-10-25T02:30:00+01:00' };
+  const read = parseSharedState(sharedSearch(state));
+  assert.equal(read.time, '2026-10-25T01:30:00.000Z');
+  assert.equal(read.name, state.name);
+});
+
+test('coordinate labels retain the hemisphere without negative north/east labels', () => {
+  assert.equal(formatCoordinates(-33.9, -70.7), '33.9000° S, 70.7000° W');
+  assert.equal(formatCoordinates(0, 0), '0.0000° N, 0.0000° E');
+  assert.equal(formatCoordinates(null, 14), '—');
+  assert.equal(formatCoordinates(91, 14), '—');
 });

@@ -19,6 +19,8 @@ The next implemented capability decision is [point profile, satellite and previe
 
 The continuing handoff and UX work is recorded in [decision 0007](0007-briefing-handoff.md), including the required three-study review and explicit completion reporting.
 
+The next continuity refinement is [saved points and live/pinned navigation](0008-saved-points-and-time-continuity.md).
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |
@@ -38,6 +40,6 @@ The continuing handoff and UX work is recorded in [decision 0007](0007-briefing-
 
 ## Open
 
-The primary user, initial South Bohemian context, browser-native implementation and GitHub Pages publication are established. Exact reporting cadence, additional operation-specific needs, extended geography, validated final interface layout, integrated cameras/satellite, full vertical route profiles, future backend/storage, code/documentation licence, professional provider access and remaining redistribution agreements remain open. Browser file-download completion and pilot preparation/output validation remain separate checks.
+The primary user, initial South Bohemian context, browser-native implementation and GitHub Pages publication are established. Exact reporting cadence, additional operation-specific needs, extended geography, validated final interface layout, integrated cameras and further satellite products, full vertical route profiles, future backend/storage, code/documentation licence, professional provider access and remaining redistribution agreements remain open. Browser file-download completion and pilot preparation/output validation remain separate checks.
 
 Use the [decision template](template.md) for a substantial new decision. Record date, status, context, choice, consequences and supporting sources. Mark a superseded decision and link its replacement instead of silently rewriting history.

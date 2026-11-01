@@ -1,5 +1,5 @@
 import {escapeHtml as esc} from './charts.js';
-import {formatNumber,formatTime,reportState} from './briefing.js';
+import {formatNumber,formatTime,formatCoordinates,reportState} from './briefing.js';
 import {nearestTimeIndex} from './weather.js';
 import {satelliteState} from './satellite.js';
 
@@ -61,7 +61,7 @@ export function renderReportPack(snapshot){
 }
 export function formatBriefingText(snapshot,{mode='full'}={}){
  const zone=snapshot.state.timezone;
- const lines=[`HELI BRIEFING · ${snapshot.state.name}`,`Čas přehledu ${stamp(snapshot.state.time,zone)}`,`Zachyceno ${stamp(snapshot.createdAt,zone)} · ${snapshot.state.lat.toFixed(4)}° N, ${snapshot.state.lon.toFixed(4)}° E`,'', 'STAV ZACHYCENÝCH ZDROJŮ',...sourceReview(snapshot,{mode}).map(row=>`${row.tone==='warn'?'UPOZORNĚNÍ · ':''}${row.name}: ${row.text}`)];
+ const lines=[`HELI BRIEFING · ${snapshot.state.name}`,`Čas přehledu ${stamp(snapshot.state.time,zone)}`,`Zachyceno ${stamp(snapshot.createdAt,zone)} · ${formatCoordinates(snapshot.state.lat,snapshot.state.lon)}`,'', 'STAV ZACHYCENÝCH ZDROJŮ',...sourceReview(snapshot,{mode}).map(row=>`${row.tone==='warn'?'UPOZORNĚNÍ · ':''}${row.name}: ${row.text}`)];
  if(snapshot.notes?.trim())lines.push('','POZNÁMKY',snapshot.notes.trim());
  if(mode==='full'){
   lines.push('','MODELOVÝ VZOREK',...selectedForecastLines(snapshot));

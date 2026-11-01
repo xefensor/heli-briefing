@@ -31,6 +31,12 @@ These additions preserve the substantial graphs, direct evidence access and coor
 
 The whole project remains **incomplete**. Check the remaining feature/access/validation items below; a finished iteration is not a claim that the product is fully complete.
 
+## Point and time continuity
+
+- [x] Add direct coordinate entry and named browser-local points in the global location selector.
+- [x] Preserve live mode across reload while keeping copied inspection links explicitly pinned.
+- [ ] Publish and record final verification; see [decision 0008](decisions/0008-saved-points-and-time-continuity.md).
+
 ## Foundation
 
 - [x] Capture the owner requirements and separate recommendations from decisions.

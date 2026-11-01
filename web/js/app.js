@@ -3,7 +3,8 @@ import {renderSatellite, satelliteState} from './satellite.js';
 import { MODELS, fetchForecast, nearestTimeIndex } from './weather.js';
 import { renderChart, escapeHtml as esc } from './charts.js';
 import { getAstronomy } from './astro.js';
-import { formatNumber as num, formatTime as clock, ageLabel, reportState, toDateTimeInput, fromDateTimeInput, parseSharedState, haversineKm } from './briefing.js';
+import { formatNumber as num, formatTime as clock, ageLabel, reportState, toDateTimeInput, fromDateTimeInput, parseSharedState, sharedSearch, formatCoordinates, haversineKm } from './briefing.js';
+import { mountPlaceControls } from './place-controls.js';
 import { renderMetarSummary, renderTafPeriods } from './report-views.js';
 import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
@@ -87,18 +88,17 @@ function restore(key) {
 document.documentElement.dataset.theme = restore('theme') || 'light';
 $('notes').value = restore('notes') || '';
 reportView = ['both', 'summary', 'raw'].includes(restore('report-view')) ? restore('report-view') : 'both';
+const placeControls = mountPlaceControls({ getCurrent: () => state, onChoose: choosePlace });
 
 function writeUrl() {
   const url = new URL(location.href);
-  url.search = new URLSearchParams({ lat: state.lat.toFixed(5), lon: state.lon.toFixed(5), name: state.name, model: state.model, compare: state.compare, time: state.time, hours: String(state.hours), timezone: state.timezone }).toString();
+  url.search = sharedSearch(state, { live: liveMode });
   history.replaceState(null, '', url);
   navigationSearch = url.search;
 }
 
 function updateControls() {
-  $('location').value = state.place;
-  $('location').querySelector('[value="custom"]').hidden = state.place !== 'custom';
-  $('location').querySelector('[value="custom"]').textContent = state.name;
+  placeControls.update();
   document.querySelectorAll('[data-model]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.model === state.model)));
   document.querySelectorAll('[data-hours]').forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.hours) === state.hours)));
   if (document.activeElement !== $('inspection-time')) $('inspection-time').value = toDateTimeInput(state.time, state.timezone);
@@ -112,7 +112,7 @@ function updateControls() {
   $('live-mode').setAttribute('aria-pressed', String(liveMode));
   document.querySelectorAll('[data-report-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.reportView === reportView)));
   $('place-title').textContent = state.name;
-  $('context-line').textContent = `${state.lat.toFixed(4)}° N, ${state.lon.toFixed(4)}° E · ${definition().label} · ${fullTime(state.time)}`;
+  $('context-line').textContent = `${formatCoordinates(state.lat, state.lon)} · ${definition().label} · ${fullTime(state.time)}`;
   $('windy-link').href = `https://www.windy.com/?${state.lat.toFixed(4)},${state.lon.toFixed(4)},9`;
   if (forecast) {
     $('time-slider').max = String(forecast.times.length - 1);
@@ -304,7 +304,7 @@ function initMap() {
   base.on('tileerror', () => { $('map-caption').textContent = 'Podkladovou mapu se nepodařilo načíst. ZTM ČÚZK pokrývá Česko; bod předpovědi lze vybrat i v záhlaví.'; });
   pointMarker = L.circleMarker([state.lat, state.lon], { radius: 8, color: '#b57722', fillColor: '#f3d497', fillOpacity: 1, weight: 3 }).addTo(map).bindTooltip('Vybrané místo předpovědi');
   stationsLayer = L.layerGroup(STATIONS.map((station) => L.circleMarker([station.lat, station.lon], { radius: 4, color: '#1e6465', fillColor: '#d7edeb', fillOpacity: 1, weight: 1.5 }).bindTooltip(`${station.id} · ${station.name}`).on('click', (event) => { L.DomEvent.stopPropagation(event); choosePlace(station.lat, station.lon, `${station.id} · ${station.name}`); }))).addTo(map);
-  map.on('click', (event) => choosePlace(event.latlng.lat, event.latlng.lng, `Bod ${event.latlng.lat.toFixed(3)}° N, ${event.latlng.lng.toFixed(3)}° E`));
+  map.on('click', (event) => choosePlace(event.latlng.lat, event.latlng.lng, `Bod ${formatCoordinates(event.latlng.lat, event.latlng.lng, 3)}`));
 }
 
 function radarFrames() {
@@ -634,6 +634,8 @@ $('models').addEventListener('click', (event) => {
   loadForecast();
 });
 $('location').addEventListener('change', (event) => {
+  if (event.target.value === 'edit') { placeControls.update(); placeControls.open(); return; }
+  if (event.target.value.startsWith('point:')) { placeControls.choose(event.target.value); return; }
   const place = PLACES[event.target.value];
   if (place) choosePlace(place.lat, place.lon, place.name, event.target.value);
 });
@@ -653,9 +655,12 @@ $('theme').addEventListener('click', () => { const theme = document.documentElem
 $('notes').addEventListener('input', (event) => persist('notes', event.target.value));
 $('print').addEventListener('click', () => { stopRadar(); $('print-notes').textContent = $('notes').value; updateControls(); window.print(); });
 $('share').addEventListener('click', async () => {
-  writeUrl();
-  try { await navigator.clipboard.writeText(location.href); $('share').textContent = 'Odkaz zkopírován'; setTimeout(() => { $('share').textContent = 'Kopírovat odkaz'; }, 2500); }
-  catch { $('share').textContent = 'Zkopíruj adresu z prohlížeče'; }
+  const url = new URL(location.href);
+  url.search = sharedSearch(state);
+  $('share-feedback').textContent = '';
+  $('share-fallback').hidden = true;
+  try { await navigator.clipboard.writeText(url.href); $('share-feedback').textContent = 'Odkaz s pevným časem byl zkopírován. Data se po otevření načtou znovu; nejde o uložený briefing.'; }
+  catch { $('share-link').value = url.href; $('share-fallback').hidden = false; $('share-feedback').textContent = 'Prohlížeč nepovolil kopírování. Zkopíruj připravený odkaz s pevným časem.'; $('share-link').focus(); $('share-link').select(); }
 });
 function previewChartTime(time) {
   for (const card of $('charts').querySelectorAll('[data-chart-card]')) {

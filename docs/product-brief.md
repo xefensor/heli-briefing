@@ -28,7 +28,7 @@ The original provides a location/date-based briefing worksheet with solar and mo
 
 “Source controls affect all relevant forecast panels” does not mean a model selector changes the issuing authority of METAR, TAF, SIGMET, cameras or astronomical calculations.
 
-Persistent controls means that the relevant context remains available across panels. Remembering preferences across visits is a separate, unresolved persistence decision.
+Persistent controls means that the relevant context remains available across panels. Explicitly saved browser-local points are implemented in [decision 0008](decisions/0008-saved-points-and-time-continuity.md). Remembering an entire previous session or other preferences across visits remains a separate decision.
 
 ## How the research guides the rebuild
 

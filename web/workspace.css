@@ -1,4 +1,33 @@
 /* Briefing workspace: scan a region, read an aligned forecast, inspect evidence. */
+.share-feedback:empty { display:none; }
+.topbar #location { width:230px; max-width:100%; }
+#place-title { overflow-wrap:anywhere; }
+.share-feedback, .share-fallback { margin:0 0 16px; font-size:14px; }
+.share-fallback label { display:block; margin-bottom:6px; }
+.places-dialog { width:min(680px,calc(100% - 28px)); }
+.places-dialog .dialog-header { position:sticky; top:0; z-index:1; background:var(--surface); }
+.places-content { padding:0 20px 20px; }
+.places-content > p, #point-coordinate-help, #places-count { font-size:14px; }
+#place-form label { display:block; font-size:14px; font-weight:600; margin:14px 0 6px; }
+#place-form input { height:44px; font-size:16px; }
+.coordinate-fields { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.place-form-actions, .saved-point-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.places-feedback { color:var(--teal); overflow-wrap:anywhere; }
+.places-feedback:empty { display:none; }
+.saved-point { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 0; border-top:1px solid var(--line); }
+.saved-point > div:first-child { min-width:0; overflow-wrap:anywhere; }
+.saved-point strong { display:block; font-size:16px; }
+.saved-point small { display:block; font:13px/1.6 var(--mono); color:var(--muted); margin-top:4px; }
+.saved-point-actions { flex-shrink:0; }
+@media (max-width:600px) {
+ .topbar #location { width:100%; }
+ .places-content { padding:0 16px 16px; }
+ .coordinate-fields { gap:10px; }
+ .saved-point { display:block; }
+ .saved-point-actions { margin-top:12px; }
+ .place-form-actions .button { flex:1 1 140px; }
+}
+@media print { .share-feedback, .share-fallback { display:none; } }
 @media screen {
   :root { --bg:#e9edf0; --surface:#fff; --surface-alt:#f3f6f8; --surface-strong:#e4ecf0; --text:#192d3d; --muted:#4e6271; --line:#d6dfe5; --line-strong:#aabcc8; --teal:#12657a; --teal-soft:#e1eff3; --chart-cyan:#076b8d; --chart-amber:#a55c00; --chart-blue:#345ca5; --chart-purple:#7952a0; --graph-grid:#dce4e9; --radius:8px; }
   html[data-theme=dark] { --bg:#101a23; --surface:#192733; --surface-alt:#20323f; --surface-strong:#2b4050; --text:#edf3f7; --muted:#b5c6d1; --line:#354b5a; --line-strong:#607887; --teal:#8ad1e0; --teal-soft:#263f4a; --chart-cyan:#7dd3ed; --chart-amber:#f1ba69; --chart-blue:#a6bbff; --chart-purple:#d4b4f2; --graph-grid:#3a4e5d; }

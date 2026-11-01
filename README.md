@@ -12,6 +12,8 @@ The goal is to bring a regional weather picture, detailed graphs, local observat
 
 **Current handoff refinement:** full briefing and compact original-report output, captured-source review, copyable text and clearer print appendices. [Scope and verification](docs/decisions/0007-briefing-handoff.md). The whole project remains incomplete; route/camera/access and pilot/output validation work is still open.
 
+**Point and time refinement:** direct coordinate entry, named browser-local points and live-mode reload continuity; [scope and verification](docs/decisions/0008-saved-points-and-time-continuity.md).
+
 ## Start here
 
 - [Documentation index](docs/README.md)
