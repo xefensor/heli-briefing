@@ -4,7 +4,7 @@ A helicopter weather and briefing workspace for a South Bohemian professional pi
 
 The goal is to bring a regional weather picture, detailed graphs, local observations and source comparison into a coherent interface with few repeated actions. Information depth and simple interaction are both requirements.
 
-**Status:** research and documentation foundation. This repository does not yet contain the new application. The rebuild is guided by research into pilot needs, aviation interfaces and data sources. The pilot-authored original Google Site supplies context and candidate information needs; its features and workflow are open to redesign. The exact reporting schedule, application stack, hosting and some data agreements remain open.
+**Status:** first evaluation implementation in `web/`, using browser-native JavaScript modules, HTML, CSS and SVG charts. GitHub Pages is the owner-selected publishing target; initial setup found Pages disabled, and publication must be verified from a successful deployment. The rebuild is guided by research into pilot needs, aviation interfaces and data sources. The pilot-authored original supplies context and candidate information needs; its features and workflow remain open to redesign. Pilot validation, the exact reporting schedule and some data agreements remain open.
 
 ## Start here
 
@@ -18,6 +18,7 @@ The goal is to bring a regional weather picture, detailed graphs, local observat
 - [Data integrity requirements](docs/data/integrity.md)
 - [Proposed architecture](docs/architecture.md)
 - [Roadmap and acceptance criteria](docs/roadmap.md)
+- [Build and deployment](docs/deployment.md)
 - [Decision register](docs/decisions/README.md)
 
 Research was checked on **1 November 2026**. Feed capabilities, access conditions and prices can change; dated observations are not uptime or accuracy guarantees.
@@ -26,17 +27,22 @@ Research was checked on **1 November 2026**. Feed capabilities, access condition
 
 Read [AGENTS.md](AGENTS.md) before changing the repository and [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 
-Run the documentation checks from the repository root:
+Use Node.js 24 and Python 3. There are no application package dependencies to install. Run from the repository root:
 
 ```sh
+npm test
 python3 scripts/check_docs.py
+npm run build
+npm run dev
 git diff --check
 ```
 
-The local link checker uses Python's standard library. It does not call weather providers or require credentials. Application build and test commands will be added when the implementation stack is selected.
+`npm run dev` serves the browser application locally. `npm run build` copies public assets from `web/` to ignored `dist/`; it does not publish them. The Python documentation checker validates local links without contacting weather providers. The [deployment guide](docs/deployment.md) covers report refresh, Pages setup and verification.
 
 ## Data and licensing
 
-The proposed weather stack combines ČHMÚ ALADIN, DWD ICON, ECMWF, official aviation reports and observed radar. Sources retain their own identities, validity periods and reuse conditions. Model forecasts, measurements and calculated astronomy are different products.
+The first build uses an Open-Meteo forecast adapter for ČHMÚ ALADIN, DWD ICON and ECMWF, a collected AviationWeather.gov report snapshot and ČHMÚ radar metadata. Sources retain their own identities, validity periods and reuse conditions. Model forecasts, measurements and calculated astronomy are different products. Real data requests and a published site still need runtime verification; no provider uptime or forecast-skill guarantee is implied.
 
-The [source catalogue](docs/data/sources.md) records access and licensing constraints. This repository does not currently redistribute third-party weather datasets or screenshots. A project code and documentation licence has not been selected; public repository access does not itself grant a reuse licence.
+Open-Meteo's free hosted API is used for this open-source evaluation version under its applicable terms. Professional/commercial production use needs appropriate provider access. Any private API key requires a server-side adapter or ingestion service; it cannot be kept secret on GitHub Pages.
+
+The [source catalogue](docs/data/sources.md) records access and licensing constraints. Collected reports preserve source attribution and timestamps; external imagery retains its source and rights. A project code and documentation licence has not been selected; public repository access does not itself grant a reuse licence.

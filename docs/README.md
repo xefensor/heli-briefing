@@ -1,6 +1,6 @@
 # Documentation
 
-Start with the product brief, then follow the evidence and implementation constraints for the area being changed. Research was checked on **1 November 2026**. This is a planning baseline for a fresh build, not a description of completed application features.
+Start with the product brief, then follow the evidence and implementation constraints for the area being changed. Research was checked on **1 November 2026**. A first evaluation implementation now exists in `web/`; the design and broader architecture remain proposals unless an implementation decision states otherwise. Read the deployment guide for current commands and distinguish implemented source from verified publication or pilot validation.
 
 | Document | Purpose |
 | --- | --- |
@@ -13,6 +13,8 @@ Start with the product brief, then follow the evidence and implementation constr
 | [Data integrity](data/integrity.md) | Time, units, vertical references, missing values, report validity and failure handling. |
 | [Architecture](architecture.md) | Proposed responsibilities and data contracts without selecting an application stack. |
 | [Roadmap](roadmap.md) | Work stages, dependencies and evidence required to move forward. |
+| [Build and deployment](deployment.md) | Current static application commands, GitHub Pages setup, report refresh and provider access limits. |
+| [First-build hosting decision](decisions/0004-github-pages-first-build.md) | Browser-native implementation, owner-selected GitHub Pages and the deployment-time data path. |
 | [Decision register](decisions/README.md) | Confirmed decisions, proposals and questions still open. |
 
 ## Reading status correctly

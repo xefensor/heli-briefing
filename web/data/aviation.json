@@ -1,0 +1,1346 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-01T14:09:30Z",
+  "attribution": "NOAA / National Weather Service Aviation Weather Center; original issuing authorities remain identified in each bulletin.",
+  "documentationUrl": "https://aviationweather.gov/data/api/",
+  "metar": {
+    "status": "ok",
+    "retrievedAt": "2026-11-01T14:08:44Z",
+    "attemptedAt": "2026-11-01T14:08:44Z",
+    "error": null,
+    "sourceUrl": "https://aviationweather.gov/api/data/metar?ids=LKCS%2CLKHS%2CLKPR%2CLKKB%2CLKPD%2CLKTB%2CLKKV%2CLOWL%2CLOWW&format=json",
+    "items": [
+      {
+        "id": "metar:LKKB:2026-11-01T14:00:00Z:",
+        "station": "LKKB",
+        "fir": null,
+        "raw": "METAR LKKB 011400Z 02003KT 340V060 9999 FEW035 BKN050 09/03 Q1029 NOSIG",
+        "issuedAt": null,
+        "observedAt": "2026-11-01T14:00:00Z",
+        "receivedAt": "2026-11-01T14:05:22Z",
+        "validFrom": null,
+        "validTo": null,
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKKB",
+          "receiptTime": "2026-11-01T14:05:22.730Z",
+          "obsTime": 1793541600,
+          "reportTime": "2026-11-01T14:00:00.000Z",
+          "temp": 9,
+          "dewp": 3,
+          "wdir": 20,
+          "wspd": 3,
+          "visib": "6+",
+          "altim": 1029,
+          "qcField": 16,
+          "metarType": "METAR",
+          "rawOb": "METAR LKKB 011400Z 02003KT 340V060 9999 FEW035 BKN050 09/03 Q1029 NOSIG",
+          "lat": 50.123,
+          "lon": 14.538,
+          "elev": 281,
+          "name": "Prague/Kbely Arpt, PR, CZ",
+          "cover": "BKN",
+          "clouds": [
+            {
+              "cover": "FEW",
+              "base": 3500
+            },
+            {
+              "cover": "BKN",
+              "base": 5000
+            }
+          ],
+          "fltCat": "VFR"
+        }
+      },
+      {
+        "id": "metar:LKKV:2026-11-01T14:00:00Z:",
+        "station": "LKKV",
+        "fir": null,
+        "raw": "METAR LKKV 011400Z 06004KT 9999 FEW022 BKN038 06/02 Q1029",
+        "issuedAt": null,
+        "observedAt": "2026-11-01T14:00:00Z",
+        "receivedAt": "2026-11-01T14:02:10Z",
+        "validFrom": null,
+        "validTo": null,
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKKV",
+          "receiptTime": "2026-11-01T14:02:10.664Z",
+          "obsTime": 1793541600,
+          "reportTime": "2026-11-01T14:00:00.000Z",
+          "temp": 6,
+          "dewp": 2,
+          "wdir": 60,
+          "wspd": 4,
+          "visib": "6+",
+          "altim": 1029,
+          "qcField": 0,
+          "metarType": "METAR",
+          "rawOb": "METAR LKKV 011400Z 06004KT 9999 FEW022 BKN038 06/02 Q1029",
+          "lat": 50.202,
+          "lon": 12.91,
+          "elev": 600,
+          "name": "Karlovy Vary Intl, KA, CZ",
+          "cover": "BKN",
+          "clouds": [
+            {
+              "cover": "FEW",
+              "base": 2200
+            },
+            {
+              "cover": "BKN",
+              "base": 3800
+            }
+          ],
+          "fltCat": "VFR"
+        }
+      },
+      {
+        "id": "metar:LKPD:2026-11-01T14:00:00Z:",
+        "station": "LKPD",
+        "fir": null,
+        "raw": "METAR LKPD 011400Z 36006KT 330V040 9999 FEW032 BKN040 09/04 Q1029 NOSIG",
+        "issuedAt": null,
+        "observedAt": "2026-11-01T14:00:00Z",
+        "receivedAt": "2026-11-01T14:05:22Z",
+        "validFrom": null,
+        "validTo": null,
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKPD",
+          "receiptTime": "2026-11-01T14:05:22.816Z",
+          "obsTime": 1793541600,
+          "reportTime": "2026-11-01T14:00:00.000Z",
+          "temp": 9,
+          "dewp": 4,
+          "wdir": 360,
+          "wspd": 6,
+          "visib": "6+",
+          "altim": 1029,
+          "qcField": 16,
+          "metarType": "METAR",
+          "rawOb": "METAR LKPD 011400Z 36006KT 330V040 9999 FEW032 BKN040 09/04 Q1029 NOSIG",
+          "lat": 50.016,
+          "lon": 15.74,
+          "elev": 226,
+          "name": "Pardubice Arpt, PA, CZ",
+          "cover": "BKN",
+          "clouds": [
+            {
+              "cover": "FEW",
+              "base": 3200
+            },
+            {
+              "cover": "BKN",
+              "base": 4000
+            }
+          ],
+          "fltCat": "VFR"
+        }
+      },
+      {
+        "id": "metar:LKPR:2026-11-01T14:00:00Z:",
+        "station": "LKPR",
+        "fir": null,
+        "raw": "METAR LKPR 011400Z 05006KT 9999 FEW024 SCT035 08/02 Q1029 NOSIG",
+        "issuedAt": null,
+        "observedAt": "2026-11-01T14:00:00Z",
+        "receivedAt": "2026-11-01T14:02:10Z",
+        "validFrom": null,
+        "validTo": null,
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKPR",
+          "receiptTime": "2026-11-01T14:02:10.718Z",
+          "obsTime": 1793541600,
+          "reportTime": "2026-11-01T14:00:00.000Z",
+          "temp": 8,
+          "dewp": 2,
+          "wdir": 50,
+          "wspd": 6,
+          "visib": "6+",
+          "altim": 1029,
+          "qcField": 16,
+          "metarType": "METAR",
+          "rawOb": "METAR LKPR 011400Z 05006KT 9999 FEW024 SCT035 08/02 Q1029 NOSIG",
+          "lat": 50.101,
+          "lon": 14.26,
+          "elev": 364,
+          "name": "Prague/Havel Arpt, ST, CZ",
+          "cover": "SCT",
+          "clouds": [
+            {
+              "cover": "FEW",
+              "base": 2400
+            },
+            {
+              "cover": "SCT",
+              "base": 3500
+            }
+          ],
+          "fltCat": "VFR"
+        }
+      },
+      {
+        "id": "metar:LKTB:2026-11-01T14:00:00Z:",
+        "station": "LKTB",
+        "fir": null,
+        "raw": "METAR LKTB 011400Z 03009KT 350V050 9999 BKN033 09/03 Q1027 NOSIG",
+        "issuedAt": null,
+        "observedAt": "2026-11-01T14:00:00Z",
+        "receivedAt": "2026-11-01T14:02:10Z",
+        "validFrom": null,
+        "validTo": null,
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKTB",
+          "receiptTime": "2026-11-01T14:02:10.747Z",
+          "obsTime": 1793541600,
+          "reportTime": "2026-11-01T14:00:00.000Z",
+          "temp": 9,
+          "dewp": 3,
+          "wdir": 30,
+          "wspd": 9,
+          "visib": "6+",
+          "altim": 1027,
+          "qcField": 16,
+          "metarType": "METAR",
+          "rawOb": "METAR LKTB 011400Z 03009KT 350V050 9999 BKN033 09/03 Q1027 NOSIG",
+          "lat": 49.151,
+          "lon": 16.694,
+          "elev": 233,
+          "name": "Brno/Tuřany Arpt, JM, CZ",
+          "cover": "BKN",
+          "clouds": [
+            {
+              "cover": "BKN",
+              "base": 3300
+            }
+          ],
+          "fltCat": "VFR"
+        }
+      },
+      {
+        "id": "metar:LOWL:2026-11-01T13:50:00Z:",
+        "station": "LOWL",
+        "fir": null,
+        "raw": "METAR LOWL 011350Z AUTO VRB01KT 9999 FEW044 OVC048 08/04 Q1028 NOSIG",
+        "issuedAt": null,
+        "observedAt": "2026-11-01T13:50:00Z",
+        "receivedAt": "2026-11-01T13:55:28Z",
+        "validFrom": null,
+        "validTo": null,
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LOWL",
+          "receiptTime": "2026-11-01T13:55:28.303Z",
+          "obsTime": 1793541000,
+          "reportTime": "2026-11-01T14:00:00.000Z",
+          "temp": 8,
+          "dewp": 4,
+          "wdir": "VRB",
+          "wspd": 1,
+          "visib": "6+",
+          "altim": 1028,
+          "qcField": 18,
+          "metarType": "METAR",
+          "rawOb": "METAR LOWL 011350Z AUTO VRB01KT 9999 FEW044 OVC048 08/04 Q1028 NOSIG",
+          "lat": 48.233,
+          "lon": 14.188,
+          "elev": 290,
+          "name": "Linz Arpt, OB, AT",
+          "cover": "OVC",
+          "clouds": [
+            {
+              "cover": "FEW",
+              "base": 4400
+            },
+            {
+              "cover": "OVC",
+              "base": 4800
+            }
+          ],
+          "fltCat": "VFR"
+        }
+      },
+      {
+        "id": "metar:LOWW:2026-11-01T13:50:00Z:",
+        "station": "LOWW",
+        "fir": null,
+        "raw": "METAR LOWW 011350Z 34008KT 9999 FEW038 10/04 Q1026 NOSIG",
+        "issuedAt": null,
+        "observedAt": "2026-11-01T13:50:00Z",
+        "receivedAt": "2026-11-01T13:55:28Z",
+        "validFrom": null,
+        "validTo": null,
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LOWW",
+          "receiptTime": "2026-11-01T13:55:28.270Z",
+          "obsTime": 1793541000,
+          "reportTime": "2026-11-01T14:00:00.000Z",
+          "temp": 10,
+          "dewp": 4,
+          "wdir": 340,
+          "wspd": 8,
+          "visib": "6+",
+          "altim": 1026,
+          "qcField": 16,
+          "metarType": "METAR",
+          "rawOb": "METAR LOWW 011350Z 34008KT 9999 FEW038 10/04 Q1026 NOSIG",
+          "lat": 48.117,
+          "lon": 16.582,
+          "elev": 179,
+          "name": "Vienna Intl, NE, AT",
+          "cover": "FEW",
+          "clouds": [
+            {
+              "cover": "FEW",
+              "base": 3800
+            }
+          ],
+          "fltCat": "VFR"
+        }
+      }
+    ],
+    "requestedStations": [
+      "LKCS",
+      "LKHS",
+      "LKPR",
+      "LKKB",
+      "LKPD",
+      "LKTB",
+      "LKKV",
+      "LOWL",
+      "LOWW"
+    ],
+    "missingStations": [
+      "LKCS",
+      "LKHS"
+    ]
+  },
+  "taf": {
+    "status": "ok",
+    "retrievedAt": "2026-11-01T14:08:52Z",
+    "attemptedAt": "2026-11-01T14:08:52Z",
+    "error": null,
+    "sourceUrl": "https://aviationweather.gov/api/data/taf?ids=LKCS%2CLKHS%2CLKPR%2CLKKB%2CLKPD%2CLKTB%2CLKKV%2CLOWL%2CLOWW&format=json",
+    "items": [
+      {
+        "id": "taf:LKCS:2026-10-05T20:00:00Z:",
+        "station": "LKCS",
+        "fir": null,
+        "raw": "TAF LKCS 052000Z 0521/0606 VRB02KT CAVOK PROB30 TEMPO 0600/0606 5000 BR NSC",
+        "issuedAt": "2026-10-05T20:00:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-10-05T20:20:14Z",
+        "validFrom": "2026-10-05T21:00:00Z",
+        "validTo": "2026-10-06T06:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKCS",
+          "dbPopTime": "2026-10-05T20:20:14.729Z",
+          "bulletinTime": "2026-10-05T20:00:00.000Z",
+          "issueTime": "2026-10-05T20:00:00.000Z",
+          "validTimeFrom": 1791234000,
+          "validTimeTo": 1791266400,
+          "rawTAF": "TAF LKCS 052000Z 0521/0606 VRB02KT CAVOK PROB30 TEMPO 0600/0606 5000 BR NSC",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 48.946,
+          "lon": 14.427,
+          "elev": 432,
+          "prior": 4,
+          "name": "Ceske Budejovice Arpt",
+          "fcsts": [
+            {
+              "timeFrom": 1791234000,
+              "timeTo": 1791266400,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": "VRB",
+              "wspd": 2,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": "NSW",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "NSC",
+                  "base": null,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1791244800,
+              "timeTo": 1791266400,
+              "timeBec": null,
+              "fcstChange": "TEMPO",
+              "probability": 30,
+              "wdir": null,
+              "wspd": null,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": 3.11,
+              "altim": null,
+              "vertVis": null,
+              "wxString": "BR",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "NSC",
+                  "base": null,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            }
+          ]
+        }
+      },
+      {
+        "id": "taf:LKKB:2026-11-01T11:00:00Z:",
+        "station": "LKKB",
+        "fir": null,
+        "raw": "TAF LKKB 011100Z 0112/0212 02006KT 9999 BKN040 BECMG 0123/0201 VRB02KT PROB30 TEMPO 0200/0207 4000 MIFG BR SCT006",
+        "issuedAt": "2026-11-01T11:00:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-11-01T11:30:11Z",
+        "validFrom": "2026-11-01T12:00:00Z",
+        "validTo": "2026-11-02T12:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKKB",
+          "dbPopTime": "2026-11-01T11:30:11.938Z",
+          "bulletinTime": "2026-11-01T11:00:00.000Z",
+          "issueTime": "2026-11-01T11:00:00.000Z",
+          "validTimeFrom": 1793534400,
+          "validTimeTo": 1793620800,
+          "rawTAF": "TAF LKKB 011100Z 0112/0212 02006KT 9999 BKN040 BECMG 0123/0201 VRB02KT PROB30 TEMPO 0200/0207 4000 MIFG BR SCT006",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 50.123,
+          "lon": 14.538,
+          "elev": 281,
+          "prior": 6,
+          "name": "Prague/Kbely Arpt",
+          "fcsts": [
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793574000,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": 20,
+              "wspd": 6,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "BKN",
+                  "base": 4000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793574000,
+              "timeTo": 1793620800,
+              "timeBec": 1793581200,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": "VRB",
+              "wspd": 2,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "BKN",
+                  "base": 4000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793577600,
+              "timeTo": 1793602800,
+              "timeBec": null,
+              "fcstChange": "TEMPO",
+              "probability": 30,
+              "wdir": null,
+              "wspd": null,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": 2.49,
+              "altim": null,
+              "vertVis": null,
+              "wxString": "MIFG BR",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 600,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            }
+          ]
+        }
+      },
+      {
+        "id": "taf:LKKV:2026-11-01T11:00:00Z:",
+        "station": "LKKV",
+        "fir": null,
+        "raw": "TAF LKKV 011100Z 0112/0212 05005KT 9999 SCT012 BKN030 BECMG 0116/0118 SCT030 BECMG 0121/0123 VRB02KT 4000 BR TEMPO 0123/0207 1200 BR BCFG SCT004 BECMG 0208/0210 06005KT BKN025",
+        "issuedAt": "2026-11-01T11:00:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-11-01T11:20:28Z",
+        "validFrom": "2026-11-01T12:00:00Z",
+        "validTo": "2026-11-02T12:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKKV",
+          "dbPopTime": "2026-11-01T11:20:28.645Z",
+          "bulletinTime": "2026-11-01T11:00:00.000Z",
+          "issueTime": "2026-11-01T11:00:00.000Z",
+          "validTimeFrom": 1793534400,
+          "validTimeTo": 1793620800,
+          "rawTAF": "TAF LKKV 011100Z 0112/0212 05005KT 9999 SCT012 BKN030 BECMG 0116/0118 SCT030 BECMG 0121/0123 VRB02KT 4000 BR TEMPO 0123/0207 1200 BR BCFG SCT004 BECMG 0208/0210 06005KT BKN025",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 50.202,
+          "lon": 12.91,
+          "elev": 600,
+          "prior": 4,
+          "name": "Karlovy Vary Intl",
+          "fcsts": [
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793548800,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": 50,
+              "wspd": 5,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 1200,
+                  "type": null
+                },
+                {
+                  "cover": "BKN",
+                  "base": 3000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793548800,
+              "timeTo": 1793566800,
+              "timeBec": 1793556000,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": 50,
+              "wspd": 5,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 3000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793566800,
+              "timeTo": 1793606400,
+              "timeBec": 1793574000,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": "VRB",
+              "wspd": 2,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": 2.49,
+              "altim": null,
+              "vertVis": null,
+              "wxString": "BR",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 3000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793574000,
+              "timeTo": 1793602800,
+              "timeBec": null,
+              "fcstChange": "TEMPO",
+              "probability": null,
+              "wdir": null,
+              "wspd": null,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": 0.75,
+              "altim": null,
+              "vertVis": null,
+              "wxString": "BR BCFG",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 400,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793606400,
+              "timeTo": 1793620800,
+              "timeBec": 1793613600,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": 60,
+              "wspd": 5,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": 2.49,
+              "altim": null,
+              "vertVis": null,
+              "wxString": "BR",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "BKN",
+                  "base": 2500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            }
+          ]
+        }
+      },
+      {
+        "id": "taf:LKPD:2026-11-01T11:00:00Z:",
+        "station": "LKPD",
+        "fir": null,
+        "raw": "TAF LKPD 011100Z 0112/0212 03005KT 9999 BKN035 TEMPO 0112/0119 03010KT BECMG 0120/0122 30004KT BKN040 PROB30 TEMPO 0203/0208 VRB02KT 4000 BR SCT005",
+        "issuedAt": "2026-11-01T11:00:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-11-01T11:30:12Z",
+        "validFrom": "2026-11-01T12:00:00Z",
+        "validTo": "2026-11-02T12:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKPD",
+          "dbPopTime": "2026-11-01T11:30:12.063Z",
+          "bulletinTime": "2026-11-01T11:00:00.000Z",
+          "issueTime": "2026-11-01T11:00:00.000Z",
+          "validTimeFrom": 1793534400,
+          "validTimeTo": 1793620800,
+          "rawTAF": "TAF LKPD 011100Z 0112/0212 03005KT 9999 BKN035 TEMPO 0112/0119 03010KT BECMG 0120/0122 30004KT BKN040 PROB30 TEMPO 0203/0208 VRB02KT 4000 BR SCT005",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 50.016,
+          "lon": 15.74,
+          "elev": 226,
+          "prior": 3,
+          "name": "Pardubice Arpt",
+          "fcsts": [
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793563200,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": 30,
+              "wspd": 5,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "BKN",
+                  "base": 3500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793559600,
+              "timeBec": null,
+              "fcstChange": "TEMPO",
+              "probability": null,
+              "wdir": 30,
+              "wspd": 10,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793563200,
+              "timeTo": 1793620800,
+              "timeBec": 1793570400,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": 300,
+              "wspd": 4,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "BKN",
+                  "base": 4000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793588400,
+              "timeTo": 1793606400,
+              "timeBec": null,
+              "fcstChange": "TEMPO",
+              "probability": 30,
+              "wdir": "VRB",
+              "wspd": 2,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": 2.49,
+              "altim": null,
+              "vertVis": null,
+              "wxString": "BR",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            }
+          ]
+        }
+      },
+      {
+        "id": "taf:LKPR:2026-11-01T11:00:00Z:",
+        "station": "LKPR",
+        "fir": null,
+        "raw": "TAF LKPR 011100Z 0112/0218 04007KT 9999 SCT016 BKN035 BECMG 0121/0123 33004KT PROB30 TEMPO 0123/0207 4000 BR SCT035",
+        "issuedAt": "2026-11-01T11:00:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-11-01T11:20:23Z",
+        "validFrom": "2026-11-01T12:00:00Z",
+        "validTo": "2026-11-02T18:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKPR",
+          "dbPopTime": "2026-11-01T11:20:23.574Z",
+          "bulletinTime": "2026-11-01T11:00:00.000Z",
+          "issueTime": "2026-11-01T11:00:00.000Z",
+          "validTimeFrom": 1793534400,
+          "validTimeTo": 1793642400,
+          "rawTAF": "TAF LKPR 011100Z 0112/0218 04007KT 9999 SCT016 BKN035 BECMG 0121/0123 33004KT PROB30 TEMPO 0123/0207 4000 BR SCT035",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 50.101,
+          "lon": 14.26,
+          "elev": 364,
+          "prior": 2,
+          "name": "Prague/Havel Arpt",
+          "fcsts": [
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793566800,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": 40,
+              "wspd": 7,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 1600,
+                  "type": null
+                },
+                {
+                  "cover": "BKN",
+                  "base": 3500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793566800,
+              "timeTo": 1793642400,
+              "timeBec": 1793574000,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": 330,
+              "wspd": 4,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 1600,
+                  "type": null
+                },
+                {
+                  "cover": "BKN",
+                  "base": 3500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793574000,
+              "timeTo": 1793602800,
+              "timeBec": null,
+              "fcstChange": "TEMPO",
+              "probability": 30,
+              "wdir": null,
+              "wspd": null,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": 2.49,
+              "altim": null,
+              "vertVis": null,
+              "wxString": "BR",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 3500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            }
+          ]
+        }
+      },
+      {
+        "id": "taf:LKTB:2026-11-01T11:00:00Z:",
+        "station": "LKTB",
+        "fir": null,
+        "raw": "TAF LKTB 011100Z 0112/0212 07012KT 9999 SCT035 BECMG 0116/0118 06006KT CAVOK BECMG 0207/0209 06012KT 9999 SCT025",
+        "issuedAt": "2026-11-01T11:00:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-11-01T11:20:28Z",
+        "validFrom": "2026-11-01T12:00:00Z",
+        "validTo": "2026-11-02T12:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LKTB",
+          "dbPopTime": "2026-11-01T11:20:28.610Z",
+          "bulletinTime": "2026-11-01T11:00:00.000Z",
+          "issueTime": "2026-11-01T11:00:00.000Z",
+          "validTimeFrom": 1793534400,
+          "validTimeTo": 1793620800,
+          "rawTAF": "TAF LKTB 011100Z 0112/0212 07012KT 9999 SCT035 BECMG 0116/0118 06006KT CAVOK BECMG 0207/0209 06012KT 9999 SCT025",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 49.151,
+          "lon": 16.694,
+          "elev": 233,
+          "prior": 3,
+          "name": "Brno/Tuřany Arpt",
+          "fcsts": [
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793548800,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": 70,
+              "wspd": 12,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 3500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793548800,
+              "timeTo": 1793602800,
+              "timeBec": 1793556000,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": 60,
+              "wspd": 6,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": "NSW",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "NSC",
+                  "base": null,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            },
+            {
+              "timeFrom": 1793602800,
+              "timeTo": 1793620800,
+              "timeBec": 1793610000,
+              "fcstChange": "BECMG",
+              "probability": null,
+              "wdir": 60,
+              "wspd": 12,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": "NSW",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 2500,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            }
+          ]
+        }
+      },
+      {
+        "id": "taf:LOWL:2026-11-01T11:15:00Z:",
+        "station": "LOWL",
+        "fir": null,
+        "raw": "TAF LOWL 011115Z 0112/0212 06005KT 9999 FEW020 BKN040 TX08/0112Z TN03/0205Z",
+        "issuedAt": "2026-11-01T11:15:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-11-01T11:17:12Z",
+        "validFrom": "2026-11-01T12:00:00Z",
+        "validTo": "2026-11-02T12:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LOWL",
+          "dbPopTime": "2026-11-01T11:17:12.301Z",
+          "bulletinTime": "2026-11-01T11:00:00.000Z",
+          "issueTime": "2026-11-01T11:15:00.000Z",
+          "validTimeFrom": 1793534400,
+          "validTimeTo": 1793620800,
+          "rawTAF": "TAF LOWL 011115Z 0112/0212 06005KT 9999 FEW020 BKN040 TX08/0112Z TN03/0205Z",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 48.233,
+          "lon": 14.188,
+          "elev": 290,
+          "prior": 3,
+          "name": "Linz Arpt",
+          "fcsts": [
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793620800,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": 60,
+              "wspd": 5,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "FEW",
+                  "base": 2000,
+                  "type": null
+                },
+                {
+                  "cover": "BKN",
+                  "base": 4000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": [
+                {
+                  "validTime": 1793534400,
+                  "surfaceTemp": 8,
+                  "maxOrMin": "MAX"
+                },
+                {
+                  "validTime": 1793595600,
+                  "surfaceTemp": 3,
+                  "maxOrMin": "MIN"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "taf:LOWW:2026-11-01T11:15:00Z:",
+        "station": "LOWW",
+        "fir": null,
+        "raw": "TAF LOWW 011115Z 0112/0218 35008KT 9999 SCT030 BKN040 TX10/0112Z TN04/0204Z TEMPO 0200/0211 DZ SCT012 BKN014",
+        "issuedAt": "2026-11-01T11:15:00Z",
+        "observedAt": null,
+        "receivedAt": "2026-11-01T11:17:12Z",
+        "validFrom": "2026-11-01T12:00:00Z",
+        "validTo": "2026-11-02T18:00:00Z",
+        "cancelled": false,
+        "nil": false,
+        "amended": false,
+        "corrected": false,
+        "source": {
+          "icaoId": "LOWW",
+          "dbPopTime": "2026-11-01T11:17:12.621Z",
+          "bulletinTime": "2026-11-01T11:00:00.000Z",
+          "issueTime": "2026-11-01T11:15:00.000Z",
+          "validTimeFrom": 1793534400,
+          "validTimeTo": 1793642400,
+          "rawTAF": "TAF LOWW 011115Z 0112/0218 35008KT 9999 SCT030 BKN040 TX10/0112Z TN04/0204Z TEMPO 0200/0211 DZ SCT012 BKN014",
+          "mostRecent": 1,
+          "remarks": "",
+          "lat": 48.117,
+          "lon": 16.582,
+          "elev": 179,
+          "prior": 0,
+          "name": "Vienna Intl",
+          "fcsts": [
+            {
+              "timeFrom": 1793534400,
+              "timeTo": 1793642400,
+              "timeBec": null,
+              "fcstChange": null,
+              "probability": null,
+              "wdir": 350,
+              "wspd": 8,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "6+",
+              "altim": null,
+              "vertVis": null,
+              "wxString": null,
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 3000,
+                  "type": null
+                },
+                {
+                  "cover": "BKN",
+                  "base": 4000,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": [
+                {
+                  "validTime": 1793534400,
+                  "surfaceTemp": 10,
+                  "maxOrMin": "MAX"
+                },
+                {
+                  "validTime": 1793592000,
+                  "surfaceTemp": 4,
+                  "maxOrMin": "MIN"
+                }
+              ]
+            },
+            {
+              "timeFrom": 1793577600,
+              "timeTo": 1793617200,
+              "timeBec": null,
+              "fcstChange": "TEMPO",
+              "probability": null,
+              "wdir": null,
+              "wspd": null,
+              "wgst": null,
+              "wshearHgt": null,
+              "wshearDir": null,
+              "wshearSpd": null,
+              "visib": "",
+              "altim": null,
+              "vertVis": null,
+              "wxString": "DZ",
+              "notDecoded": null,
+              "clouds": [
+                {
+                  "cover": "SCT",
+                  "base": 1200,
+                  "type": null
+                },
+                {
+                  "cover": "BKN",
+                  "base": 1400,
+                  "type": null
+                }
+              ],
+              "icgTurb": [],
+              "temp": []
+            }
+          ]
+        }
+      }
+    ],
+    "requestedStations": [
+      "LKCS",
+      "LKHS",
+      "LKPR",
+      "LKKB",
+      "LKPD",
+      "LKTB",
+      "LKKV",
+      "LOWL",
+      "LOWW"
+    ],
+    "missingStations": [
+      "LKHS"
+    ]
+  },
+  "sigmet": {
+    "status": "empty",
+    "retrievedAt": "2026-11-01T14:08:57Z",
+    "attemptedAt": "2026-11-01T14:08:57Z",
+    "error": null,
+    "sourceUrl": "https://aviationweather.gov/data/cache/sigmets.cache.json.gz",
+    "items": [],
+    "firScope": [
+      "LKAA",
+      "LOVV",
+      "EDMM",
+      "LZBB"
+    ]
+  },
+  "radar": {
+    "status": "ok",
+    "retrievedAt": "2026-11-01T14:08:57Z",
+    "attemptedAt": "2026-11-01T14:08:57Z",
+    "observedAt": "2026-11-01T14:05:00Z",
+    "url": "https://opendata.chmi.cz/meteorology/weather/radar/composite/pseudocappi2km/png/pacz2gmaps3.z_cappi020.20261101.1405.0.png",
+    "bounds": [
+      [
+        48.047,
+        11.267
+      ],
+      [
+        52.167,
+        20.77
+      ]
+    ],
+    "dataBounds": [
+      [
+        48.047,
+        11.267
+      ],
+      [
+        51.458,
+        19.624
+      ]
+    ],
+    "legendUrl": "https://opendata.chmi.cz/meteorology/weather/radar/scl/scl-dbz-mmh.png",
+    "sourceUrl": "https://opendata.chmi.cz/meteorology/weather/radar/composite/pseudocappi2km/png/",
+    "documentationUrl": "https://opendata.chmi.cz/meteorology/weather/radar/radar_description_en.pdf",
+    "product": "PseudoCAPPI_2km",
+    "measurement": "Radar reflectivity at 2 km AMSL; observed five-minute composite, not extrapolation",
+    "attribution": "ČHMÚ / CZRAD · CC BY 4.0",
+    "error": null
+  }
+}

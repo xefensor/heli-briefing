@@ -1,10 +1,10 @@
 # Product brief
 
-Status: planning baseline · Updated: 2026-11-01
+Status: first evaluation implementation started; product recommendations remain unvalidated · Updated: 2026-11-01
 
 [Repository overview](../README.md) · [Design brief](design.md)
 
-This repository is a fresh implementation foundation. Xef clarified that the intended pilot made the original Google Site, and then that the new product should be rebuilt using all three research tracks. The [original-site inventory](research/original-site.md) supplies context and hypotheses about useful information, not a validated feature or workflow specification. Develop the product around the confirmed preparation role, pilot needs, aviation interface patterns and trustworthy available data. No application stack has been selected.
+This repository now includes a first evaluation implementation in `web/`, using browser-native modules and a static build for the owner-selected GitHub Pages target; see [decision 0004](decisions/0004-github-pages-first-build.md) and [deployment](deployment.md). Publication, live runtime behaviour and pilot usability need their own verification. Xef clarified that the intended pilot made the original Google Site, and then that the new product should be rebuilt using all three research tracks. The [original-site inventory](research/original-site.md) supplies context and hypotheses about useful information, not a validated feature or workflow specification. Develop the product around the confirmed preparation role, pilot needs, aviation interface patterns and trustworthy available data. The recommendations and open questions below remain planning guidance unless a later decision explicitly settles them.
 
 ## Primary user and working context
 
@@ -62,7 +62,7 @@ The following jobs are recommendations for the rebuild. LKCS and LKHS are useful
 - Which controls belong in the global header, and whether inspection time, departure time, arrival time and graph horizon need separate representations.
 - Which products are available with sufficient coverage, metadata and reuse rights; what remains an official-source link until an agreement exists.
 - Appropriate route/terrain/alternate depth, offline or saved briefings, print/PDF output, accounts, alerts and any operational integration. The original provides evidence of print intent, not a final delivery decision.
-- Application stack, hosting, persistence, authentication and delivery scope.
+- Future backend/ingestion stack, persistence, authentication and professional delivery scope. The first evaluation build uses static JavaScript modules and GitHub Pages under [decision 0004](decisions/0004-github-pages-first-build.md).
 
 Do not resolve these by assuming that every helicopter operation resembles an airline, HEMS base, US low-altitude service or recreational VFR flight.
 

@@ -4,7 +4,9 @@
 
 Start with [README.md](README.md), the [documentation index](docs/README.md) and [product brief](docs/product-brief.md). Read the [design document](docs/design.md) for interface work and both [data sources](docs/data/sources.md) and [data integrity](docs/data/integrity.md) for data work. Check the [decision register](docs/decisions/README.md) before treating a proposal as settled.
 
-The repository currently contains a research and documentation foundation. There is no selected application framework, production deployment or completed provider integration in this repository. Do not report planned features as implemented. Use the three research tracks—[pilot needs](docs/research/pilot-needs.md), [aviation interfaces](docs/research/interface-references.md) and [data sources](docs/data/sources.md)—to develop the new product. Read the [original-site inventory](docs/research/original-site.md) for contextual evidence and defects; its feature set, section order and controls are not an accepted specification. Do not import a rejected prototype.
+The repository contains research and a first evaluation implementation in `web/`: browser-native JavaScript modules, HTML, CSS and SVG charts, with no application package dependencies. Node.js 24 builds static output in `dist/`; Python collects the aviation report snapshot. GitHub Pages is the selected host, but initial setup found it disabled; confirm a successful deployment before claiming publication. Read [deployment](docs/deployment.md) and [decision 0004](docs/decisions/0004-github-pages-first-build.md) for the implemented hosting/data path. Distinguish source implementation, passing checks, live integrations and validated pilot workflows.
+
+Use the three research tracks—[pilot needs](docs/research/pilot-needs.md), [aviation interfaces](docs/research/interface-references.md) and [data sources](docs/data/sources.md)—to develop the product. Read the [original-site inventory](docs/research/original-site.md) for contextual evidence and defects; its feature set, section order and controls are not an accepted specification. Do not import a rejected prototype.
 
 ## Product requirements
 
@@ -43,10 +45,11 @@ The repository currently contains a research and documentation foundation. There
 - Make routine reversible choices within the user's requested scope. Ask only when a material unresolved choice or access restriction changes what can be delivered.
 - Ask the owner one question at a time. First check the original site and existing documentation for the answer. Distinguish an observed feature from an inference about how the pilot uses it.
 - Keep unrelated changes out of a task. Inspect existing files and concurrent changes before editing; never overwrite another contributor's work without reconciling it.
-- Use provider adapters, clear capability metadata and bounded server-side caching when application work begins. Keep provider credentials and proprietary access on the server.
+- Maintain provider adapters and clear capability metadata. The first static version uses browser forecast requests and a deployment-time report collector; future private/commercial access requires a suitable server-side adapter or ingestion service. Keep provider credentials and proprietary access on the server; never embed keys in static assets.
 - Large GRIB/HDF5 ingestion requires a suitable background process. Do not assume browser code or a small request-time function can decode an entire regional model on demand.
 - Do not select a framework, database, hosting provider, paid subscription or project licence merely to fill an empty file. Record the concrete reason and decision status.
 - Respect source-specific attribution and redistribution rights. Public display does not establish an open API or permission to rehost images and datasets.
+- Open-Meteo's free hosted service supports this open-source evaluation under its applicable terms. Do not represent it as configured professional/commercial production access. Recheck provider access terms before that transition.
 - Keep private account details, API keys, signed URLs, tokens and raw sensitive logs out of this public repository. Use an example environment file with placeholders when configuration becomes necessary.
 - Use the GitHub connector when the user requests it. Preserve the existing branch head and use non-forced or guarded ref updates; do not reset history to resolve a conflict.
 
@@ -54,6 +57,6 @@ The repository currently contains a research and documentation foundation. There
 
 For documentation changes, run `python3 scripts/check_docs.py` and `git diff --check` when a local Git checkout is available. Check links, terminology, proposal status and dated claims. Network source checks are deliberate research actions, not part of routine CI.
 
-For future code changes, run the meaningful checks documented for the selected stack. Prioritise tests for report validity, unit and vertical-reference conversion, time boundaries, source switching, missing data and provider failure. Do not create tests that only repeat the implementation.
+For application changes, run `npm test` and `npm run build`. Use `npm run dev` for local browser inspection. The tests use Node.js and Python standard-library tooling; no dependency installation is needed. Prioritise tests for report validity, unit and vertical-reference conversion, time boundaries, source switching, missing data and provider failure. Do not create tests that only repeat the implementation. Keep live connectivity checks separate from deterministic tests, and record the actual payload, browser result and deployment state supporting any integration claim.
 
 Report what changed, what was checked and any remaining material limitation. Distinguish local preparation, a committed change, a deployed website and a verified live integration. Do not claim a deployment or official operational approval that has not happened.

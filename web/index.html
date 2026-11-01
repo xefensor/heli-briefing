@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="cs" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Vrtulníkový meteorologický briefing pro jižní Čechy. Modelové předpovědi, podrobné grafy, regionální METAR a TAF a denní světlo v jednom přehledu.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Heli Briefing · Jižní Čechy</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./vendor/leaflet.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./vendor/leaflet.js" defer></script>
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#briefing">Přejít na briefing</a>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Heli Briefing, úvodní místo">
+      <svg class="brand-icon" viewBox="0 0 44 44" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 11h32M22 7v12M15 20h15l6 8H14l-5-5H5v-5h4l6 5M19 20l-4 8M26 20v8M15 32h20M18 28v4M31 28v4"/><circle cx="22" cy="11" r="3"/></svg>
+      <span><span class="brand-name">HELI BRIEFING</span><span class="brand-sub">JIŽNÍ ČECHY</span></span>
+    </a>
+    <div class="header-context">
+      <div class="control-group"><label for="location">Místo</label><select id="location"><option value="lkcs">LKCS · Planá</option><option value="lkhs">LKHS · Hosín</option><option value="sumava">Šumava · Kvilda</option><option value="custom" hidden>Vlastní bod</option></select></div>
+      <div class="control-group"><span id="model-label" class="control-label">Předpověď</span><div class="segmented" id="models" role="group" aria-labelledby="model-label"><button type="button" data-model="aladin" aria-pressed="true">ALADIN</button><button type="button" data-model="icon" aria-pressed="false">ICON-D2</button><button type="button" data-model="ecmwf" aria-pressed="false">ECMWF</button></div></div>
+      <div class="control-group"><label for="inspection-time">Čas přehledu <span id="input-zone">CZ</span></label><input id="inspection-time" type="datetime-local" step="3600" aria-describedby="time-convention"></div>
+      <button class="button button-quiet" id="now" type="button">Teď</button>
+    </div>
+    <div class="header-actions"><button class="icon-button" id="refresh" type="button" title="Obnovit předpověď a zprávy" aria-label="Obnovit data">↻</button><button class="icon-button" id="theme" type="button" title="Změnit denní/noční vzhled" aria-label="Přepnout noční vzhled">◐</button><button class="button button-primary" id="print" type="button">Tisk briefingu</button></div>
+  </header>
+  <main id="briefing" class="workspace">
+    <div class="page-heading"><div><p class="eyebrow">METEOROLOGICKÝ PŘEHLED / 01</p><h1 id="place-title">Planá · České Budějovice</h1><p class="meta-line" id="context-line">Načítání skutečných dat…</p></div><div class="time-buttons"><button type="button" class="button button-quiet" id="share">Kopírovat odkaz</button><button type="button" class="button button-quiet" id="zone">Čas: CZ</button><span class="tag">VÝVOJOVÁ VERZE</span></div></div>
+    <div class="print-only" id="print-context"></div>
+    <div class="status-banner" id="weather-status" role="status" aria-live="polite" data-state="loading">Načítám předpověď pro zvolené místo. Žádné ukázkové hodnoty.</div>
+    <section aria-label="Modelové hodnoty ve vybraném čase" class="context-summary" id="summary"></section>
+    <div class="timeline-bar"><div><span class="label">Časová osa</span><strong id="selected-label">—</strong></div><input id="time-slider" type="range" min="0" max="71" value="0" aria-label="Vybrat hodinu předpovědi"><div class="segmented" id="horizon" role="group" aria-label="Rozsah grafů"><button type="button" data-hours="24" aria-pressed="false">24 h</button><button type="button" data-hours="48" aria-pressed="true">48 h</button><button type="button" data-hours="72" aria-pressed="false">72 h</button></div></div>
+    <p id="time-convention" class="chart-caption">Hodnoty předpovědi patří nejbližší hodině uvedené u grafů. Při opakované podzimní hodině vstup CZ vybírá první výskyt; druhý zadej v UTC.</p>
+    <div class="briefing-grid">
+      <div class="main-column">
+        <section class="panel"><div class="panel-heading"><div><p class="eyebrow">VÝVOJ V MÍSTĚ</p><h2>Předpověď v souvislostech</h2></div><div class="panel-actions"><label for="compare" class="muted">Porovnat</label><select id="compare"><option value="">Bez porovnání</option><option value="aladin">ALADIN</option><option value="icon">ICON-D2</option><option value="ecmwf">ECMWF</option></select></div></div><p class="panel-meta" id="forecast-meta">Zdroj a čas platnosti se zobrazí po načtení.</p><div class="comparison-strip" id="comparison" hidden></div><div class="charts-grid" id="charts" aria-live="polite"></div><p class="chart-caption">Kliknutím do kteréhokoli grafu vybereš společný čas. Prázdná místa znamenají nedostupná data. Oblačnost v % není základna ani ceiling.</p></section>
+        <section class="panel" id="reports-panel"><div class="panel-heading"><div><p class="eyebrow">NEZÁVISLÉ NA MODELU</p><h2>Letištní pozorování a TAF</h2></div><a class="button button-quiet" href="https://aviationweather.gov/data/metar/" target="_blank" rel="noopener noreferrer">Oficiální zdroj ↗</a></div><p class="panel-meta" id="reports-meta">Načítání regionálních zpráv…</p><div id="reports-status" role="status"></div><div class="station-grid" id="reports"></div></section>
+      </div>
+      <aside class="side-column" aria-label="Region a kontext briefingu">
+        <section class="panel"><div class="panel-heading"><div><p class="eyebrow">REGIONÁLNÍ KONTEXT</p><h2>Místo a srážky</h2></div><button id="gps" type="button" class="button button-quiet">Moje poloha</button></div><div id="region-map" role="region" aria-label="Interaktivní mapa. Kliknutím vyber místo předpovědi."></div><div class="panel-actions map-controls"><label><input id="radar-toggle" type="checkbox"> Radar ČHMÚ</label><span id="radar-time" class="muted">Načítání snímku…</span></div><p class="chart-caption" id="map-caption">Klikni do mapy pro předpověď v novém bodě. Letištní zprávy zůstávají vázané na stanici.</p><div id="radar-legend"></div><div class="panel-actions"><a id="windy-link" class="button button-quiet" href="https://www.windy.com/" target="_blank" rel="noopener noreferrer">Windy ↗</a><a href="https://www.chmi.cz/aktualni-situace/aktualni-stav-pocasi/ceska-republika/radary" class="button button-quiet" target="_blank" rel="noopener noreferrer">Radar u zdroje ↗</a></div></section>
+        <section class="panel"><div class="panel-heading"><div><p class="eyebrow">VYBRANÉ MÍSTO A DEN</p><h2>Denní světlo</h2></div><span aria-hidden="true">☀</span></div><div id="astronomy"></div></section>
+        <section class="panel"><div class="panel-heading"><div><p class="eyebrow">VÝZNAMNÉ POČASÍ</p><h2>Výstrahy a region</h2></div></div><div id="sigmets" class="source-list"><p class="muted">Načítání SIGMET…</p></div><div class="source-list"><a href="https://www.chmi.cz/letectvi/predpovedi-pro-letani/swl-mapa" target="_blank" rel="noopener noreferrer"><strong>SWL · významné počasí ↗</strong><span>Grafický produkt ČHMÚ; platnost ověř v mapě.</span></a><a href="https://www.chmi.cz/letectvi/predpovedi-pro-letani/predpoved-nizke-oblacnosti" target="_blank" rel="noopener noreferrer"><strong>Nízká oblačnost ↗</strong><span>Regionální předpověď; výšky podle legendy produktu.</span></a><a href="https://aim.rlp.cz/" target="_blank" rel="noopener noreferrer"><strong>AIM · NOTAM a vzdušný prostor ↗</strong><span>Přímo u vydavatele; živý stav zde neodvozujeme.</span></a></div></section>
+        <section class="panel briefing-notes"><div class="panel-heading"><div><p class="eyebrow">PRO OSTATNÍ PILOTY</p><h2>Poznámky k briefingu</h2></div></div><label for="notes" class="sr-only">Vlastní poznámky k briefingu</label><textarea id="notes" rows="5" placeholder="Lokální situace, změny během období, co ověřit…"></textarea><p class="chart-caption">Ukládá se pouze v tomto prohlížeči. Poznámky se zahrnou do tisku; sdílený odkaz je neobsahuje.</p><div id="print-notes" class="print-only"></div></section>
+      </aside>
+    </div>
+    <footer class="footer"><div><strong>HELI BRIEFING</strong><p>Modelová předpověď, skutečná pozorování a výpočty mají oddělené zdroje a časy. Přehled nevydává automatické rozhodnutí o provedení letu.</p></div><div><p>Počasí: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> / ČHMÚ / DWD / ECMWF · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Zprávy: NOAA Aviation Weather Center. Radar: ČHMÚ. Astronomie: SunCalc.</p><p><a href="https://github.com/xefensor/heli-briefing" target="_blank" rel="noopener noreferrer">Zdrojový kód a dokumentace ↗</a> · <a href="https://github.com/xefensor/heli-briefing/blob/main/docs/deployment.md" target="_blank" rel="noopener noreferrer">Zdroje a provozní omezení ↗</a></p></div></footer>
+  </main>
+  <noscript><p>Tento briefing načítá a propojuje aktuální zdroje pomocí JavaScriptu. Bez něj použij přímo <a href="https://www.chmi.cz/letectvi">leteckou meteorologii ČHMÚ</a>.</p></noscript>
+</body>
+</html>
