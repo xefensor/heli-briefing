@@ -7,7 +7,8 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 | Decision | Basis |
 | --- | --- |
 | Use the `heli-briefing` repository for project documentation and guidance. | The owner created the repository and authorised setup through the GitHub connector. |
-| [Start fresh with research before rebuilding](0001-research-before-rebuild.md). | The owner discarded earlier designs and requested pilot-needs, interface and data-source research. |
+| [Start fresh with research before rebuilding](0001-research-before-rebuild.md), qualified by the later source-baseline decision. | Rejected redesigns are not the implementation starting point; the original's useful content is retained as evidence. |
+| [Use the pilot-authored original as the content and workflow baseline](0002-original-site-workflow-baseline.md). | The owner clarified the primary user and explicitly directed us to derive requirements from the original instead of asking him to speculate. |
 | Preserve rich data and graphs while reducing repeated interaction. | Explicit owner feedback on previous iterations. |
 | Keep meaningful global controls prominent, including forecast source selection. | Explicit owner feedback on header and source behaviour. |
 | Use a helicopter theme; ABS styling is optional. | Explicit owner direction. |
@@ -23,6 +24,6 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 
 ## Open
 
-The primary operator/workflow, full geographical scope, final interface layout, framework, hosting, storage, code/documentation licence, paid services and redistribution agreements remain open. No application migration or deployment is authorised merely by a planning entry.
+The primary user and initial South Bohemian context are established. Exact reporting cadence, additional operation-specific needs, extended geography, final interface layout, framework, hosting, storage, code/documentation licence, paid services and redistribution agreements remain open. No application migration or deployment is authorised merely by a planning entry.
 
 Use the [decision template](template.md) for a substantial new decision. Record date, status, context, choice, consequences and supporting sources. Mark a superseded decision and link its replacement instead of silently rewriting history.

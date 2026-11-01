@@ -2,7 +2,9 @@
 
 Date: 2026-11-01
 
-Status: accepted
+Status: partially superseded by [Use the pilot-authored original as the content and workflow baseline](0002-original-site-workflow-baseline.md).
+
+The research-first and fresh implementation directions remain in effect. The historical exclusion of the original as a feature inventory below was superseded when the owner clarified its role as the intended pilot's own working reference.
 
 ## Context
 

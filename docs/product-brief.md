@@ -4,13 +4,20 @@ Status: planning baseline · Updated: 2026-11-01
 
 [Repository overview](../README.md) · [Design brief](design.md)
 
-This repository is a fresh start. Xef discarded the original site and previous redesigns as product directions. Earlier code, layouts and control schemes are not an accepted specification. Research remains evidence to evaluate; it does not make a proposal a decision. This phase records requirements and plans before implementation. No application stack has been selected.
+This repository is a fresh implementation foundation. Xef clarified that the original Google Site was made by the intended pilot and should be used to infer the product's actual content and workflow. The [original-site inventory](research/original-site.md) is therefore the baseline; earlier rejected redesigns are not. Preserve useful information and preparation tasks while correcting defects in the original. Research informs improvements, and no application stack has been selected.
+
+## Primary user and working context
+
+The confirmed primary user is a **South Bohemian professional helicopter pilot who prepares reports for others**. Xef tentatively described a shift weather overview, then directed us to derive the workflow from the pilot-authored original instead of asking him to guess details.
+
+The original provides a location/date-based briefing worksheet with solar and moon information, substantial weather graphs, regional TAFs, an SWL chart and a browser-print action. This supports a web briefing with printing intent. It does not establish a fixed shift schedule, HEMS operation, report editor, custom PDF generation or a distribution system.
 
 ## Xef-confirmed requirements
 
 | Requirement | Consequence for the product |
 | --- | --- |
-| The audience is helicopter pilots. | Design around their information needs; identify the operation type before encoding a particular workflow. |
+| The primary user is a South Bohemian professional helicopter pilot preparing reports for others. | Support preparation and readable briefing output; do not assume a particular HEMS/IFR workflow. |
+| Use the pilot-authored original site as the content and workflow reference. | Inventory its actual information and controls before asking questions or reducing scope. Preserve the useful purpose of astronomy, graphs, regional reports, SWL and print access. |
 | Rich data and graphs are essential. Previous versions removed or hid too much. | Preserve useful information and relationships. Do not equate better UX with fewer data or fewer graphs. |
 | Access should require few avoidable clicks. | Core briefing information should be directly inspectable; important information must not disappear into layers of navigation. |
 | Source controls should persist and affect all relevant forecast panels. | A model/source change must consistently update the forecast context across the page. It must have a visible effect and a clear scope. |
@@ -25,24 +32,25 @@ Persistent controls means that the relevant context remains available across pan
 
 ## Proposed product jobs and priorities
 
-The following is a working recommendation, not an approved feature list or order. A pilot should be able to begin with a region or location; a route should be optional until the primary job is established.
+The original supports starting with a base/location and date, then reading the complete briefing. Use LKCS and LKHS as initial location shortcuts, with GPS as in the original. Its six regional TAF stations are LKPR, LKKB, LKPD, LKTB, LKKV and LOWL; these are a source-derived baseline rather than a permanently closed station list. The following improvements remain recommendations for the rebuild.
 
 1. **Get a regional weather picture.** Understand the current observations, significant weather, precipitation and developing trends around the area of interest.
 2. **Inspect a chosen location and time.** Read observations alongside forecast development: wind and gusts, visibility, cloud information, precipitation, temperature/dew point and pressure. Identify whether a value belongs to the selected point, a model grid or a reporting station.
 3. **Explore a flight context when needed.** Compare times, an optional route, destinations and alternates. A nearby airport is a source of regional evidence, not automatically the weather at a landing area.
 4. **Inspect the evidence.** Reach original METAR/TAF/SIGMET text, decoded reports, graphs, maps and relevant cameras without rebuilding the same context in each view.
-5. **Understand available light.** Show sunrise/sunset and civil twilight for the selected place and date, with night context where relevant. These are calculated facts, not permission to fly.
+5. **Understand available light.** Preserve the original's substantial solar and lunar information, event times and two-day profiles with correct selected-instant calculations. These are calculated facts, not permission to fly or measured ground illumination.
+6. **Prepare readable output for others.** Preserve the original's explicit print intent and verify a clean browser-print output. A bespoke PDF generator, report composer or delivery service is additional scope, not a feature already demonstrated by the source.
 
 “Now” and a future time are viewing or flight contexts within the same product. They are not a decision to create two separate, sparsely populated applications. A linked timeline is one possible interaction pattern; Xef has not approved it as the final solution.
 
 ## Decisions still required
 
-- Primary job: briefing an already chosen flight, deciding a route/time, or maintaining awareness during a shift.
-- Initial operation types: local/private/training, commercial work, transport, HEMS or another mix; VFR/IFR and night/NVIS needs.
-- Initial geography. Research currently emphasizes Czech and European services; a Czech-only or regional HEMS-only product has not been accepted.
+- Exact report cadence and the distinction between preparation, a shift overview and flight-specific follow-up. The primary preparation role and South Bohemian context are established.
+- Any operation-specific VFR/IFR, night/NVIS, aircraft or operator requirements that cannot be inferred from the original.
+- Extent beyond the original's South Bohemian location defaults and Czech/Austrian regional reports.
 - Which controls belong in the global header, and whether inspection time, departure time, arrival time and graph horizon need separate representations.
 - Which products are available with sufficient coverage, metadata and reuse rights; what remains an official-source link until an agreement exists.
-- Route/terrain/alternate depth, offline or exported briefings, saved locations, accounts, alerts and any operational integration.
+- Additional route/terrain/alternate depth, offline or saved briefings, custom PDF export, accounts, alerts and any operational integration. Browser printing is already part of the original's intended workflow.
 - Application stack, hosting, persistence, authentication and delivery scope.
 
 Do not resolve these by assuming that every helicopter operation resembles an airline, HEMS base, US low-altitude service or recreational VFR flight.
@@ -65,6 +73,6 @@ These are testable planning criteria to refine with the chosen product scope. Th
 - [EASA helicopter operating-site guidance](https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-air-operations?erules-id=ERULES-1963177438-12875) distinguishes point-specific weather and supplemental site information. The cited section concerns commercial IFR helicopter operations; its operational requirements must not become universal product rules.
 - [CHIRP GA1395](https://chirp.co.uk/report/ga1395/) documents a reported discrepancy between a forecast overlay and observations, including an acknowledged feed error. It supports exposing evidence and uncertainty; it does not establish general unreliability of a product or justify an automatic “flyable” judgement.
 
-There has been no representative survey of the intended local audience, agreed operational workflow, usability validation of this new product, or approval of a specific layout. Record owner acceptance only when supported by the conversation, with the date and scope. Routine engineering decisions within an authorised task can be made and documented with their reasons; they must not be relabelled as owner requirements.
+The original is direct evidence of the intended pilot's chosen content and available controls. The exact daily use, reporting schedule and successful runtime operation of every feature are not established by source inspection. There has been no representative survey of the intended local audience or usability validation of the new product. Record owner acceptance only when supported by the conversation, with the date and scope. Routine engineering decisions within an authorised task can be made and documented with their reasons; they must not be relabelled as owner requirements.
 
 Earlier numerical conventions are not requirements: no universal report-age threshold, legal weather minima or night/HEMS assessment has been accepted. A pressure-level wind is not a fixed height above a landing area, and lunar illumination is not a measurement of usable visual conditions.

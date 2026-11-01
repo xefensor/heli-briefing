@@ -4,11 +4,12 @@
 
 Start with [README.md](README.md), the [documentation index](docs/README.md) and [product brief](docs/product-brief.md). Read the [design document](docs/design.md) for interface work and both [data sources](docs/data/sources.md) and [data integrity](docs/data/integrity.md) for data work. Check the [decision register](docs/decisions/README.md) before treating a proposal as settled.
 
-The repository currently contains a research and documentation foundation. There is no selected application framework, production deployment or completed provider integration in this repository. Do not report planned features as implemented. Do not import a previous prototype or recreate the original Google Site as the default design.
+The repository currently contains a research and documentation foundation. There is no selected application framework, production deployment or completed provider integration in this repository. Do not report planned features as implemented. Read the [original-site inventory](docs/research/original-site.md): the pilot-authored original is the content and workflow baseline. Preserve its useful briefing scope while correcting defects; do not import a rejected prototype or assume the old layout is the final design.
 
 ## Product requirements
 
-- Build for helicopter pilots. Do not silently narrow the audience to HEMS, offshore, IFR or one operator.
+- The primary user is a South Bohemian professional helicopter pilot preparing reports for others. A shift weather overview is a working assumption, not a confirmed schedule. Do not infer HEMS, aircraft capability or specific operating minima.
+- Derive requirements from the supplied original site before asking the owner to speculate. Its solar/moon information, detailed weather graphs, regional TAFs, SWL and explicit browser-print action establish a useful content and preparation baseline.
 - Preserve substantial data, graphs and original reports while reducing navigation and repeated setup.
 - Keep location, time and forecast source controls prominent and stable. Source changes must update all relevant forecast panels consistently.
 - Preserve the identities of observations, official reports, cameras and calculated astronomy when a forecast model changes.
@@ -39,6 +40,7 @@ The repository currently contains a research and documentation foundation. There
 ## Engineering workflow
 
 - Make routine reversible choices within the user's requested scope. Ask only when a material unresolved choice or access restriction changes what can be delivered.
+- Ask the owner one question at a time. First check the original site and existing documentation for the answer. Distinguish an observed feature from an inference about how the pilot uses it.
 - Keep unrelated changes out of a task. Inspect existing files and concurrent changes before editing; never overwrite another contributor's work without reconciling it.
 - Use provider adapters, clear capability metadata and bounded server-side caching when application work begins. Keep provider credentials and proprietary access on the server.
 - Large GRIB/HDF5 ingestion requires a suitable background process. Do not assume browser code or a small request-time function can decode an entire regional model on demand.

@@ -5,6 +5,7 @@ Start with the product brief, then follow the evidence and implementation constr
 | Document | Purpose |
 | --- | --- |
 | [Product brief](product-brief.md) | Confirmed requirements, audience assumptions and unresolved product scope. |
+| [Original site](research/original-site.md) | Pilot-authored content/workflow baseline, actual controls, print intent and implementation defects to correct. |
 | [Design](design.md) | Information hierarchy, interaction proposals and product acceptance criteria. |
 | [Pilot needs](research/pilot-needs.md) | Structured pilot research, forum evidence, limitations and implications. |
 | [Interface references](research/interface-references.md) | Documented patterns from helicopter and aviation tools, with source and illustration dates. |

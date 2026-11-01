@@ -1,15 +1,16 @@
 # Heli Briefing
 
-A helicopter weather and briefing workspace, starting with research for Czechia and Central Europe.
+A helicopter weather and briefing workspace for a South Bohemian professional pilot preparing briefings for others, with regional context for Czechia and Central Europe.
 
 The goal is to bring a regional weather picture, detailed graphs, local observations and source comparison into a coherent interface with few repeated actions. Information depth and simple interaction are both requirements.
 
-**Status:** research and documentation foundation. This repository does not yet contain the new application. The previous Google Site and prototype layouts are not the implementation specification. The operational audience, application stack, hosting and some data agreements remain open.
+**Status:** research and documentation foundation. This repository does not yet contain the new application. The pilot-authored original Google Site is the content and workflow reference; its layout and implementation defects are not a requirement to copy. The exact reporting schedule, application stack, hosting and some data agreements remain open.
 
 ## Start here
 
 - [Documentation index](docs/README.md)
 - [Product brief and confirmed requirements](docs/product-brief.md)
+- [Original site content and workflow](docs/research/original-site.md)
 - [Design principles and proposed interactions](docs/design.md)
 - [Pilot needs and evidence](docs/research/pilot-needs.md)
 - [Interface references](docs/research/interface-references.md)
