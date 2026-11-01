@@ -2,7 +2,7 @@
 
 Date: 2026-11-01
 
-Status: implemented locally; publication recorded below after verification
+Status: implemented and published on GitHub Pages; verified 2026-11-01
 
 ## Direction and research check
 
@@ -40,3 +40,9 @@ Print-layout QA uses an isolated WeasyPrint 70 document renderer with external r
 The whole project is **not complete**. Full route/terrain cross-sections, cameras, integrated aeronautical products/access agreements, professional data access, pilot usability/processing review, native browser download/print verification and remaining release/licensing decisions are open. Iteration completion, publication and passing tests do not close these items.
 
 Final document-renderer QA produced three report-pack pages and fourteen full-briefing pages for the captured sample, compared with twenty pages before moving supporting tables into appendices. The full result retained the eight forecast graphs, selected-station observation plots, profile, imagery and original reports. All report-pack pages and a full-document contact sheet were visually inspected. These counts describe this sample only and are not a fixed pagination guarantee. Browser-native print/PDF saving remains a separate check.
+
+The initial published handoff was inspected on public HTTPS: nine requested stations, original reports and missing/expired states appeared in compact mode. Clipboard API copy succeeded and returned a 3,412-character frozen report text in the browser check. A fresh HTML download attempt returned a cloud-browser download failure and reset its testing kernel; no delivered filesystem path was returned. This does not establish a defect in the HTML payload, and file delivery remains unverified. No browser-internal pages or alternative download bypass were used. Native print/PDF saving was not observed.
+
+## Publication
+
+[Pages run 41324430678](https://github.com/xefensor/heli-briefing/actions/runs/41324430678) successfully published the final application revision `00f446b492baf6f3542d15a2fe123b5cbc4466a7`, following handoff commit `0f4b9c6ccc6cf8014b44afa8e968707f9bc07251`. The application suite passed 125 tests and documentation checks passed. This closes the implementation/publication step for this iteration; the whole-project completion status above remains **not complete**.

@@ -27,7 +27,7 @@ These additions preserve the substantial graphs, direct evidence access and coor
 - [x] Retain full briefing output and add a compact original-report pack.
 - [x] Add captured-source review and plain-text/manual-copy handoff.
 - [x] Refine the preparation area, preview controls and printable appendices.
-- [ ] Publish and record final browser/print-layout checks; see [decision 0007](decisions/0007-briefing-handoff.md).
+- [x] Publish and record final browser/print-layout checks; see [decision 0007](decisions/0007-briefing-handoff.md).
 
 The whole project remains **incomplete**. Check the remaining feature/access/validation items below; a finished iteration is not a claim that the product is fully complete.
 
