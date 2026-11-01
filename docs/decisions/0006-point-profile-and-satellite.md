@@ -2,7 +2,7 @@
 
 Date: 2026-11-01
 
-Status: implemented locally; publication evidence recorded separately
+Status: implemented and published on GitHub Pages; verified 2026-11-01
 
 ## Context and decision
 
@@ -29,3 +29,7 @@ Local validation: 119 tests (86 JavaScript, 33 Python), build and documentation 
 ## Remaining work
 
 Full route/terrain cross-sections, cameras, integrated NOTAM/airspace, professional provider access, pilot workflow validation and actual print/download completion remain open. No new paid service, account, provider key or operational approval was configured.
+
+## Publication evidence
+
+[Pages run 41320741025](https://github.com/xefensor/heli-briefing/actions/runs/41320741025) successfully published the final application revision `5a3edb15bfc86604f67f5c9e4053c74bf4e0aabd`, following the main feature commit `d44b8b4da3628b3899b4fc962d2e41b8010f2577`. The public HTTPS page loaded eight forecast graphs, six ALADIN pressure levels and an embedded GeoColour image. Its satellite product time was 2026-11-01 14:50 UTC at the check, with its own age label. The preparation action opened a frozen preview in local browser QA, including both embedded radar/satellite images, profile content and no scripts or external image URLs. Browser file-download completion, printed/PDF output and pilot validation remain outstanding.

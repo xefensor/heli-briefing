@@ -20,7 +20,7 @@ These additions preserve the substantial graphs, direct evidence access and coor
 - [x] Add a model-coordinated six-level point profile with height/terrain masking and provider interpolation labels.
 - [x] Add bounded timestamped EUMETSAT GeoColour imagery and enlarged inspection.
 - [x] Include both in frozen output and open the preview when preparing a briefing.
-- [ ] Verify and publish the extension; see [decision 0006](decisions/0006-point-profile-and-satellite.md).
+- [x] Verify and publish the extension; see [decision 0006](decisions/0006-point-profile-and-satellite.md).
 
 ## Foundation
 
