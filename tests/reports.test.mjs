@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { summarizeMetar, summarizeTaf, formatReportSummary } from '../web/js/reports.js';
-import { renderMetarSummary, renderTafPeriods } from '../web/js/report-views.js';
+import { renderMetarSummary, renderTafPeriods, renderReportGuide } from '../web/js/report-views.js';
 
 const metar = (body, source = {}) => ({ raw: `METAR LKCS 011200Z ${body}`, source });
 const taf = (body, extra = {}) => ({ raw: `TAF LKCS 011100Z 0112/0212 ${body}`,
@@ -181,4 +181,17 @@ test('TAF period HTML preserves conditional scope, selected overlap and unknown 
   assert.match(html, /&lt;script&gt;/);
   assert.doesNotMatch(html, /<script>/);
   assert.match(html, /1\.11\. 18:00 UTC/);
+});
+
+
+test('compact report layout preserves all conditional periods and exceptional warnings',()=>{
+ const item=taf('05005KT 9999 SCT025 BECMG 0118/0120 30004KT PROB30 TEMPO 0120/0206 2000 BR BKN/// <script>unknown</script>');
+ const full=renderTafPeriods(item,{selectedTime:'2026-11-01T21:00:00Z'});
+ const compact=renderTafPeriods(item,{selectedTime:'2026-11-01T21:00:00Z',compact:true});
+ assert.equal((compact.match(/class="taf-period"/g)||[]).length,(full.match(/class="taf-period"/g)||[]).length);
+ assert.match(compact,/PROB30 TEMPO/);assert.match(compact,/&lt;script&gt;/);assert.doesNotMatch(compact,/<script>/);
+ assert.match(compact,/neznám|neznámá|neznámou/);
+ assert.match(renderReportGuide(),/Chybějící položky nejsou doplněny/);
+ const metarHtml=renderMetarSummary(metar('VRB02KT 0400 FG VV/// 00/00 Q1030'),{compact:true});
+ assert.match(metarHtml,/Výška neznámá/);assert.match(metarHtml,/report-warnings/);
 });

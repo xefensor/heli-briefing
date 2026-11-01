@@ -73,7 +73,7 @@ These behaviours are implemented in v0.2. The verification record above states w
 
 ## Provider access before professional production
 
-This first build is an open-source evaluation version using Open-Meteo's free hosted service within its applicable access terms. Its data licence and hosted API licence are separate. Professional/commercial production use needs the appropriate provider access; no paid service has been configured by this build.
+This build is an evaluation version using Open-Meteo's free hosted service within its applicable access terms. Its data licence and hosted API licence are separate. Professional/commercial production use needs the appropriate provider access; no paid service has been configured by this build.
 
 Any future paid API credentials need a server-side adapter or ingestion service. GitHub Pages cannot keep a key private in JavaScript, environment-generated client files, query strings or local storage. Changing the forecast adapter should preserve model identity, field capabilities, timestamps and honest failure states.
 
@@ -123,3 +123,8 @@ The validation follow-up [Pages run 41339822041](https://github.com/xefensor/hel
 [Pages run 41340900375](https://github.com/xefensor/heli-briefing/actions/runs/41340900375) completed successfully for final application commit [`ab5e1d9c71f4765b29ebf15ec1541253c8a8a849`](https://github.com/xefensor/heli-briefing/commit/ab5e1d9c71f4765b29ebf15ec1541253c8a8a849). The public page was reloaded and loaded the expected final asset version **`3ffbd5319c5f5cbb6d1d`**. Its content width matched scroll width at 1348 px. Actual live model switching produced an ICON-D2-labelled route section with 17/17 vertical columns while the independent native ceiling and cameras retained their sources; returning to ALADIN invalidated/reloaded the section. Live SWL imagery decoded at its original 2339 px width, alongside the 1654 px low-cloud image. The same scoped images had decoded in the full frozen output.
 
 The buildable v0.3 evaluation scope is finished and published. The **whole professional project is not operationally complete**: appropriate professional provider access, the owner's project licence, intended-pilot processing/usability acceptance and actual target-browser native save/print remain external gates. Integrated NOTAM/airspace redistribution additionally requires authorized access if that capability is taken into scope. These gates and a concrete pilot script are maintained in the [release checklist](release-checklist.md); there is no remaining declared engineering feature checkpoint to hand back as though it were completion.
+
+
+## Professional workspace redesign · 1 November 2026
+
+Version 0.4.0 implements the [full UI/UX review](design-review-2026-11-01.md) and [decision 0011](decisions/0011-professional-briefing-workspace.md). It reorganizes existing evidence and controls without replacing data definitions or provider access. Local validation passed 171 tests (129 JavaScript, 42 Python), a static build, documentation-link checks and the desktop/responsive/output workflows recorded in the review. Publication evidence follows once the Pages run completes.

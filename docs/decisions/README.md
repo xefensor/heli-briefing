@@ -25,6 +25,8 @@ The first bounded route capability is [route-point weather and independent depar
 
 The route section, ČÚZK terrain, timestamped cameras and integrated SWL/low-cloud products are recorded in [decision 0010](0010-route-section-and-visual-evidence.md).
 
+The subsequent [professional workspace redesign](0011-professional-briefing-workspace.md) records the owner-requested UI/UX review and implemented structure, with all core data retained.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |

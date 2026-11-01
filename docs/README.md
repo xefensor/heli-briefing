@@ -6,6 +6,7 @@ Start with the product brief, then follow the evidence and implementation constr
 | --- | --- |
 | [Product brief](product-brief.md) | Confirmed requirements, audience assumptions and unresolved product scope. |
 | [Original site](research/original-site.md) | Contextual inventory of actual controls, candidate information needs, print intent and implementation defects; evaluated against the three research tracks. |
+| [Professional workspace review](design-review-2026-11-01.md) | UI/UX audit, three-study reasoning, redesign and verification. |
 | [Design](design.md) | Information hierarchy, interaction proposals and product acceptance criteria. |
 | [Pilot needs](research/pilot-needs.md) | Structured pilot research, forum evidence, limitations and implications. |
 | [Interface references](research/interface-references.md) | Documented patterns from helicopter and aviation tools, with source and illustration dates. |

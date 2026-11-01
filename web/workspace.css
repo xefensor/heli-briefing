@@ -42,7 +42,7 @@
 @media (max-width:600px) { .route-workspace { padding:0 14px 16px; } .route-point { padding:16px; } .route-values { grid-template-columns:repeat(2,minmax(0,1fr)); } .route-editor-point { display:block; } .route-editor-point label { margin:12px 0; } .route-time-row > div { width:100%; } .route-editor-actions { margin-top:12px; } .route-add-row { align-items:flex-end; } .route-add-row > div { max-width:100%; } }
 @media print { .route-charts { display:block; } .route-add-row,.route-time-row,.route-editor,#route-clear,#route-undo,#route-empty,#route-feedback,#route-storage,#route-time-help { display:none; } .route-point-grid { grid-template-columns:1fr; } .route-point { break-inside:avoid; } .route-chart { break-inside:avoid; } }
 .share-feedback:empty { display:none; }
-.topbar #location { width:230px; max-width:100%; }
+
 #place-title { overflow-wrap:anywhere; }
 .share-feedback, .share-fallback { margin:0 0 16px; font-size:14px; }
 .share-fallback label { display:block; margin-bottom:6px; }
@@ -70,209 +70,6 @@
  .place-form-actions .button { flex:1 1 140px; }
 }
 @media print { .share-feedback, .share-fallback { display:none; } }
-@media screen {
-  :root { --bg:#e9edf0; --surface:#fff; --surface-alt:#f3f6f8; --surface-strong:#e4ecf0; --text:#192d3d; --muted:#4e6271; --line:#d6dfe5; --line-strong:#aabcc8; --teal:#12657a; --teal-soft:#e1eff3; --chart-cyan:#076b8d; --chart-amber:#a55c00; --chart-blue:#345ca5; --chart-purple:#7952a0; --graph-grid:#dce4e9; --radius:8px; }
-  html[data-theme=dark] { --bg:#101a23; --surface:#192733; --surface-alt:#20323f; --surface-strong:#2b4050; --text:#edf3f7; --muted:#b5c6d1; --line:#354b5a; --line-strong:#607887; --teal:#8ad1e0; --teal-soft:#263f4a; --chart-cyan:#7dd3ed; --chart-amber:#f1ba69; --chart-blue:#a6bbff; --chart-purple:#d4b4f2; --graph-grid:#3a4e5d; }
-  html { scroll-padding-top:0; }
-  body { font-size:16px; line-height:1.55; }
-  .workspace { max-width:1680px; padding:28px 28px; }
-  .topbar { gap:20px; padding:12px 24px; background:#142a39; border-bottom:3px solid #d7a653; }
-  .brand-name { font-size:15px; letter-spacing:.06em; }
-  .brand-sub { font-size:11px; }
-  .control-group > label, .control-group > .control-label { font-size:12px; letter-spacing:.04em; }
-  .topbar input[type=datetime-local] { width:210px; }
-  .topbar select { min-width:160px; }
-  .button, .icon-button, .panel-actions .button, .archive-buttons .button { font-size:14px; min-height:42px; }
-  .segmented button, .report-toolbar .segmented button { font-size:13px; min-height:36px; }
-  .page-heading { align-items:center; margin-bottom:18px; }
-  .page-heading h1 { font-size:30px; letter-spacing:-.025em; }
-  .eyebrow, .panel-heading .eyebrow { font:600 11px/1.4 var(--font); letter-spacing:.09em; }
-  .meta-line { font-size:14px; margin-bottom:0; }
-  .page-heading > .time-buttons { width:auto; max-width:none; display:flex; flex:0 1 auto; }
-  .page-heading > .time-buttons > .button { font:600 14px/1.3 var(--font); padding:10px 12px; min-height:42px; }
-  .page-heading .tag { font-size:10px; }
-  .section-nav { display:flex; gap:6px 24px; flex-wrap:wrap; border-bottom:1px solid var(--line-strong); padding:0 0 16px; margin-bottom:18px; }
-  .section-nav a { color:var(--text); text-decoration:none; font-size:14px; font-weight:600; padding:6px 0; border-bottom:2px solid transparent; }
-  .section-nav a:hover { color:var(--teal); border-color:var(--teal); }
-  .status-banner { font-size:13px; margin-bottom:12px; padding:10px 14px; }
-  .freshness-line { margin:0 0 18px; font-size:13px; }
-  .monitor-meta, .live-pill { font-size:12px; }
-  .context-summary { margin-bottom:24px; }
-  .summary-cell { padding:18px 16px; }
-  .summary-cell .label { font-size:12px; letter-spacing:0; text-transform:none; }
-  .summary-cell .value { font:600 clamp(19px,1.8vw,28px)/1.25 var(--mono); letter-spacing:-.045em; }
-  .summary-cell .sub { font-size:12px; line-height:1.5; }
-  .briefing-grid { grid-template-columns:minmax(0, 1fr) 390px; gap:24px; }
-  .main-column, .side-column { display:flex; gap:24px; }
-  .panel-heading { min-height:76px; padding:16px 20px; flex-wrap:wrap; }
-  .panel-heading h2 { font-size:20px; line-height:1.3; letter-spacing:-.02em; }
-  .panel-meta, .chart-caption, .cloud-status, .cloud-context, .monitor-meta, .archive-item-meta, #archive-status, .footer { font-size:13px; line-height:1.6; }
-  .panel > p.panel-meta { padding:12px 20px; }
-  .panel > p.chart-caption { padding:12px 20px; }
-  .panel-actions { flex-wrap:wrap; }
-  .panel-actions select { width:auto; max-width:100%; font-size:14px; }
-  .timeline-bar { grid-template-columns:auto minmax(70px,1fr) auto; gap:16px; padding:14px 20px; }
-  .time-help { padding:10px 20px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--line); }
-  .time-help summary { cursor:pointer; }
-  .time-help p { margin:10px 0 0; }
-  .timeline-bar .label { font-size:12px; letter-spacing:0; text-transform:none; }
-  .timeline-bar strong { font:600 14px/1.5 var(--mono); }
-  #time-convention { font-size:12px; margin:0; padding:10px 20px; background:var(--surface-alt); }
-  .charts-grid { grid-template-columns:1fr; }
-  #charts .chart-card { display:grid; grid-template-columns:200px minmax(0,1fr); gap:0 16px; padding:22px 16px; }
-  #charts .chart-reading { grid-column:1; grid-row:1 / 3; }
-  #charts .chart-surface { grid-column:2; grid-row:1; }
-  #charts .chart-legend { grid-column:2; }
-  #charts .chart-caption { grid-column:1 / -1; margin-top:12px; }
-  .chart-header { padding:0; }
-  .chart-title { font-size:16px; font-weight:650; }
-  .chart-value { display:block; margin-top:12px; font:600 17px/1.6 var(--mono); letter-spacing:-.03em; }
-  .chart-hover-value { font-size:13px; font-weight:600; line-height:1.6; color:var(--teal); padding:8px; background:var(--teal-soft); margin:8px 0 0; }
-  .chart-sample { font-size:12px; color:var(--muted); margin:8px 0; }
-  .chart-surface { min-height:0; }
-  .chart-surface svg text { font-size:14px; }
-  .chart-legend { font-size:12px; gap:8px 16px; }
-  .chart-legend i { width:20px; height:3px; }
-  .chart-caption { padding:0; }
-  .cloud-chart svg text { font-size:14px; }
-  .cloud-reading { font-size:32px; }
-  .cloud-reading > span:not(.value) { font-size:15px; }
-  .cloud-context { padding:16px 20px; }
-  #region-map { height:370px; }
-  .map-controls, .map-caption, .source-list a span, .source-list p, .source-list li, .light-item .label, .light-item .sub { font-size:13px; }
-  .leaflet-control-attribution { font-size:10px !important; }
-  .source-list a strong { font-size:15px; }
-  .light-item strong { font-size:24px; }
-  .light-item { padding:14px; }
-  .side-column .panel-heading h2 { font-size:19px; }
-  .history-controls select { font-size:14px; height:42px; }
-  .chart-card { padding:20px; }
-  .chart-unit { font-size:13px; }
-  .tag[data-tone=warn] { color:var(--amber); background:var(--amber-soft); border-color:var(--amber); }
-  .tag[data-tone=bad] { color:var(--danger); background:var(--danger-soft); border-color:var(--danger); }
-  .source-badge, .tag { font-size:11px; white-space:normal; }
-  #reports-panel { margin-top:24px; }
-  .station-overview-wrap { overflow-x:auto; }
-  .station-overview { border-collapse:collapse; width:100%; font-size:14px; text-align:left; }
-  .station-overview caption { text-align:left; padding:16px 20px; font-size:14px; font-weight:600; }
-  .station-overview th, .station-overview td { padding:14px 20px; border-bottom:1px solid var(--line); vertical-align:top; }
-  .station-overview thead { background:var(--surface-alt); font-size:12px; color:var(--muted); }
-  .station-overview small { display:block; font-size:12px; font-weight:400; color:var(--muted); margin-top:4px; }
-  .station-overview tbody tr:hover { background:var(--surface-alt); }
-  .station-grid { grid-template-columns:1fr; background:var(--surface); }
-  .station-card { padding:24px; border-top:2px solid var(--line-strong); }
-  .station-title { font-size:16px; justify-content:space-between; }
-  .station-title strong { font-size:20px; }
-  .station-pick { width:auto; justify-content:flex-start; font-size:17px; }
-  .station-meta { font-size:13px; margin-top:10px; }
-  .report-block { padding:16px 0; }
-  .report-raw { font:14px/1.7 var(--mono); padding:14px 16px; }
-  .metar-summary { display:block; padding:16px; }
-  .metar-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin:0 0 14px; }
-  .metar-metric dt { font-size:13px; color:var(--muted); margin-bottom:6px; }
-  .metar-metric dd { margin:0; font-size:16px; font-weight:600; }
-  .report-warnings { font-size:13px; line-height:1.6; padding-left:20px; }
-  .taf-periods table { font-size:14px; }
-  .taf-periods th { font-size:13px; }
-  .taf-periods th, .taf-periods td { padding:14px 16px; }
-  .taf-table th:first-child { width:22%; }
-  .taf-period-time { width:22%; }
-  .taf-period-label { display:block; margin:6px 0; }
-  .taf-interpretation { margin-bottom:12px; }
-  .report-toolbar { font-size:14px; padding:14px 20px; }
-  .comparison-item, .comparison-item strong { font-size:14px; }
-  .feed-error { font-size:14px; }
-  .archive-item-title { font-size:15px; }
-  textarea { font-size:16px; line-height:1.6; }
-  section[id], article[id] { scroll-margin-top:112px; }
-  .footer { margin-top:30px; }
-  @media (max-width:1250px) {
-    .topbar { gap:14px; flex-wrap:wrap; }
-    .brand { display:none; }
-    .header-context { gap:10px; }
-    .briefing-grid { grid-template-columns:minmax(0,1fr) 330px; }
-    .context-summary { grid-template-columns:repeat(3,minmax(0,1fr)); }
-    .summary-cell:nth-child(n+4) { border-top:1px solid var(--line); }
-    .summary-cell:nth-child(4) { border-left:0; }
-  }
-  @media (max-width:1100px) {
-    #charts .chart-card { display:block; }
-    #charts .chart-reading { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:4px 16px; margin-bottom:12px; }
-    #charts .chart-value { margin:0; }
-    #charts .chart-sample { width:100%; margin:0; }
-    .header-actions #print { display:none; }
-  }
-  @media (max-width:900px) {
-    .workspace { padding:20px 16px; }
-    .briefing-grid { grid-template-columns:minmax(0,1fr); }
-    .side-column { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
-    #region-panel { grid-column:1 / -1; }
-    .topbar { position:static; }
-    html { scroll-padding-top:0; }
-    section[id], article[id] { scroll-margin-top:16px; }
-    .page-heading { align-items:flex-start; flex-direction:column; }
-    #region-map { height:400px; }
-  }
-  @media (max-width:600px) {
-    body { min-width:320px; }
-    .workspace { padding:20px 12px; }
-    .topbar { padding:12px; }
-    .header-context { display:grid; grid-template-columns:minmax(0,1fr) auto; width:100%; flex-basis:100%; }
-    .header-context .control-group:nth-child(2) { grid-column:1 / -1; grid-row:2; }
-    .header-context .control-group:nth-child(3) { grid-column:1; grid-row:3; }
-    .header-context #now { grid-row:3; align-self:end; }
-    .header-context .segmented { display:flex; }
-    .header-context .segmented button { flex:1; font-size:14px; }
-    .topbar input[type=datetime-local], .topbar select { width:100%; min-width:0; }
-    .header-actions { position:absolute; top:30px; right:12px; }
-    .header-context .control-group:first-child { margin-right:90px; grid-column:1 / -1; }
-    .page-heading h1 { font-size:26px; }
-    .page-heading > .time-buttons { width:100%; max-width:none; gap:6px; }
-    .page-heading > .time-buttons > .tag { display:none; }
-    .page-heading > .time-buttons > .button { font-size:13px; padding:10px 8px; }
-    .section-nav { gap:4px 18px; }
-    .context-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .summary-cell { padding:14px 12px; }
-    .summary-cell .value { font-size:20px; }
-    .summary-cell:nth-child(odd) { border-left:0; }
-    .summary-cell:nth-child(even) { border-left:1px solid var(--line); }
-    .summary-cell:nth-child(n+3) { border-top:1px solid var(--line); }
-    .panel-heading { padding:16px; }
-    .panel-heading h2 { font-size:19px; }
-    .timeline-bar { grid-template-columns:1fr auto; padding:14px; }
-    .timeline-bar > input { grid-row:2; grid-column:1 / -1; }
-    .timeline-bar > .segmented { grid-column:2; grid-row:1; }
-    .timeline-bar strong { font-size:12px; }
-    .timeline-bar .segmented button { padding:5px 8px; font-size:12px; min-height:34px; }
-    #time-convention { padding:10px 14px; }
-    #charts .chart-card { padding:18px 10px; }
-    .chart-surface svg text, .cloud-chart svg text { font-size:12px; }
-    .chart-value { font-size:16px; }
-    .side-column { display:flex; }
-    .station-card { padding:16px; }
-    .station-title { display:block; }
-    .station-overview { min-width:850px; }
-    .station-overview caption { max-width:calc(100vw - 28px); }
-    .station-overview th, .station-overview td { padding:12px; }
-    .metar-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .taf-periods table, .taf-periods tbody, .taf-periods tr, .taf-periods th, .taf-periods td { display:block; width:100%; min-width:0; }
-    .taf-periods thead { display:none; }
-    .taf-periods tr { padding:12px; border-bottom:1px solid var(--line-strong); }
-    .taf-periods td, .taf-periods th { border:0; padding:6px 0; }
-    .taf-period-time br { display:none; }
-    .taf-period-label { display:inline; margin-left:8px; }
-    .station-overview th[scope=row] { position:sticky; left:0; background:var(--surface); width:180px; min-width:180px; }
-
-    .taf-periods th, .taf-periods td { padding:12px; }
-    .station-pick { font-size:16px; }
-    .report-raw { font-size:13px; }
-    .freshness-line { gap:10px; }
-    .report-toolbar .segmented button { font-size:12px; padding:6px 8px; }
-    #region-map { height:340px; }
-  }
-  @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *, *::before, *::after { animation:none !important; } }
-}
-@media print { .section-nav, .station-overview-wrap { display:none; } #reports-panel { margin-top:18px; } .chart-reading { break-inside:avoid; } }
 /* Vertical point evidence and independent observed satellite context. */
 .profile-empty,.profile-note { margin:0; padding:16px 20px; font-size:13px; line-height:1.6; }
 .profile-svg { display:block; width:100%; max-width:780px; height:auto; margin:16px auto; font:14px var(--font); fill:var(--text); }
@@ -351,3 +148,10 @@
 
 .astronomy-chart{padding:12px 16px}.astronomy-chart h3{font-size:16px;margin:8px 0}.astronomy-chart svg{width:100%;height:auto}.astronomy-chart .chart-caption{padding:0;font-size:12px}
 .section-plot [data-section-sample][aria-pressed="true"] line{stroke:var(--chart-cyan);stroke-width:2}
+
+/* Evidence grid belongs to the full chapter, not a narrow stack beside the meteogram. */
+.camera-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.camera-card{border:0;padding:0}.camera-card h3{font-size:15px}.camera-card p{font-size:12px}.camera-card img{border-radius:4px}.camera-credit{font-size:11px!important}.camera-card+.camera-card{border-left:1px solid var(--line);padding-left:18px}.camera-enlarge{overflow:hidden}.evidence-grid .observation-history .chart-card{display:block}.evidence-grid .observation-history .chart-header{margin-bottom:8px}.evidence-grid .observation-history .chart-surface{margin:0 0 8px}.evidence-grid .observation-history .chart-title{font-size:14px}.evidence-grid .satellite-credit,.evidence-grid .satellite-explanation{font-size:12px}.evidence-grid .satellite-time{font-size:13px}.source-list{padding:14px 18px}.source-list p,.source-list li{font-size:13px;line-height:1.65}.source-list pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 var(--mono)}.source-links{display:flex;gap:15px;flex-wrap:wrap;padding:0 18px 16px;font-size:12px}.source-list ul{padding-left:18px}.source-list:empty{display:none}#region-map{height:335px;background:var(--surface-alt);z-index:0}.map-controls{display:flex;padding:10px 16px;align-items:center;gap:8px;font-size:12px}.map-controls label{display:flex;align-items:center;gap:6px;white-space:nowrap}.map-controls input{width:16px;height:16px}.map-controls>span{font-size:11px}.radar-playback{display:flex;align-items:center;gap:8px;padding:0 16px 10px}.radar-playback input{min-width:50px}.radar-playback .button{padding:6px 8px;font-size:11px;min-height:34px}#radar-legend{padding:0 16px 12px}#radar-legend img{width:100%;height:auto}#radar-legend p{font-size:11px;margin:6px 0 0}#region-panel>.panel-actions:last-child{padding:0 12px 12px}.leaflet-control-attribution{font-size:9px!important}.light-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:20px}.light-item .label{font-size:12px;margin-bottom:5px}.light-item strong{font-size:25px;font-weight:600;font-variant-numeric:tabular-nums}.light-item .sub{font-size:12px;color:var(--muted)}#astronomy>p{padding:0 20px;font-size:12px;color:var(--muted)}.output-secondary{padding:12px 20px}.output-grid .button-primary{font-size:14px}.preview-toolbar .segmented{min-height:42px}.preview-toolbar .segmented button{font-size:13px}.preview-toolbar .button{min-height:42px}.section-sample table{font-size:13px}.section-plot-scroll{outline-offset:-3px}.section-output>.section-note{max-width:1000px}.route-point-grid{gap:16px}.route-point{padding:18px}.route-point h3{font-size:17px}.route-values{gap:12px}.route-values dd{font-size:15px}.route-values dt{font-size:12px}.route-model h4{font-size:15px}.route-model{margin-top:14px;padding-top:12px}.route-note{font-size:12px}.route-panel{margin-top:30px}.route-workspace{padding:0 20px 20px}.profile-table{font-size:13px}.profile-table th,.profile-table td{padding:10px 12px}.profile-note{font-size:12px}.saved-preview{width:min(1360px,96vw)}.saved-preview .dialog-header h2{font-size:19px}.preview-context,.preview-feedback{font-size:12px}.section-output h3{font-size:19px}.section-controls .button{font-size:13px}.section-surface{font-size:13px}.report-raw{border-radius:0 4px 4px 0}
+@media(max-width:1100px){.camera-grid{gap:16px}.camera-card+.camera-card{padding-left:14px}.profile-svg{max-width:650px}.output-grid{gap:20px}}
+@media(max-width:800px){.camera-grid{grid-template-columns:1fr}.camera-card+.camera-card{padding:18px 0 0;border-left:0;border-top:1px solid var(--line)}.camera-card h3{font-size:17px}.camera-card p{font-size:13px}.camera-card img{width:100%;max-height:380px;object-fit:contain;background:#111}#region-map{height:310px}.evidence-grid .satellite-image img{max-height:450px;object-fit:contain}.light-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.light-item strong{font-size:23px}.section-controls{margin-top:18px}}
+@media(max-width:520px){.light-grid{grid-template-columns:1fr 1fr;padding:16px}.profile-table th,.profile-table td{padding:0}.profile-table tr{font-size:14px}.camera-card img{max-height:none}.route-workspace{padding:0 16px 16px}.output-grid{margin-top:26px}.saved-preview .dialog-header h2{font-size:16px}.preview-toolbar{gap:8px}.preview-toolbar .button{font-size:12px;min-height:38px}.preview-toolbar .segmented button{font-size:12px}.preview-toolbar .segmented{min-height:38px}.saved-preview[open]{height:94dvh;max-height:94dvh}.imagery-dialog{max-height:94dvh}.satellite-dialog{max-height:94dvh}#imagery-large{max-height:70dvh}.chapter .panel>p.panel-meta{padding:11px 16px}}
+@media print{.camera-grid{grid-template-columns:repeat(3,1fr)}.camera-card+.camera-card{border:0;padding:0}.camera-card h3{font-size:12px}.camera-card p{font-size:9px}.camera-credit{font-size:8px!important}.evidence-grid .observation-history .chart-card{break-inside:avoid}.profile-table{font-size:10px}.profile-note,.section-note{font-size:10px}.light-grid{grid-template-columns:repeat(4,1fr)}.light-item strong{font-size:18px}.output-secondary{display:none}.source-list p{font-size:10px}.source-links{font-size:10px}.leaflet-control-container{display:none}}
