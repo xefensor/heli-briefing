@@ -2,7 +2,9 @@
 
 Date: 2026-11-01
 
-Status: accepted
+Status: partially superseded by [Research-informed redesign](0003-research-informed-redesign.md).
+
+The primary user and requirement to consult available evidence remain established. The content/workflow baseline and preservation mandate below are historical: the owner subsequently clarified that the original should be improved/rethought using all three research tracks. Its features and workflow are not an accepted specification.
 
 ## Context
 

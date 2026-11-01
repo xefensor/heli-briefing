@@ -4,12 +4,12 @@
 
 Start with [README.md](README.md), the [documentation index](docs/README.md) and [product brief](docs/product-brief.md). Read the [design document](docs/design.md) for interface work and both [data sources](docs/data/sources.md) and [data integrity](docs/data/integrity.md) for data work. Check the [decision register](docs/decisions/README.md) before treating a proposal as settled.
 
-The repository currently contains a research and documentation foundation. There is no selected application framework, production deployment or completed provider integration in this repository. Do not report planned features as implemented. Read the [original-site inventory](docs/research/original-site.md): the pilot-authored original is the content and workflow baseline. Preserve its useful briefing scope while correcting defects; do not import a rejected prototype or assume the old layout is the final design.
+The repository currently contains a research and documentation foundation. There is no selected application framework, production deployment or completed provider integration in this repository. Do not report planned features as implemented. Use the three research tracks—[pilot needs](docs/research/pilot-needs.md), [aviation interfaces](docs/research/interface-references.md) and [data sources](docs/data/sources.md)—to develop the new product. Read the [original-site inventory](docs/research/original-site.md) for contextual evidence and defects; its feature set, section order and controls are not an accepted specification. Do not import a rejected prototype.
 
 ## Product requirements
 
 - The primary user is a South Bohemian professional helicopter pilot preparing reports for others. A shift weather overview is a working assumption, not a confirmed schedule. Do not infer HEMS, aircraft capability or specific operating minima.
-- Derive requirements from the supplied original site before asking the owner to speculate. Its solar/moon information, detailed weather graphs, regional TAFs, SWL and explicit browser-print action establish a useful content and preparation baseline.
+- Consult the original and existing research before asking the owner to speculate. Treat original features as clues to information needs, not automatic requirements or proof of the pilot's actual workflow. Evaluate what to retain, rework, replace or defer against the preparation task, research and reliable data availability.
 - Preserve substantial data, graphs and original reports while reducing navigation and repeated setup.
 - Keep location, time and forecast source controls prominent and stable. Source changes must update all relevant forecast panels consistently.
 - Preserve the identities of observations, official reports, cameras and calculated astronomy when a forecast model changes.
@@ -19,6 +19,7 @@ The repository currently contains a research and documentation foundation. There
 ## Evidence and decisions
 
 - Keep owner-confirmed requirements, research observations, design inferences and unresolved decisions distinct.
+- Owner-confirmed goals and constraints take priority. Use pilot research to propose task priorities, interface research to propose presentation and interaction, and data research to establish feasible, trustworthy capabilities. Record the reasoning when these sources point in different directions; neither the old page nor a competitor is a specification.
 - A forum participant's account is qualitative evidence, not verified credentials or a representative survey.
 - Product documentation demonstrates a feature or layout; it does not establish measured usability or forecast accuracy.
 - Record factual sources with real URLs, the checked date and material limitations. Do not commit chat citation IDs or tool result IDs.

@@ -4,23 +4,23 @@
 
 Source: [pilot-authored Google Site](https://sites.google.com/view/krystof13-30). Checked on **2026-11-01** by retrieving the public page and inspecting its embedded HTML and JavaScript. The newly retrieved embed matched the earlier inspected source exactly. Embedded-source SHA-256: `3a52003d5b60d4cf87be63dc6e624ffca647b5e927204e472c45ea20f0c10ef2`.
 
-Xef identifies this as the intended pilot's own page and directs us to use it as the content and workflow reference. The primary user is a South Bohemian professional helicopter pilot preparing reports for others. A shift overview is a working assumption. The source establishes available controls and implementation, not successful live operation or the pilot's exact reporting schedule.
+Xef identifies this as the intended pilot's own page and directs us to consult it, then clarifies that the rebuild should improve/rethink it using all three research tracks. The primary user is a South Bohemian professional helicopter pilot preparing reports for others. A shift overview is a working assumption. The source establishes page content, controls and implementation, not their importance, successful live operation or the pilot's exact reporting schedule. This inventory supplies contextual evidence, not a required feature list or accepted workflow; see [decision 0003](../decisions/0003-research-informed-redesign.md).
 
 ## Observed content and controls
 
-| Area | What the original actually contains | Baseline for the rebuild |
+| Area | What the original actually contains | Information need to evaluate |
 | --- | --- | --- |
-| Location | LKCS/Planá default, LKHS/Hosín and device-GPS shortcuts. Location changes update labels, astronomy, weather queries and Windy links. | Preserve useful local shortcuts and a consistent selected-location context. |
-| Date and clocks | Date picker, today action, UTC and local clocks. | Keep date and timezone context visible; coordinate it correctly with the data being displayed. |
-| Solar information | Dawn, sunrise, sunset, dusk, solar noon, elevation/azimuth, day/night status, countdowns and a two-day solar/twilight profile. | Preserve substantial daylight and twilight information with accurate definitions. |
-| Lunar information | Phase and illuminated fraction, horizon status, rise/set with adjacent-day handling, altitude/azimuth and a two-day profile with mouse/touch inspection. | Preserve useful lunar context and distinguish astronomical values from measured lighting conditions. |
-| Current weather strip | Surface wind/direction, gust, a claimed ceiling/category, pressure/tendency, temperature/dew point/spread, visibility and a calculated QFE. | Preserve relevant quantities with honest source, time, units and calculation labels. |
-| Four visible weather graphs | Cloud/base development, pressure, temperature/dew point, and surface/gust/upper wind; all labelled as 24-hour trends. | Retain the graph depth and relationships while correcting time axes and unsupported values. |
-| Regional TAFs | LKPR, LKKB, LKPD, LKTB, LKKV and LOWL; raw, decoded or combined modes; refresh and source links. | Keep the regional report overview and original bulletin access. These stations are distinct from the selected LKCS/LKHS location. |
-| External weather inspection | Windy forecast/model and radar/lightning links. SWL image with refresh, original-source link and an enlarged view. | Preserve access to regional context; an external link is not an integrated radar or camera layer. |
-| Print intent | A footer button labelled “Tisk briefingu” calls `window.print()`. | Preserve and verify a readable browser-print output. |
+| Location | LKCS/Planá default, LKHS/Hosín and device-GPS shortcuts. Location changes update labels, astronomy, weather queries and Windy links. | Relevant local defaults and a coherent location context; assess shortcuts against the preparation task. |
+| Date and clocks | Date picker, today action, UTC and local clocks. | Clear time context coordinated with the data; redesign the controls as needed. |
+| Solar information | Dawn, sunrise, sunset, dusk, solar noon, elevation/azimuth, day/night status, countdowns and a two-day solar/twilight profile. | Useful daylight/twilight context; assess detail, prominence and profile horizon. |
+| Lunar information | Phase and illuminated fraction, horizon status, rise/set with adjacent-day handling, altitude/azimuth and a two-day profile with mouse/touch inspection. | Potential night-use/reporting context; verify relevance and distinguish calculated astronomy from measured ground light. |
+| Current weather strip | Surface wind/direction, gust, a claimed ceiling/category, pressure/tendency, temperature/dew point/spread, visibility and a calculated QFE. | Relevant quantities with honest source, time, units and definitions; reassess unsupported calculations. |
+| Four visible weather graphs | Cloud/base development, pressure, temperature/dew point, and surface/gust/upper wind; all labelled as 24-hour trends. | Rich forecast development and relationships; choose grouping, fields and horizon from tasks and supported data. |
+| Regional TAFs | LKPR, LKKB, LKPD, LKTB, LKKV and LOWL; raw, decoded or combined modes; refresh and source links. | Appropriate regional report selection and original bulletin access; the station list and reading modes can change. |
+| External weather inspection | Windy forecast/model and radar/lightning links. SWL image with refresh, original-source link and an enlarged view. | Regional and significant-weather context; evaluate integrations and links using research, coverage and rights. |
+| Print intent | A footer button labelled “Tisk briefingu” calls `window.print()`. | Readable output for other pilots; browser printing is one candidate to evaluate. |
 
-The source contains no route editor, report composer, saved-report system, recipient management, bespoke PDF generator or camera integration. Adding these is new scope. There is no custom print stylesheet, and successful printing inside Google Sites was not tested.
+The source contains no route editor, report composer, saved-report system, recipient management, bespoke PDF generator or camera integration. These remain proposed scope to assess against the same task, research and feasibility criteria. Absence from the original does not determine priority. There is no custom print stylesheet, and successful printing inside Google Sites was not tested.
 
 ## Actual sources
 
@@ -46,4 +46,4 @@ The original's displayed VFR/category conventions and night labels do not establ
 
 The section order suggests a preparation worksheet: select base/date, inspect daylight and lunar context, assess weather trends and regional reports, inspect SWL, and print when useful. The user confirms that the pilot prepares reports for others. The source does not show how the final report is composed, delivered or scheduled.
 
-Use this evidence to establish a complete web briefing and verified print output before inventing a report-management workflow. Preserve the useful depth while making source switching, time selection and data reliability work consistently. The final visual arrangement remains a design decision.
+Treat this as a workflow hypothesis. The [pilot-needs research](pilot-needs.md), [interface research](interface-references.md) and [data catalogue](../data/sources.md) guide what to retain, rework, replace or defer. The new briefing may use a different order, control model and output flow. Preserve owner-requested information depth and low interaction cost while validating the preparation task; no observed widget or old sequence is mandatory solely because it appears here.

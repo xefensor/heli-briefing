@@ -8,8 +8,8 @@ The repository starts with documentation. Later stages describe proposed work an
 - [x] Preserve pilot-needs research and interface references with source links.
 - [x] Record provider access, capability, licensing and data-integrity constraints.
 - [x] Add repository guidance, contribution guidance and documentation checks.
-- [x] Establish the initial user/context: a South Bohemian professional pilot preparing reports for others, using the pilot-authored original as the content/workflow reference.
-- [ ] Resolve only consequential operation-specific details that cannot be inferred from the original; shift cadence remains tentative.
+- [x] Establish the initial user/context: a South Bohemian professional pilot preparing reports for others, with the original as contextual evidence and the three research tracks guiding the rebuild.
+- [ ] Resolve only consequential operation-specific details not established by available evidence; shift cadence remains tentative.
 - [ ] Select the project licence and any required data agreements.
 
 ## Prove the data path
@@ -27,11 +27,12 @@ Acceptance: real source values, provenance, defined time/height references and h
 
 ## Validate the interaction model
 
-- Sketch a briefing that preserves the original's astronomy, detailed graphs, regional TAFs, SWL and printing intent, with effective source controls.
+- Synthesize pilot needs, aviation interface patterns and data capabilities into a coherent preparation flow with rich graphs, inspectable evidence and effective source controls.
+- Assess major original features and proposed additions: retain, rework, replace or defer each with a brief task/evidence/data rationale. Do not require feature parity, the original section order or the same chart count.
 - Compare a quick weather check, point inspection and an optional route briefing.
 - Define how time selection differs from departure/passage time.
 - Keep original reports and local evidence accessible with few repeated actions.
-- Validate desktop, tablet, narrow-screen and browser-print behaviour, readable labels and touch/keyboard interaction.
+- Evaluate readable output for other pilots, with browser printing as one candidate; validate the selected output alongside desktop, tablet, narrow-screen, readable labels and touch/keyboard interaction.
 - Use realistic missing-data and disagreement cases in the prototype.
 
 Acceptance: a pilot can identify the viewing location, time, source, age and significant missing information without opening configuration. Compare sources without losing location or time. Agree the first-version layout before broad implementation.
@@ -59,9 +60,9 @@ Formal operational suitability or approval is not established by a source being 
 
 ## Questions to resolve
 
-1. Which reporting cadence or operation-specific requirement materially changes the original preparation workflow? Do not ask the owner to guess details the original already demonstrates.
+1. Which reporting cadence or operation-specific requirement materially changes the proposed preparation workflow? First use the existing evidence and ask the owner only about consequential gaps, one question at a time.
 2. Which VFR/IFR, aircraft or night-use requirements need direct confirmation from the pilot?
-3. What additional geography and forecast horizon are needed beyond the original's South Bohemian and regional context?
+3. What geography, regional report set and forecast horizon best support the confirmed South Bohemian preparation role?
 4. Which raw datasets are worth direct ingestion, and where does an aggregator offer enough value?
 5. Which camera, aviation-chart, NOTAM and airspace reuse agreements are needed?
 6. Which application stack and hosting can support the validated data path?

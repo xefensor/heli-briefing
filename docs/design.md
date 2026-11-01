@@ -4,13 +4,13 @@ Status: recommendations for a fresh product · Updated: 2026-11-01
 
 [Repository overview](../README.md) · [Product brief](product-brief.md)
 
-The confirmed direction is a helicopter-focused briefing with rich data and graphs, few avoidable clicks, meaningful persistent source controls and real working data. The primary pilot prepares reports for others in South Bohemia. The [pilot-authored original](research/original-site.md) is the content and workflow baseline; its layout and defects are not the design specification. ABS styling is optional. Exact layout, linked timeline, component system and application stack remain design choices.
+The confirmed direction is a helicopter-focused briefing with rich data and graphs, few avoidable clicks, meaningful persistent source controls and real working data. The primary pilot prepares reports for others in South Bohemia. Develop a new design from the three research tracks, using the [pilot-authored original](research/original-site.md) as contextual evidence of possible needs and defects. Its features, order and workflow can change. ABS styling is optional. Exact layout, linked timeline, component system and application stack remain design choices.
 
-## Original briefing scope
+## Synthesize the evidence into a new briefing
 
-Preserve the original's location/date controls, substantial solar and lunar sections, four weather trend graphs, regional TAF reading modes, SWL chart inspection and print access. Improve their consistency and reliability. Treat a region map, route editor, integrated cameras, report composer or custom PDF workflow as additional recommendations rather than replacements for the briefing content already demonstrated.
+Use [pilot-needs research](research/pilot-needs.md) to propose task priorities, [aviation interface research](research/interface-references.md) to develop presentation and interaction, and [data research](data/sources.md) to establish honest capabilities. The original's astronomy, weather graphs, regional reports, SWL and print action are candidates to assess within that synthesis. A map, cameras or route context can be prioritized when the task and evidence justify them; absence from the original is not a reason to defer them automatically.
 
-The print button establishes intent, not a verified printing implementation. Design a readable print version with explicit briefing context and source/validity times. Source inspection found no print stylesheet or bespoke PDF generator. Likewise, fix the ineffective original model/profile controls and date/weather mismatch instead of preserving those behaviours.
+For each major feature, record whether to retain, rework, replace or defer it and why. Preserve the owner-requested graph depth and direct access to evidence without locking the design to four charts, two-day astronomy profiles, old reading modes or section order. Prioritize a coherent preparation flow over individual widgets. Treat output for other pilots as a product task; browser printing is one candidate, and any chosen output needs explicit briefing context and source/validity times. Source inspection found print intent but no custom print stylesheet, bespoke PDF generator or verified printing implementation.
 
 ## Design approach to evaluate
 
@@ -40,7 +40,7 @@ The final scope must choose the core set; these are recommendations, not a claim
 - **Regional evidence:** radar/satellite, significant-weather products and warnings. A source switch should not erase a different authoritative product merely because it comes from another provider.
 - **Station reports:** station identity, issue/observation time, age, validity and forecast change periods; original text alongside an optional interpretation. A compact overview should lead directly to evidence.
 - **Cameras:** location, view direction where known and image timestamp. A loading failure, old image or reference image must not look live. Availability and reuse rights are unresolved.
-- **Light:** dawn, sunrise, sunset, civil dusk and selected-date context, plus the original's lunar event times, phase/altitude information and two-day profiles. Preserve their useful depth while correcting calculations and labels; lunar fraction alone does not measure usable ground light.
+- **Light:** dawn, sunrise, sunset, civil dusk and selected-date context. Evaluate lunar event times, phase/altitude information and profiles according to reporting and night-use needs, with supporting detail placed where it helps. Lunar fraction alone does not measure usable ground light.
 - **Optional flight context:** route, terrain, timing and alternate comparison without making route entry a prerequisite for checking a region or location.
 
 Do not hide the agreed core graphs behind “advanced” accordions. Use expansion for supporting explanation, dense tables or enlarged inspection. Conversely, showing the same readings in a large summary, chart footer and another panel can add bulk without adding evidence.
@@ -65,6 +65,6 @@ These are observed documentation patterns and design interpretations, not instru
 
 ## Evidence boundaries and validation
 
-User requests establish the need for richness and low friction; they do not select a final panel arrangement. The original establishes the intended pilot's content and print intent. Forum comments establish individual use cases, not population-wide preferences. Official product manuals show interface mechanics, not proof that those mechanics fit this preparation workflow. South Bohemia is the initial confirmed context; a HEMS-only audience has not been established. Offline use, alerts, saved locations and automatic assessments remain proposals or open decisions.
+User requests establish the need for richness and low friction; they do not select a final panel arrangement. The original establishes page content and print intent, not a validated preparation workflow or feature priority. Forum comments establish individual use cases, not population-wide preferences. Official product manuals show interface mechanics, not proof that those mechanics fit this preparation workflow. South Bohemia is the initial confirmed context; a HEMS-only audience has not been established. Offline use, alerts, saved locations and automatic assessments remain proposals or open decisions.
 
 Before accepting a design, verify that a pilot can identify the selected place, forecast source and time context; compare the agreed graphs; find a report's station and age; distinguish a model from an observation; and inspect missing or conflicting data without reconstructing context. Repeat on the intended mobile/tablet sizes and with keyboard/screen-reader access. Record what was tested, what failed and what Xef accepted; do not report a proposed interaction as implemented or validated.

@@ -2,9 +2,9 @@
 
 Date: 2026-11-01
 
-Status: partially superseded by [Use the pilot-authored original as the content and workflow baseline](0002-original-site-workflow-baseline.md).
+Status: clarified by [Research-informed redesign](0003-research-informed-redesign.md), following the intervening [original-site baseline decision](0002-original-site-workflow-baseline.md).
 
-The research-first and fresh implementation directions remain in effect. The historical exclusion of the original as a feature inventory below was superseded when the owner clarified its role as the intended pilot's own working reference.
+The research-first and fresh implementation directions remain in effect. Decision 0002 briefly treated the original as a content/workflow baseline. Decision 0003 records the owner's clarification: use it as contextual evidence while redesigning through all three research tracks. It is not a required feature inventory or accepted workflow.
 
 ## Context
 

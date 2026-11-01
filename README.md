@@ -4,7 +4,7 @@ A helicopter weather and briefing workspace for a South Bohemian professional pi
 
 The goal is to bring a regional weather picture, detailed graphs, local observations and source comparison into a coherent interface with few repeated actions. Information depth and simple interaction are both requirements.
 
-**Status:** research and documentation foundation. This repository does not yet contain the new application. The pilot-authored original Google Site is the content and workflow reference; its layout and implementation defects are not a requirement to copy. The exact reporting schedule, application stack, hosting and some data agreements remain open.
+**Status:** research and documentation foundation. This repository does not yet contain the new application. The rebuild is guided by research into pilot needs, aviation interfaces and data sources. The pilot-authored original Google Site supplies context and candidate information needs; its features and workflow are open to redesign. The exact reporting schedule, application stack, hosting and some data agreements remain open.
 
 ## Start here
 

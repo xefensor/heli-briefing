@@ -7,8 +7,8 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 | Decision | Basis |
 | --- | --- |
 | Use the `heli-briefing` repository for project documentation and guidance. | The owner created the repository and authorised setup through the GitHub connector. |
-| [Start fresh with research before rebuilding](0001-research-before-rebuild.md), qualified by the later source-baseline decision. | Rejected redesigns are not the implementation starting point; the original's useful content is retained as evidence. |
-| [Use the pilot-authored original as the content and workflow baseline](0002-original-site-workflow-baseline.md). | The owner clarified the primary user and explicitly directed us to derive requirements from the original instead of asking him to speculate. |
+| [Rebuild using all three research tracks](0003-research-informed-redesign.md). | The owner clarified that the original is a starting point to improve/rethink using pilot-needs, aviation-interface and data-source research. Its features and workflow are not an accepted specification. |
+| Use the original as contextual evidence before asking the owner to speculate. | The owner identified the primary user and directed us to inspect the pilot-authored page. Its information needs and defects are recorded in the [inventory](../research/original-site.md). |
 | Preserve rich data and graphs while reducing repeated interaction. | Explicit owner feedback on previous iterations. |
 | Keep meaningful global controls prominent, including forecast source selection. | Explicit owner feedback on header and source behaviour. |
 | Use a helicopter theme; ABS styling is optional. | Explicit owner direction. |
@@ -21,6 +21,10 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 | Backend adapters, bounded caching and separate large-file ingestion. | Provider constraints and data size support these responsibilities; implementation stack remains open. |
 | Coordinated map, detailed graphs, local evidence and optional route profile. | Supported by pilot research and interface references; exact first-version workflow and layout need validation. |
 | A continuous viewing timeline with distinct observation, forecast and route-passage semantics. | Reduces duplicated navigation while preserving temporal meaning; exact controls remain a design choice. |
+
+## Decision history
+
+[Decision 0001](0001-research-before-rebuild.md) established the fresh start and research-first approach. [Decision 0002](0002-original-site-workflow-baseline.md) then anchored scope too strongly to the pilot-authored original. [Decision 0003](0003-research-informed-redesign.md) clarifies the current direction: keep the original as evidence and use the three research tracks to redesign the product. The primary user, information depth and low-friction requirements remain established.
 
 ## Open
 
