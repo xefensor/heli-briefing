@@ -2,7 +2,7 @@
 
 Date: 2026-11-01
 
-Status: implemented locally; publication verification pending
+Status: core iteration published; final asset-version deployment pending
 
 ## Context and three-study review
 
@@ -28,6 +28,12 @@ A local browser check reproduced an existing continuity defect: pressing **Teď*
 - **Kopírovat odkaz** always constructs a timestamp-bearing inspection link without changing the current page's live mode. Explain that recipients retrieve data afresh. The frozen briefing remains the path for preserving actual captured data. A labelled selectable input handles denied clipboard access.
 - Use N/S/E/W labels consistently for entered coordinates in the main context and saved HTML/text; do not display a negative latitude as north or a negative longitude as east.
 
+## Release consistency
+
+The core saved-point deployment succeeded, but a subsequent live check still showed the old alias-selection behavior after its correction had deployed. Cache reuse or deployment propagation is the inference; browser network/cache internals were not inspected. The build now moves scripts, styles, favicon and vendored dependencies together under a content-derived `assets/<version>/` directory and rewrites the HTML entry URLs. Relative module imports remain intact. Runtime weather snapshots stay under `data/` with their original source timestamps and freshness behavior. Weather-only scheduled updates do not invalidate application assets; application/HTML changes produce a different version.
+
+The first relocation regression also detected that unused default Leaflet marker/layer image files were never bundled in the original source. Current map rendering uses circle markers and no layer control; this iteration does not claim those unused icons are available. Add their licensed assets before using those Leaflet features.
+
 ## Alternatives and consequences
 
 Remembering an entire previous session would also restore stale inspection times and requires a different preference decision. This iteration saves explicit points only. A shared/account-backed list would require identity/storage infrastructure, which remains unselected. A route editor is a separate task; points are not a route or terrain cross-section.
@@ -40,8 +46,9 @@ The editor keeps frequent use in one existing dropdown. Supporting entry/managem
 - Local browser checks: Czech decimal-comma entry, save/recall across reload, preserved ICON-D2/ECMWF comparison context, deletion/undo, invalid latitude rejection and a timestamp-bearing copied link while the page remained live.
 - Narrow-screen check: 390 px QA viewport, 375 px content; dialog client and scroll widths match with no horizontal overflow. Input autofocus and stacked actions were visually inspected.
 - Deterministic checks cover coordinate validation/zero, storage denial/quota/corruption/version handling, coordinate collisions, capacity without eviction, edit/delete/undo, time serialization and repeated-hour absolute instants.
-- All 135 local tests passed (101 JavaScript and 34 Python); build emitted 30 static files; documentation checker passed for 26 tracked Markdown files. Pinned-time temporary-point selection and pinned reload were also confirmed in the local browser.
-- Publication and live checks will be recorded after completion. Native download/print verification and actual pilot validation remain outstanding.
+- All 137 local tests passed (103 JavaScript and 34 Python); build emitted 30 static files; documentation checker passed for 26 tracked Markdown files. Pinned-time temporary-point selection and pinned reload were also confirmed in the local browser.
+- Initial publication run [41326998280](https://github.com/xefensor/heli-briefing/actions/runs/41326998280) succeeded. Live HTTPS checks confirmed point save/recall across reload, live mode retained, timestamp-bearing clipboard sharing without pinning the sender, eight forecast charts and nine regional station rows. Final versioned-asset publication and alias verification will be recorded after completion.
+- Build regressions verify every HTML asset and local module import resolves after relocation, and data-only changes leave the asset version stable while module changes change it. Native download/print verification and actual pilot validation remain outstanding.
 
 ## Whole-project status
 
