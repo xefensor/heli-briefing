@@ -350,3 +350,4 @@
 @media print{.imagery-dialog{display:none}.camera-card{break-inside:avoid}.camera-card img{max-height:220px;object-fit:contain}#aviation-chart-content{display:block}.aviation-chart{break-inside:avoid}.section-sample table{min-width:0}}
 
 .astronomy-chart{padding:12px 16px}.astronomy-chart h3{font-size:16px;margin:8px 0}.astronomy-chart svg{width:100%;height:auto}.astronomy-chart .chart-caption{padding:0;font-size:12px}
+.section-plot [data-section-sample][aria-pressed="true"] line{stroke:var(--chart-cyan);stroke-width:2}

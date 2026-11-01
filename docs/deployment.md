@@ -109,4 +109,7 @@ Desktop content width equalled scroll width (1348 px); the 390 px mobile iframe 
 
 The supported cloud-browser download check timed out waiting for its native download event and returned no file path. The normal print action exposed no native output artifact. These are **unverified native save/print checks**, not evidence that the HTML payload is invalid or that target-browser delivery works. The complete HTML preview, embedded images, copy, archive persistence and deterministic offline-content checks passed. Actual target-device file reopen/PDF acceptance remains on the pilot checklist. No browser-internal downloads page, alternate browser driver or sandbox bypass was used.
 
-Publication and public-HTTPS verification for this scope are recorded below after the actual deployment completes.
+Initial publication for this scope succeeded in [Pages run 41339510300](https://github.com/xefensor/heli-briefing/actions/runs/41339510300) for application commit `02afd018773b53b493fb557afdec246d639f147b`. The final validation follow-up and public-HTTPS evidence are recorded below.
+
+
+The validation follow-up [Pages run 41339822041](https://github.com/xefensor/heli-briefing/actions/runs/41339822041) succeeded for commit `a241a0198d609374d10dbf9e414ed857e0320055`. Public HTTPS loaded asset version `2d610ccb8fd6093fbbd4`, all eight forecast graphs and the new astronomy graph. The live route produced 17/17 vertical columns and 257/257 terrain samples. Its captured full briefing rendered four route-section plots and seven successfully decoded embedded images (satellite, three cameras, SWL, low-cloud and radar), and saved in the browser archive. Final archive-copy cleanup and its release evidence follow below.

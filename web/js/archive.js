@@ -264,7 +264,12 @@ export function saveBriefing(snapshot, storage) {
 }
 
 export function deleteBriefing(id, storage) {
-  if (!storage && globalThis.indexedDB) return databaseArchive(previous=>{const items=previous.filter(item=>item.id!==id);return {items,result:metadata(items)};});
+  if (!storage && globalThis.indexedDB) {
+    // A migrated legacy copy must not survive an explicit browser-archive deletion.
+    // Remove it first: a failed database transaction still retains the primary copy.
+    deleteBriefing(id, storageOrThrow());
+    return databaseArchive(previous=>{const items=previous.filter(item=>item.id!==id);return {items,result:metadata(items)};});
+  }
   const target = storageOrThrow(storage);
   const items = readArchive(target).filter((item) => item.id !== id);
   try { target.setItem(ARCHIVE_KEY, JSON.stringify({ schemaVersion: 1, items })); }

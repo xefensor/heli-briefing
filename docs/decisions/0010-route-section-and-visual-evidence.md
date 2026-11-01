@@ -1,6 +1,6 @@
 # 0010 · Route sections and licensed visual evidence
 
-Date: 2026-11-01. Status: implemented locally; publication evidence is recorded in the deployment guide.
+Date: 2026-11-01. Status: implemented and published; source, deployment and live verification evidence are recorded in the deployment guide.
 
 ## Context and three-study check
 
@@ -24,7 +24,7 @@ A deployment collector includes only three verified ČHMÚ-authored cameras: Če
 
 A second collector binds SWL metadata to its image using stable before/after issue metadata and the image API's issue description. The low-cloud layer uses the provider's explicit EPSG:3857 bounds and advertised three-hour time inventory; missing frames remain missing. Low-cloud issuance is **unknown**, not inferred from the beginning of the timeline or forecast split. The source's cloudy/clear/no-data colours and original heights require its legend. This product remains independent of the selected main model.
 
-The low-cloud image can overlay the existing map; activation turns observed radar off. Automatic time updates never scroll the page. Original-resolution camera/chart inspection uses one native dialog. Full briefings capture three JPEGs and the relevant SWL/low-cloud PNGs inline, retaining their provenance and source-review warnings. Failed image capture becomes an explicit unavailable state. Image-rich snapshots exceeded the previous localStorage budget in browser QA. The archive now uses atomic IndexedDB storage with up to ten records / 20 MB serialized data, preserves legacy snapshots through one-time copying, and retains the 5 MB legacy path when IndexedDB is absent. Write/quota failures preserve older records and leave the new preview available for download. Compact METAR/TAF output remains a report pack. The existing astronomy calculation also supplies a 48-hour sun/moon altitude graph at 30-minute intervals from the selected UTC day, with a labelled civil −6° solar reference; it does not model the terrain horizon or actual ground illumination.
+The low-cloud image can overlay the existing map; activation turns observed radar off. Automatic time updates never scroll the page. Original-resolution camera/chart inspection uses one native dialog. Full briefings capture three JPEGs and the relevant SWL/low-cloud PNGs inline, retaining their provenance and source-review warnings. Failed image capture becomes an explicit unavailable state. Image-rich snapshots exceeded the previous localStorage budget in browser QA. The archive now uses atomic IndexedDB storage with up to ten records / 20 MB serialized data, preserves legacy snapshots through one-time copying (explicit deletion also removes the matching legacy copy), and retains the 5 MB legacy path when IndexedDB is absent. Write/quota failures preserve older records and leave the new preview available for download. Compact METAR/TAF output remains a report pack. The existing astronomy calculation also supplies a 48-hour sun/moon altitude graph at 30-minute intervals from the selected UTC day, with a labelled civil −6° solar reference; it does not model the terrain horizon or actual ground illumination.
 
 ## Primary-source recheck · 2026-11-01
 
