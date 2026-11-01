@@ -1,4 +1,46 @@
 /* Briefing workspace: scan a region, read an aligned forecast, inspect evidence. */
+.route-panel { margin-top:24px; }
+.route-workspace { padding:0 20px 20px; }
+.route-workspace label { display:block; font-size:14px; font-weight:600; margin-bottom:6px; }
+.route-add-row,.route-time-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:16px 0; }
+.route-add-row > div { flex:1; min-width:180px; max-width:480px; }
+.route-time-row > div { width:250px; }
+.route-add-row small { display:block; color:var(--muted); font-size:13px; margin-top:4px; }
+.route-workspace input,.route-workspace select { font-size:16px; min-height:44px; }
+.route-editor { list-style:none; padding:0; margin:18px 0; }
+.route-editor-point { display:grid; grid-template-columns:minmax(0,1fr) 195px auto; align-items:center; gap:16px; border-top:1px solid var(--line); padding:14px 0; }
+.route-editor-point strong,.route-editor-point small { display:block; overflow-wrap:anywhere; }
+.route-editor-point small { font-size:13px; color:var(--muted); }
+.route-editor-point label { font-size:13px; margin:0; }
+.route-editor-point input { margin-top:6px; }
+.route-editor-actions { display:flex; gap:6px; flex-wrap:wrap; }
+.route-editor-actions .button { min-width:42px; }
+.route-note,.route-provenance,.route-ceiling { font-size:13px; line-height:1.6; color:var(--muted); }
+.route-feedback { font-size:14px; color:var(--teal); }
+.route-feedback:empty,#route-storage:empty { display:none; }
+.route-point-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.route-point { padding:20px; border:1px solid var(--line-strong); border-radius:6px; min-width:0; overflow-wrap:anywhere; }
+.route-point h3 { margin:0; font-size:19px; }
+.route-point header > p { margin:8px 0; font-size:13px; color:var(--muted); }
+.route-point header > strong { display:block; font-size:15px; }
+.route-inspect { font:inherit; color:var(--teal); background:none; border:0; text-align:left; padding:4px 0; cursor:pointer; }
+.route-inspect:hover { text-decoration:underline; }
+.route-model { border-top:1px solid var(--line); margin-top:18px; padding-top:16px; }
+.route-model h4 { margin:0; font-size:16px; }
+.route-model h4 span { display:block; font-size:13px; font-weight:400; margin-top:4px; }
+.route-values { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:16px 0; }
+.route-values dt { font-size:13px; color:var(--muted); }
+.route-values dd { margin:4px 0 0; font-size:17px; font-weight:600; }
+.route-attention { color:var(--amber); font-size:14px; }
+.route-provenance summary { cursor:pointer; }
+.route-ceiling { border-top:1px solid var(--line-strong); padding-top:14px; }
+.route-chart svg { display:block; width:100%; height:auto; }
+.route-chart svg text { font:14px var(--font); fill:var(--text); }
+.route-chart h3 { margin-bottom:0; font-size:17px; }
+.route-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; margin:20px 0; }
+@media (max-width:900px) { .route-point-grid,.route-charts { grid-template-columns:1fr; } .route-editor-point { grid-template-columns:minmax(0,1fr) 180px; } .route-editor-actions { grid-column:1/-1; } }
+@media (max-width:600px) { .route-workspace { padding:0 14px 16px; } .route-point { padding:16px; } .route-values { grid-template-columns:repeat(2,minmax(0,1fr)); } .route-editor-point { display:block; } .route-editor-point label { margin:12px 0; } .route-time-row > div { width:100%; } .route-editor-actions { margin-top:12px; } .route-add-row { align-items:flex-end; } .route-add-row > div { max-width:100%; } }
+@media print { .route-charts { display:block; } .route-add-row,.route-time-row,.route-editor,#route-clear,#route-undo,#route-empty,#route-feedback,#route-storage,#route-time-help { display:none; } .route-point-grid { grid-template-columns:1fr; } .route-point { break-inside:avoid; } .route-chart { break-inside:avoid; } }
 .share-feedback:empty { display:none; }
 .topbar #location { width:230px; max-width:100%; }
 #place-title { overflow-wrap:anywhere; }

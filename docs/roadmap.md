@@ -37,6 +37,15 @@ The whole project remains **incomplete**. Check the remaining feature/access/val
 - [x] Preserve live mode across reload while keeping copied inspection links explicitly pinned.
 - [x] Publish and record final verification, including versioned application assets; see [decision 0008](decisions/0008-saved-points-and-time-continuity.md).
 
+## Route-point briefing
+
+- [x] Add up to six route points, independent departure and user-entered leg times with honest timing gaps.
+- [x] Coordinate main/comparison models, native ceiling, discrete charts, map connectors and frozen full output.
+- [x] Check timing/failure cases and selected desktop/mobile interactions locally.
+- [ ] Publish and record live verification; see [decision 0009](decisions/0009-route-point-weather.md).
+
+Continuous weather/terrain sections and actual pilot validation remain separate open work.
+
 ## Foundation
 
 - [x] Capture the owner requirements and separate recommendations from decisions.

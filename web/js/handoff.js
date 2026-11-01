@@ -2,6 +2,7 @@ import {escapeHtml as esc} from './charts.js';
 import {formatNumber,formatTime,formatCoordinates,reportState} from './briefing.js';
 import {nearestTimeIndex} from './weather.js';
 import {satelliteState} from './satellite.js';
+import {routeText} from './route.js';
 
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
 const value=(number,unit='',digits=0)=>finite(number)?`${formatNumber(number,digits)}${unit?' '+unit:''}`:'—';
@@ -12,6 +13,7 @@ const array=value=>Array.isArray(value)?value:[];
 export function sourceReview(snapshot,{mode='full'}={}) {
  const now=Date.parse(snapshot.createdAt), selected=Date.parse(snapshot.state.time), rows=[];
  if(mode==='full'){
+  if(snapshot.route?.rows?.length){const route=snapshot.route,missing=route.loading||route.rows.some(row=>!row.passageAt||row.samples.some(sample=>sample.status!=='available'||sample.stale)||row.ceiling.status!=='available'||row.ceiling.stale);rows.push({name:'Trasa',tone:missing?'warn':'neutral',text:`${route.rows.length} bodů${missing?' · neúplné / starší vzorky nebo probíhající obnova':' · zachycené bodové vzorky'}`});}
   const f=snapshot.forecast,i=f?nearestTimeIndex(f.times,snapshot.state.time):-1;
   const missing=i<0||['wind','temperature','visibility'].some(key=>!finite(f?.hourly?.[key]?.[i]));
   rows.push({name:f?.label||'Předpověď',tone:!f||missing||f.transport?.stale?'warn':'neutral',text:!f?'Nedostupná':missing?'Vybraný vzorek má chybějící hodnoty':f.transport?.stale?'Starší data po chybě obnovy':`Hodinový vzorek ${stamp(f.times[i],snapshot.state.timezone)}`});
@@ -67,6 +69,7 @@ export function formatBriefingText(snapshot,{mode='full'}={}){
   lines.push('','MODELOVÝ VZOREK',...selectedForecastLines(snapshot));
   if(snapshot.comparison)lines.push('','POROVNÁVACÍ MODEL',...selectedForecastLines({...snapshot,forecast:snapshot.comparison}));
   const cloud=snapshot.clouds;lines.push(`Samostatný ICON-D2 CEILING: ${cloud?.status==='available'?value(cloud.valueMsl,'m MSL'):'nedostupný'} · vzorek ${stamp(cloud?.validAt,zone)}. Není pozorovaný ceiling ani AGL.`);
+  lines.push(...routeText(snapshot.route,zone));
  }
  lines.push('','REGIONÁLNÍ ORIGINÁLNÍ ZPRÁVY');
  for(const station of stations(snapshot))lines.push('',station,bulletin(snapshot,'metar',station),bulletin(snapshot,'taf',station));

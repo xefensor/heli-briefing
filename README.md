@@ -14,6 +14,8 @@ The goal is to bring a regional weather picture, detailed graphs, local observat
 
 **Point and time refinement:** direct coordinate entry, named browser-local points and live-mode reload continuity; [scope and verification](docs/decisions/0008-saved-points-and-time-continuity.md).
 
+**Route-point briefing:** up to six points, independent departure, user-entered passage timing, coordinated model comparison, discrete weather charts and frozen route output. [Scope and verification](docs/decisions/0009-route-point-weather.md). Continuous terrain/route cross-sections remain open.
+
 ## Start here
 
 - [Documentation index](docs/README.md)

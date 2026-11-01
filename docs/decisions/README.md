@@ -21,6 +21,8 @@ The continuing handoff and UX work is recorded in [decision 0007](0007-briefing-
 
 The next continuity refinement is [saved points and live/pinned navigation](0008-saved-points-and-time-continuity.md).
 
+The first bounded route capability is [route-point weather and independent departure time](0009-route-point-weather.md).
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |

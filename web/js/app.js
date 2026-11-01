@@ -5,6 +5,8 @@ import { renderChart, escapeHtml as esc } from './charts.js';
 import { getAstronomy } from './astro.js';
 import { formatNumber as num, formatTime as clock, ageLabel, reportState, toDateTimeInput, fromDateTimeInput, parseSharedState, sharedSearch, formatCoordinates, haversineKm } from './briefing.js';
 import { mountPlaceControls } from './place-controls.js';
+import { mountRouteWorkspace } from './route-controls.js';
+import { readPlaces } from './places.js';
 import { renderMetarSummary, renderTafPeriods } from './report-views.js';
 import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
@@ -47,6 +49,7 @@ let map = null;
 let pointMarker = null;
 let radarLayer = null;
 let stationsLayer = null;
+let routeLayer = null;
 let loadError = null;
 let loading = false;
 let compareError = null;
@@ -89,6 +92,12 @@ document.documentElement.dataset.theme = restore('theme') || 'light';
 $('notes').value = restore('notes') || '';
 reportView = ['both', 'summary', 'raw'].includes(restore('report-view')) ? restore('report-view') : 'both';
 const placeControls = mountPlaceControls({ getCurrent: () => state, onChoose: choosePlace });
+const routeWorkspace = mountRouteWorkspace({ getContext: () => state,
+  getChoices: () => [...Object.values(PLACES), ...(readPlaces({ getItem: key => localStorage.getItem(key) }).places || [])],
+  getClouds: () => ({ clouds, cloudError }), onGeometry: drawRoute,
+  onInspect: point => { choosePlace(point.lat, point.lon, point.name); if (point.passageAt) selectTime(point.passageAt); $('forecast-panel').scrollIntoView({ behavior: 'smooth' }); },
+  onMap: points => { if (map && points.length) map.fitBounds(points.map(point => [point.lat, point.lon]), { padding: [25, 25], maxZoom: 11 }); $('region-panel').scrollIntoView({ behavior: 'smooth' }); },
+});
 
 function writeUrl() {
   const url = new URL(location.href);
@@ -99,6 +108,7 @@ function writeUrl() {
 
 function updateControls() {
   placeControls.update();
+  routeWorkspace.sync();
   document.querySelectorAll('[data-model]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.model === state.model)));
   document.querySelectorAll('[data-hours]').forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.hours) === state.hours)));
   if (document.activeElement !== $('inspection-time')) $('inspection-time').value = toDateTimeInput(state.time, state.timezone);
@@ -296,6 +306,16 @@ function renderSigmets() {
   $('sigmets').innerHTML = status + (active.length ? active.map((item) => `<details class="report-details" open><summary>${esc(item.fir || 'SIGMET')} · ${esc(fullTime(item.validTo))}</summary><pre class="report-raw">${esc(item.raw)}</pre></details>`).join('') : `<p class="muted">V balíčku není SIGMET s platností pro vybraný čas a FIR LKAA / LOVV / EDMM / LZBB. Ověř aktuální zdroj; nejde o potvrzení bez výstrah.</p>`) + (unknown ? `<p class="feed-error">${unknown} zpráv má neznámou platnost; nelze určit překryv.</p>` : '') + (Date.parse(state.time) > Date.now() + 3600000 ? '<p class="chart-caption">Aktuální balíček nepředpovídá, jaké výstrahy budou vydány v budoucnu.</p>' : '') + `<p class="chart-caption">SIGMET stažen ${section.retrievedAt ? esc(fullTime(section.retrievedAt)) : '—'}.</p>`;
 }
 
+function drawRoute(points) {
+  if (!map || !window.L) return;
+  routeLayer?.remove();
+  const L = window.L;
+  routeLayer = L.layerGroup();
+  if (points.length > 1) L.polyline(points.map(point => [point.lat, point.lon]), { color: '#a86b13', weight: 3, dashArray: '7 6' }).bindTooltip('Spojnice zadaných bodů · není ověřenou letovou trasou').addTo(routeLayer);
+  points.forEach((point, index) => L.circleMarker([point.lat, point.lon], { radius: 6, color: '#a86b13', fillColor: '#fff', fillOpacity: 1, weight: 3 }).bindTooltip(`${index + 1}. ${esc(point.name)}`).addTo(routeLayer));
+  routeLayer.addTo(map);
+}
+
 function initMap() {
   if (!window.L) { $('region-map').innerHTML = '<p class="empty-state">Mapovou knihovnu se nepodařilo načíst. Místo lze stále vybrat v záhlaví.</p>'; return; }
   const L = window.L;
@@ -305,6 +325,7 @@ function initMap() {
   pointMarker = L.circleMarker([state.lat, state.lon], { radius: 8, color: '#b57722', fillColor: '#f3d497', fillOpacity: 1, weight: 3 }).addTo(map).bindTooltip('Vybrané místo předpovědi');
   stationsLayer = L.layerGroup(STATIONS.map((station) => L.circleMarker([station.lat, station.lon], { radius: 4, color: '#1e6465', fillColor: '#d7edeb', fillOpacity: 1, weight: 1.5 }).bindTooltip(`${station.id} · ${station.name}`).on('click', (event) => { L.DomEvent.stopPropagation(event); choosePlace(station.lat, station.lon, `${station.id} · ${station.name}`); }))).addTo(map);
   map.on('click', (event) => choosePlace(event.latlng.lat, event.latlng.lng, `Bod ${formatCoordinates(event.latlng.lat, event.latlng.lng, 3)}`));
+  drawRoute(routeWorkspace.points());
 }
 
 function radarFrames() {
@@ -486,6 +507,7 @@ function selectedClouds() {
 }
 
 function renderClouds() {
+  routeWorkspace.sync();
   renderVerticalProfile();
   renderSatellitePanel();
   const result = selectedClouds();
@@ -551,7 +573,7 @@ function saveCurrentBriefing() {
     capturedAviation.radar.selectedFrame = frame;
   }
   try {
-    const snapshot = createBriefingSnapshot({ state: {...state, historyStation}, forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
+    const snapshot = createBriefingSnapshot({ state: {...state, historyStation}, route: routeWorkspace.snapshot(), forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
     let storageError = null;
     try { saveBriefing(snapshot); } catch (error) { storageError = error.message; }
     openPreview(snapshot);
@@ -746,7 +768,7 @@ monitor = createMonitor({
   onRefresh: async ({ forecast: refreshForecast, aviation: refreshAviation, signal, reason }) => {
     if (reason === 'manual') radarFailures.clear();
     const tasks = [];
-    if (refreshForecast) tasks.push(loadForecast(true, signal).then(result => ['forecast', result]));
+    if (refreshForecast) { tasks.push(loadForecast(true, signal).then(result => ['forecast', result])); void routeWorkspace.refresh(reason === 'manual'); }
     if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadClouds(true, signal), loadSatellite(true, signal)]).then(([reports, native, image]) => ['aviation', reports.ok && native.ok && image.ok ? { ok: true } : { ok: false, error: reports.error || native.error || image.error }]));
     return Object.fromEntries(await Promise.all(tasks));
   },
@@ -758,8 +780,8 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('focus', () => { void monitor.wake('focus'); });
 window.addEventListener('online', () => { void monitor.wake('online'); });
 window.addEventListener('offline', () => { void monitor.wake('offline'); });
-window.addEventListener('pagehide', () => { stopRadar(); monitor.stop(); });
-window.addEventListener('pageshow', () => { if (!monitor.getState().active) { monitor.start(); void monitor.wake('pageshow'); } });
+window.addEventListener('pagehide', () => { stopRadar(); monitor.stop(); routeWorkspace.stop(); });
+window.addEventListener('pageshow', () => { if (!monitor.getState().active) { monitor.start(); void monitor.wake('pageshow'); void routeWorkspace.refresh(); } });
 
 let resizeTimer;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { renderCharts(); renderClouds(); if (aviation) renderHistory(); map?.invalidateSize(); }, 180); });
