@@ -236,6 +236,7 @@
 
 @media screen and (max-width:600px) {
  .profile-table,.profile-table tbody { display:block; }
+ .profile-table caption { display:block; width:100%; padding:12px 16px; }
  .profile-table thead { display:none; }
  .profile-table tr { display:grid; grid-template-columns:1fr 1fr; padding:12px 16px; gap:10px 16px; border-top:1px solid var(--line); font-size:14px; }
  .profile-table th,.profile-table td { padding:0; border:0; }
