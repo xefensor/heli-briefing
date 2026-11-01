@@ -24,6 +24,12 @@ try {
     error: 'Nativní sběr nebyl při tomto sestavení proveden.',
   })}\n`);
 }
+try { await readFile(join(temporary, 'data', 'satellite.json')); }
+catch(error) {
+  if(error.code !== 'ENOENT') throw error;
+  await mkdir(join(temporary,'data'),{recursive:true});
+  await writeFile(join(temporary,'data','satellite.json'),JSON.stringify({schemaVersion:1,status:'unavailable',error:'Satelitní sběr nebyl při sestavení proveden.'}));
+}
 await writeFile(join(temporary, '.nojekyll'), '');
 await writeFile(join(temporary, 'build-info.json'), `${JSON.stringify({
   builtAt: new Date().toISOString(),

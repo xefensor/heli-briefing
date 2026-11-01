@@ -13,7 +13,14 @@ The repository began with documentation and now has a published v0.2 evaluation 
 - [x] Pass 105 local tests and selected desktop/390 px browser checks; publish v0.2 successfully through GitHub Pages.
 - [ ] Capture browser file-download completion and validate the preparation/output workflow with the intended pilot.
 
-These additions preserve the substantial graphs, direct evidence access and coordinated controls. Appropriate professional production provider access and pilot workflow validation remain separate work. Integrated cameras, satellite layers and full vertical route profiles remain open scope.
+These additions preserve the substantial graphs, direct evidence access and coordinated controls. Appropriate professional production provider access and pilot workflow validation remain separate work. Integrated cameras and full vertical route profiles remain open scope. A point profile and one satellite product are implemented in the current extension below.
+
+## Current extension
+
+- [x] Add a model-coordinated six-level point profile with height/terrain masking and provider interpolation labels.
+- [x] Add bounded timestamped EUMETSAT GeoColour imagery and enlarged inspection.
+- [x] Include both in frozen output and open the preview when preparing a briefing.
+- [ ] Verify and publish the extension; see [decision 0006](decisions/0006-point-profile-and-satellite.md).
 
 ## Foundation
 

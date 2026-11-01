@@ -15,6 +15,8 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 | Keep meaningful global controls prominent, including forecast source selection. | Explicit owner feedback on header and source behaviour. |
 | Use a helicopter theme; ABS styling is optional. | Explicit owner direction. |
 
+The next implemented capability decision is [point profile, satellite and preview-first handoff](0006-point-profile-and-satellite.md). Publication and browser checks are recorded there.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |

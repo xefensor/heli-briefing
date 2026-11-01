@@ -78,3 +78,8 @@ This first build is an open-source evaluation version using Open-Meteo's free ho
 Any future paid API credentials need a server-side adapter or ingestion service. GitHub Pages cannot keep a key private in JavaScript, environment-generated client files, query strings or local storage. Changing the forecast adapter should preserve model identity, field capabilities, timestamps and honest failure states.
 
 See [data sources](data/sources.md) for provider terms and [data integrity](data/integrity.md) for interpretation requirements.
+
+
+## Point-profile and satellite extension · 2026-11-01
+
+[Decision 0006](decisions/0006-point-profile-and-satellite.md) records the current implementation and source checks. The forecast adapter requests six altitude-qualified pressure levels for ALADIN/ICON-D2 and invalidates earlier tab forecast caches with a new schema version. The workflow runs `scripts/update_satellite.py` before building; `web/data/satellite.json` is generated and ignored by Git, with an honest unavailable fallback in builds without collection. The browser checks it alongside the other five-minute snapshots. GeoColour uses its own advertised frame time, source attribution and a fixed central-European crop; model/time selection does not turn it into forecast imagery. Preparing a briefing opens a frozen preview, with explicit HTML download and print actions. Existing archives remain readable. Browser download completion and printed/PDF output remain unverified.

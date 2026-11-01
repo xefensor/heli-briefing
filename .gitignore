@@ -30,3 +30,5 @@ tmp/
 *.hdf5
 *.tar.gz
 *.zip
+
+web/data/satellite.json

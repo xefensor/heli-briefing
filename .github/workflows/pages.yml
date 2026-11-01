@@ -40,6 +40,8 @@ jobs:
         run: python3 scripts/check_docs.py
       - name: Refresh aviation report snapshot
         run: python3 scripts/update_aviation.py --output web/data/aviation.json
+      - name: Refresh satellite snapshot
+        run: python3 scripts/update_satellite.py --output web/data/satellite.json
       - name: Discover complete native cloud run
         id: cloud-run
         shell: bash

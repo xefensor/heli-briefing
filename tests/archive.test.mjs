@@ -212,3 +212,13 @@ test('embedded radar is a genuine PNG data URL with its own saved observation ti
   input.radarImageDataUrl = 'data:image/png;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+';
   assert.equal(createBriefingSnapshot(input).radarImageDataUrl, null);
 });
+
+test('new point profile and satellite evidence stay frozen and embedded without external image loads', () => {
+ const input=base();
+ input.forecast.profile={status:'available',terrainMsl:425,levels:[{pressureHpa:950,interpolated:false,height:[650,660,null],wind:[0,5,null],direction:[0,20,null],temperature:[0,-1,null],humidity:[90,95,null],reasons:[null,null,'height-missing']}]};
+ const bytes=Buffer.alloc(40);Buffer.from('\x89PNG\r\n\x1a\n','binary').copy(bytes);bytes.write('IHDR',12);bytes.writeUInt32BE(1000,16);bytes.writeUInt32BE(500,20);
+ input.satellite={schemaVersion:1,layer:'mtg_fd:rgb_geocolour',bounds:[47,10,52,20],status:'ok',observedAt:'2026-11-01T14:00:00Z',retrievedAt:'2026-11-01T14:20:00Z',imageDataUrl:'data:image/png;base64,'+bytes.toString('base64')};
+ const snapshot=createBriefingSnapshot(input);input.forecast.profile.levels[0].wind[0]=80;input.satellite.observedAt='2026-11-02T00:00:00Z';
+ const html=renderBriefingHtml(snapshot);assert.equal(snapshot.forecast.profile.levels[0].wind[0],0);assert.equal(snapshot.satellite.observedAt,'2026-11-01T14:00:00Z');
+ assert.match(html,/Výškový profil/);assert.match(html,/Satelitní obraz/);assert.match(html,/EUMETSAT \/ NASA/);assert.match(html,/src="data:image\/png;base64,/);assert.doesNotMatch(html,/<img[^>]+src="https?:/);
+});

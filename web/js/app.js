@@ -1,3 +1,5 @@
+import {renderProfile, profileAt} from './profile.js';
+import {renderSatellite, satelliteState} from './satellite.js';
 import { MODELS, fetchForecast, nearestTimeIndex } from './weather.js';
 import { renderChart, escapeHtml as esc } from './charts.js';
 import { getAstronomy } from './astro.js';
@@ -62,6 +64,9 @@ let radarPlaying = false;
 let radarTimer = null;
 let reportView = 'both';
 let previewSnapshot = null;
+let satellite = null;
+let satelliteError = null;
+let satelliteSequence = 0;
 
 const definition = (model = state.model) => MODELS.find((m) => m.id === model);
 const fullTime = (iso) => `${clock(iso, state.timezone, true)} ${state.timezone === 'UTC' ? 'UTC' : 'CZ'}`;
@@ -174,7 +179,7 @@ const CHARTS = [
   { id: 'rain', title: 'Hodinové srážky', unit: 'mm', fields: [['precipitation', 'Úhrn', 'var(--chart-blue)']], min: 0, note: 'Úhrn za hodinu končící uvedeným časem; nejde o radarové měření.' },
   { id: 'temperature', title: 'Teplota a rosný bod', unit: '°C', fields: [['temperature', 'Teplota', 'var(--chart-amber)'], ['dewpoint', 'Rosný bod', 'var(--chart-cyan)']], note: 'Modelové hodnoty ve 2 m nad povrchem.' },
   { id: 'pressure', title: 'Tlak na hladině moře', unit: 'hPa', fields: [['pressure', 'MSL', 'var(--chart-purple)']], note: 'Modelový redukovaný tlak; není to měřený QNH ani QFE.' },
-  { id: 'upper', title: 'Vítr v hladině 925 hPa', unit: 'kt', fields: [['wind925', '925 hPa', 'var(--chart-blue)']], min: 0, note: 'Tlaková hladina, nikoli pevná výška AGL. U ICON-D2 není 925 hPa nativní hladina; ECMWF 9 km tento výstup neposkytuje.' },
+  { id: 'upper', title: 'Vítr v hladině 925 hPa', unit: 'kt', fields: [['wind925', '925 hPa', 'var(--chart-blue)']], min: 0, note: 'Tlaková hladina, nikoli pevná výška AGL. U ICON-D2 je 925 hPa interpolována poskytovatelem; ECMWF 9 km tento výstup neposkytuje.' },
   { id: 'humidity', title: 'Relativní vlhkost', unit: '%', fields: [['humidity', 'Vlhkost', 'var(--chart-cyan)']], min: 0, max: 100, note: 'Modelová vlhkost ve 2 m; sama neurčuje mlhu ani podmínky letu.' },
 ];
 
@@ -418,6 +423,7 @@ async function loadForecast(force = false, outerSignal = null) {
   renderSummary();
   renderStatus();
   if (!keep) renderCharts();
+  renderVerticalProfile();
   const params = { lat: state.lat, lon: state.lon, signal, force };
   const [main, other] = await Promise.allSettled([
     fetchForecast({ ...params, model: state.model }),
@@ -451,11 +457,36 @@ async function loadClouds(force = false, signal = null) {
   }
 }
 
+function renderVerticalProfile() {
+  const result=profileAt(forecast,state.time);
+  $('profile-meta').textContent = `${definition().label} · ${result.validAt ? `vzorek ${fullTime(result.validAt)}` : 'hodinový vzorek není dostupný'}${forecast?.retrievedAt ? ` · staženo ${fullTime(forecast.retrievedAt)}` : ''}${forecast?.transport?.stale ? ' · STARŠÍ PŘEDPOVĚĎ' : ''}. ${state.model==='icon'?'925 a 800 hPa jsou interpolovány poskytovatelem mezi sousedními hladinami.':''}`;
+  $('profile').innerHTML=renderProfile(forecast,state.time,{width:plotWidth('profile',40)});
+}
+function renderSatellitePanel() {
+  const html=renderSatellite(satellite,{...state,error:satelliteError});
+  $('satellite').innerHTML=html;
+  $('satellite-enlarge').disabled=!satelliteState(satellite).image;
+  if ($('satellite-dialog').open) $('satellite-large').innerHTML=html;
+}
+async function loadSatellite(force=false,signal) {
+  const sequence=++satelliteSequence;
+  try {
+    const response=await fetch('./data/satellite.json',{cache:force?'no-cache':'default',signal});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const data=await response.json();
+    if(sequence!==satelliteSequence||signal?.aborted)return {ok:false};
+    if(!satelliteState(data).image)throw new Error(data.error||'Satelitní balíček nemá ověřitelný snímek.');
+    satellite=data;satelliteError=null;renderSatellitePanel();return {ok:data.status==='ok',error:data.error};
+  }catch(error){if(signal?.aborted)return {ok:false};if(sequence===satelliteSequence){satelliteError=error.message;renderSatellitePanel();}return {ok:false,error:error.message};}
+}
+
 function selectedClouds() {
   return queryClouds(clouds, { lat: state.lat, lon: state.lon, time: state.time });
 }
 
 function renderClouds() {
+  renderVerticalProfile();
+  renderSatellitePanel();
   const result = selectedClouds();
   $('cloud-reading').innerHTML = `${esc(num(result.valueMsl))} <span>m MSL</span>`;
   $('cloud-status').textContent = `${CLOUD_STATUS_LABELS[result.status] || 'Nedostupný výstup.'}${result.stale ? ' Běh je starší nebo jeho obnova selhala.' : ''}${cloudError ? ` Obnova: ${cloudError}` : result.error ? ` ${result.error}` : ''}`;
@@ -500,11 +531,13 @@ function saveCurrentBriefing() {
     capturedAviation.radar.selectedFrame = frame;
   }
   try {
-    const snapshot = createBriefingSnapshot({ state, forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError } });
+    const snapshot = createBriefingSnapshot({ state, forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
     let storageError = null;
     try { saveBriefing(snapshot); } catch (error) { storageError = error.message; }
-    downloadBriefing(snapshot);
-    $('archive-status').textContent = `Briefing zachycen ${fullTime(snapshot.createdAt)} a předán ke stažení. ${storageError ? `Místní archiv: ${storageError}` : 'Kopie je uložena také v tomto prohlížeči.'}${radar && !imageMatches ? ' Vybraný radarový obraz není vložen; zachovány jsou jeho čas a zdroj.' : ''}`;
+    previewSnapshot=snapshot;
+    $('saved-preview-frame').srcdoc=renderBriefingHtml(snapshot);
+    $('saved-preview').showModal();
+    $('archive-status').textContent = `Briefing zachycen ${fullTime(snapshot.createdAt)} a otevřen k prohlédnutí. HTML stáhneš nebo vytiskneš z náhledu. ${storageError ? `Místní archiv: ${storageError}` : 'Kopie je uložena také v tomto prohlížeči.'}${radar && !imageMatches ? ' Vybraný radarový obraz není vložen; zachovány jsou jeho čas a zdroj.' : ''}`;
     renderArchive();
   } catch (error) { $('archive-status').textContent = `Briefing se nepodařilo uložit: ${error.message}`; }
 }
@@ -539,6 +572,7 @@ function tickFreshness(nowMs, status) {
     const label = row.querySelector('.taf-selected-label');
     if (label) label.hidden = !selected;
   });
+  if (!liveMode || document.activeElement === $('inspection-time')) renderSatellitePanel();
   renderReportFreshness();
   if (aviation) { renderSigmets(); renderRadar(); }
   const minutes = status.nextRefreshAt === null ? null : Math.max(0, Math.ceil((status.nextRefreshAt - nowMs) / 60000));
@@ -660,6 +694,8 @@ $('archive-list').addEventListener('click', event => {
     if (removeId) { deleteBriefing(removeId); renderArchive(); $('archive-status').textContent = 'Místní kopie odebrána. Již stažený soubor zůstává zachován.'; }
   } catch (error) { $('archive-status').textContent = error.message; }
 });
+$('satellite-enlarge').addEventListener('click',()=>{renderSatellitePanel();$('satellite-large').innerHTML=$('satellite').innerHTML;$('satellite-dialog').showModal();});
+$('satellite-close').addEventListener('click',()=>$('satellite-dialog').close());
 $('preview-close').addEventListener('click', () => $('saved-preview').close());
 $('preview-download').addEventListener('click', () => { if (previewSnapshot) downloadBriefing(previewSnapshot); });
 $('preview-print').addEventListener('click', () => $('saved-preview-frame').contentWindow?.print());
@@ -680,7 +716,7 @@ monitor = createMonitor({
     if (reason === 'manual') radarFailures.clear();
     const tasks = [];
     if (refreshForecast) tasks.push(loadForecast(true, signal).then(result => ['forecast', result]));
-    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadClouds(true, signal)]).then(([reports, native]) => ['aviation', reports.ok && native.ok ? { ok: true } : { ok: false, error: reports.error || native.error }]));
+    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadClouds(true, signal), loadSatellite(true, signal)]).then(([reports, native, image]) => ['aviation', reports.ok && native.ok && image.ok ? { ok: true } : { ok: false, error: reports.error || native.error || image.error }]));
     return Object.fromEntries(await Promise.all(tasks));
   },
 });

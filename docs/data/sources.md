@@ -139,3 +139,8 @@ EUROCONTROL's [October 2026 eEAD transition update](https://www.eurocontrol.int/
 ## Maintenance
 
 For each changed source, record the check date, product/version, relevant URL, licence, sample scope and unresolved questions. Recheck the DWD migration first. Re-run small capability samples after provider changes; keep samples separate from claims about accuracy, reliability, or implemented behavior.
+
+
+## Implemented point profile and satellite extension · 2026-11-01
+
+See [decision 0006](../decisions/0006-point-profile-and-satellite.md) for the checked Open-Meteo pressure-level documentation, provider interpolation labels, actual payload samples and the product-specific EUMETSAT GeoColour licence. The bounded GeoColour collector preserves the advertised/requested frame time independently of retrieval. It produces a generated static snapshot with EUMETSAT/NASA credit; cameras and full route profiles remain open. Current provider documentation explicitly identifies ICON-D2 925/800 hPa as interpolation, superseding the earlier unresolved derivation note for these fields.

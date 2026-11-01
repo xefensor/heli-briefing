@@ -83,3 +83,6 @@ Public access, open-data licensing and permission to redistribute are separate c
 Keep unit tests for normalization and temporal edge cases separate from live connectivity checks. Useful fixtures cover null versus zero, lower-bound visibility, malformed timestamps, expired/CNL/NIL TAFs, partial forecast coverage, preceding-hour accumulations, timezone folds/gaps and stale fallback after failures.
 
 A live sample records endpoint, requested fields/model, public test location, retrieval time and returned coverage. It proves that response only. It does not establish forecast skill, an SLA, universal geographic coverage, browser compatibility, or successful deployment. Before asserting an integration works, verify its intended runtime, actual source payload and rendered empty/error states.
+
+
+Implementation update · 2026-11-01: the point profile masks meteorological values at/below the API terrain, without claiming independently verified native terrain. Current provider documentation confirms interpolation of ICON-D2 925/800 hPa, resolving the earlier provider-derivation question in this document. This is a documented provider algorithm, not an independent accuracy assessment. See [decision 0006](../decisions/0006-point-profile-and-satellite.md).

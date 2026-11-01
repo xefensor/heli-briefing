@@ -1,3 +1,4 @@
+import { profileFields, normalizeProfile } from './profile.js';
 /**
  * Explicit-model forecasts for the public, open-source evaluation build.
  * Open-Meteo free hosted access is for evaluation/non-commercial use. Professional
@@ -28,8 +29,8 @@ export const MODELS = Object.freeze([
 ]);
 
 const API = 'https://api.open-meteo.com/v1/forecast';
-const CACHE_VERSION = 1;
-const CACHE_PREFIX = 'heli-forecast-v1:';
+const CACHE_VERSION = 2;
+const CACHE_PREFIX = 'heli-forecast-v2:';
 const FRESH_MS = 10 * 60 * 1000;
 const MAX_STALE_MS = 6 * 60 * 60 * 1000;
 const FIELDS = Object.freeze({
@@ -86,9 +87,9 @@ function cacheKey(lat, lon, model) {
 }
 
 function requestedFields(model) {
-  return Object.entries(FIELDS)
+  return [...new Set([...Object.entries(FIELDS)
     .filter(([key]) => model.id !== 'ecmwf' || !['wind925', 'height925'].includes(key))
-    .map(([, [apiField]]) => apiField);
+    .map(([, [apiField]]) => apiField), ...(model.id === 'ecmwf' ? [] : profileFields())])];
 }
 
 export function forecastUrl({ lat, lon, model }) {
@@ -159,7 +160,7 @@ export function normalizeForecast(payload, { lat, lon, model, retrievedAt = new 
     requestedLocation: { lat, lon },
     grid: { lat: finiteNumber(payload.latitude), lon: finiteNumber(payload.longitude), elevation: terrain },
     retrievedAt: new Date(retrievedAt).toISOString(), runTime: null,
-    times, hourly, units, coverage, capabilities, belowTerrain,
+    times, hourly, units, coverage, capabilities, belowTerrain, profile: normalizeProfile(payload,model,times.length),
     validFrom: first === -1 ? null : times[first], validTo: last === -1 ? null : times[last],
     sourceUrl: forecastUrl({ lat, lon, model }), docsUrl: definition.docsUrl,
     transport: { status: 'live', cached: false, stale: false, ageMs: 0, error: null },
@@ -171,7 +172,7 @@ export function normalizeForecast(payload, { lat, lon, model, retrievedAt = new 
       clouds: 'Layer cloud fractions, not cloud-base height or aviation ceiling.',
       height925: '925 hPa geopotential height in metres MSL; not a fixed AGL height.',
       wind925: definition.id === 'icon'
-        ? 'Open-Meteo pressure-level output; 925 hPa is not a native ICON-D2 level. Field-specific derivation is not independently verified.'
+        ? 'Open-Meteo pressure-level output; 925 hPa is not a native ICON-D2 level. Open-Meteo documents interpolation from neighbouring native pressure levels.'
         : definition.id === 'ecmwf' ? 'Pressure levels are not provided by this 9 km distribution.' : 'Wind at the 925 hPa pressure surface.',
       elevation: 'Open-Meteo elevation/downscaling reference; not independently verified native model terrain.',
       runTime: 'Ordinary API combines successive runs; initialization is not supplied. Retrieval time is separate.',

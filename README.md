@@ -8,7 +8,7 @@ The goal is to bring a regional weather picture, detailed graphs, local observat
 
 **Latest interface pass:** larger type, aligned full-width forecast rows, a larger regional map, direct section navigation and a distance-sorted station comparison above readable complete reports. See [design and validation](docs/design.md#implemented-readability-pass--1-november-2026).
 
-**v0.2 includes:** an independently labelled native ICON-D2 ceiling diagnostic, conservative structured reports and twelve-hour METAR history, a two-hour radar sequence, automatic freshness checks, a report-output preview and frozen HTML export with browser-local archives. [Release evidence and verification limits](docs/deployment.md) distinguish passing tests, browser checks and publication. Integrated cameras, satellite layers and full vertical route profiles remain future scope.
+**v0.2 includes:** an independently labelled native ICON-D2 ceiling diagnostic, conservative structured reports and twelve-hour METAR history, a two-hour radar sequence, automatic freshness checks, a report-output preview and frozen HTML export with browser-local archives. [Release evidence and verification limits](docs/deployment.md) distinguish passing tests, browser checks and publication. The next extension adds a six-level point profile, independent GeoColour satellite imagery and preview-first output; [implementation and validation](docs/decisions/0006-point-profile-and-satellite.md). Integrated cameras and full route cross-sections remain future scope.
 
 ## Start here
 
