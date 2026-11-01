@@ -24,7 +24,7 @@ The product-specific [EUMETSAT GeoColour catalogue](https://user.eumetsat.int/ca
 
 Actual small LKCS samples returned all thirty requested profile fields: 72 ALADIN samples and 61 ICON-D2 samples within requested 72-hour arrays. A 1000 hPa height below the API terrain was masked. The satellite sample advertised 2026-11-01 14:40 UTC; its regional PNG was retrieved and rendered with source credit. These observations establish those responses, not forecast accuracy or provider uptime.
 
-Local validation: 119 tests (86 JavaScript, 33 Python), build and documentation checks passed. Browser checks showed six profile rows, an explicit unsupported ECMWF profile, a rendered enlarged satellite image and a frozen preview containing profile/satellite evidence with embedded PNG images and no scripts/external image URLs. A 390 px iframe had 375 px content plus a scrollbar and no page-wide overflow. The final stacked mobile table also retained equal content/scroll widths. ICON-D2 showed both interpolation labels. Publication requires its own recorded check.
+Local validation: 120 tests (86 JavaScript, 34 Python), build and documentation checks passed. Browser checks showed six profile rows, an explicit unsupported ECMWF profile, a rendered enlarged satellite image and a frozen preview containing profile/satellite evidence with embedded PNG images and no scripts/external image URLs. A 390 px iframe had 375 px content plus a scrollbar and no page-wide overflow. The final stacked mobile table also retained equal content/scroll widths. ICON-D2 showed both interpolation labels. Publication requires its own recorded check.
 
 ## Remaining work
 
@@ -33,3 +33,7 @@ Full route/terrain cross-sections, cameras, integrated NOTAM/airspace, professio
 ## Publication evidence
 
 [Pages run 41320741025](https://github.com/xefensor/heli-briefing/actions/runs/41320741025) successfully published the final application revision `5a3edb15bfc86604f67f5c9e4053c74bf4e0aabd`, following the main feature commit `d44b8b4da3628b3899b4fc962d2e41b8010f2577`. The public HTTPS page loaded eight forecast graphs, six ALADIN pressure levels and an embedded GeoColour image. Its satellite product time was 2026-11-01 14:50 UTC at the check, with its own age label. The preparation action opened a frozen preview in local browser QA, including both embedded radar/satellite images, profile content and no scripts or external image URLs. Browser file-download completion, printed/PDF output and pilot validation remain outstanding.
+
+## Satellite refresh hardening
+
+A subsequent live deployment exposed an upstream WMS HTTP 500 and correctly displayed unavailable instead of an image. The workflow now restores a bounded last-genuine snapshot cache and saves only successful collections. Keys use the collector hash and advertised target frame; restored snapshots retain their own actual frame/URL/extent identity and original image retrieval time. If a fresh runner has no retained image and the latest advertised GetMap fails, the collector makes one bounded request for the preceding ten-minute frame **only within the same product's published time interval**. Its actual older time and fallback note are displayed. This improves continuity without treating an old frame as current or changing product. Cache state does not supply operational freshness guarantees.

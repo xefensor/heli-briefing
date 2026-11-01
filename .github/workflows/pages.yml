@@ -40,8 +40,38 @@ jobs:
         run: python3 scripts/check_docs.py
       - name: Refresh aviation report snapshot
         run: python3 scripts/update_aviation.py --output web/data/aviation.json
+      - name: Discover advertised satellite frame
+        id: satellite-frame
+        shell: bash
+        run: |
+          if frame=$(python3 scripts/update_satellite.py --cache-key); then
+            if [[ ! "$frame" =~ ^geocolour-[0-9]{8}T[0-9]{6}Z$ ]]; then
+              echo 'Unexpected satellite frame identifier' >&2
+              exit 1
+            fi
+            printf 'frame=%s\n' "$frame" >> "$GITHUB_OUTPUT"
+          else
+            printf 'frame=unavailable\n' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Restore last genuine satellite snapshot
+        id: satellite-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/satellite
+          key: satellite-${{ hashFiles('scripts/update_satellite.py') }}-${{ steps.satellite-frame.outputs.frame }}
+          restore-keys: satellite-${{ hashFiles('scripts/update_satellite.py') }}-
       - name: Refresh satellite snapshot
-        run: python3 scripts/update_satellite.py --output web/data/satellite.json
+        id: satellite-collect
+        shell: bash
+        run: |
+          python3 scripts/update_satellite.py --cache-dir .cache/satellite --output web/data/satellite.json
+          python3 -c "import json,os; d=json.load(open('web/data/satellite.json')); f=open(os.environ['GITHUB_OUTPUT'],'a'); print('available='+str(d.get('status')=='ok').lower(),file=f)"
+      - name: Cache successful satellite retrieval
+        if: steps.satellite-collect.outputs.available == 'true' && steps.satellite-cache.outputs.cache-hit != 'true' && steps.satellite-frame.outputs.frame != 'unavailable'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/satellite
+          key: satellite-${{ hashFiles('scripts/update_satellite.py') }}-${{ steps.satellite-frame.outputs.frame }}
       - name: Discover complete native cloud run
         id: cloud-run
         shell: bash

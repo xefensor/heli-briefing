@@ -22,6 +22,15 @@ class SatelliteTests(unittest.TestCase):
   old=s.collect(now=NOW,fetcher=fetch)
   def fail(url,limit):raise OSError('offline')
   result=s.collect(old,now=NOW,fetcher=fail);self.assertEqual(result['status'],'stale');self.assertEqual(result['observedAt'],old['observedAt']);self.assertEqual(result['imageDataUrl'],old['imageDataUrl'])
+ def test_first_collection_can_use_only_the_preceding_advertised_frame(self):
+  calls=[]
+  def delayed(url,limit):
+   calls.append(url)
+   if 'Capabilities' in url:return XML,'text/xml'
+   if '14%3A40' in url:raise OSError('500 provider frame not ready')
+   return PNG,'image/png'
+  result=s.collect(now=NOW,fetcher=delayed)
+  self.assertEqual(result['status'],'ok');self.assertEqual(result['observedAt'],'2026-11-01T14:30:00Z');self.assertIn('fallbackNote',result);self.assertEqual(len(calls),3)
  def test_same_frame_reuses_bytes_without_relabelling_image_retrieval(self):
   old=s.collect(now=NOW,fetcher=fetch)
   def only_metadata(url,limit):

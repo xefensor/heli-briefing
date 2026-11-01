@@ -67,7 +67,22 @@ def collect(previous=None,now=None,fetcher=fetch):
             if not valid_png(body): raise ValueError('Invalid retained image')
             reused=True
         else:
-            body,mime=fetcher(url,2_000_000)
+            try:
+                body,mime=fetcher(url,2_000_000)
+            except Exception:
+                if previous and previous.get('imageDataUrl'): raise
+                # Some WMS frames become advertised before all image data is ready.
+                # Use only a preceding timestamp in that product's published interval.
+                from datetime import timedelta
+                layer=next(l for l in ET.fromstring(capabilities).findall('.//w:Layer',NS) if l.findtext('w:Name',namespaces=NS)==LAYER)
+                dimension=next(d for d in layer.findall('w:Dimension',NS) if d.attrib.get('name')=='time')
+                interval=(dimension.text or '').strip().split('/')
+                if len(interval)!=3 or interval[2]!='PT10M': raise ValueError('Unsupported satellite fallback cadence')
+                previous_time=iso(time)-timedelta(minutes=10)
+                if previous_time<iso(interval[0]): raise ValueError('No earlier advertised satellite frame')
+                time=previous_time.isoformat(timespec='seconds').replace('+00:00','Z');url=image_url(time)
+                body,mime=fetcher(url,2_000_000)
+                base['fallbackNote']='Latest advertised frame failed; image uses the preceding published 10-minute frame.'
             if mime!='image/png' or not valid_png(body): raise ValueError('Provider did not return the expected PNG image')
         return {**base,'status':'ok','observedAt':time,'retrievedAt':previous.get('retrievedAt') if reused else stamp,'checkedAt':stamp,'imageUrl':url,'imageDataUrl':'data:image/png;base64,'+base64.b64encode(body).decode(),'error':None}
     except Exception as error:
@@ -79,10 +94,21 @@ def collect(previous=None,now=None,fetcher=fetch):
         return {**(previous if retained else base),'attemptedAt':stamp,'status':'stale' if retained else 'unavailable','error':str(error)[:240]}
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--output',default=str(ROOT/'web/data/satellite.json'));args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--cache-key',action='store_true');parser.add_argument('--cache-dir');parser.add_argument('--output',default=str(ROOT/'web/data/satellite.json'));args=parser.parse_args()
+    if args.cache_key:
+        body,_=fetch(ENDPOINT+'?service=WMS&request=GetCapabilities&version=1.3.0',2_000_000)
+        print('geocolour-'+frame_time(body,datetime.now(timezone.utc)).replace('-','').replace(':',''))
+        return
     output=Path(args.output)
+    cached=Path(args.cache_dir)/'snapshot.json' if args.cache_dir else None
     try: previous=json.loads(output.read_text())
     except (OSError,ValueError): previous=None
-    result=collect(previous);output.parent.mkdir(parents=True,exist_ok=True);output.write_text(json.dumps(result,ensure_ascii=False,separators=(',',':'))+'\n')
+    if previous is None and cached:
+        try: previous=json.loads(cached.read_text())
+        except (OSError,ValueError): pass
+    result=collect(previous);
+    if cached and result['status']=='ok':
+        cached.parent.mkdir(parents=True,exist_ok=True);cached.write_text(json.dumps(result,ensure_ascii=False,separators=(',',':'))+'\n')
+    output.parent.mkdir(parents=True,exist_ok=True);output.write_text(json.dumps(result,ensure_ascii=False,separators=(',',':'))+'\n')
     print(json.dumps({k:result.get(k) for k in ['status','observedAt','retrievedAt','error']}))
 if __name__=='__main__':main()
