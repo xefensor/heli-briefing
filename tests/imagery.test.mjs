@@ -24,6 +24,7 @@ test('low cloud preserves missing advertised slots instead of choosing another a
 test('captured charts embed actual bytes and honest failures; standalone HTML has no image requests',async()=>{
  const captured=await captureCharts(charts(),when,{fetcher:async()=>({ok:true,arrayBuffer:async()=>png.buffer.slice(png.byteOffset,png.byteOffset+png.byteLength)})});validateCharts(captured,{captured:true});assert.match(captured.swl.imageDataUrl,/^data:image\/png/);assert.equal(captured.lowCloud.frames.length,0);
  const snapshot=createBriefingSnapshot({state:{name:'Test',lat:49,lon:14,model:'aladin',timezone:'UTC',time:when,hours:24},createdAt:when,cameras:cameras(),charts:captured});
+ const wrong=structuredClone(captured);wrong.selectedLow.validAt='2026-11-01T15:00:00Z';assert.throws(()=>createBriefingSnapshot({state:snapshot.state,charts:wrong}),/jinému času|jiného času/);
  const html=renderBriefingHtml(snapshot);assert.match(html,/Churáňov/);assert.match(html,/SWL/);assert.doesNotMatch(html,/<img[^>]+src=["'](?:https?:|\.\/)/);assert.equal((html.match(/src="data:image\/png/g)||[]).length,2);
  const failure=await captureCharts(charts(),when,{fetcher:async()=>({ok:false,status:404})});assert.equal(failure.swl.imagePath,null);assert.equal(failure.selectedLow.imagePath,null);validateCharts(failure,{captured:true});
  assert.throws(()=>validateCharts(charts(),{captured:true}),/vložený obraz/);

@@ -21,7 +21,7 @@ export function mountSection({ getSchedule, getModel, getZone }) {
       if (id !== sequence) return;
       validateSection(result, getSchedule(), getModel()); data = result; lastTerrain = result.terrain; selected = 0;
       if (data.limited) cooldown = Date.now() + 60000;
-      $('section-status').textContent = `${data.rows.length} sloupců · ${data.terrain.values.filter(value => value !== null).length} / ${data.terrain.values.length} terénních vzorků${data.limited ? ' · zdroj omezil další požadavky' : ''}. Mezery zůstávají viditelné.`; paint();
+      $('section-status').textContent = `${data.rows.filter(row=>row.profile.status==='available').length} / ${data.rows.length} sloupců s výškovými daty · ${data.terrain.values.filter(value => value !== null).length} / ${data.terrain.values.length} terénních vzorků${data.limited ? ' · zdroj omezil další požadavky' : ''}. Mezery zůstávají viditelné.`; paint();
     } catch (error) { if (id === sequence && error.name !== 'AbortError') $('section-status').textContent = error.message; }
     finally { if (id === sequence) { loading = false; $('section-load').disabled = false; } }
   }

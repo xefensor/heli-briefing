@@ -139,6 +139,7 @@ export function createBriefingSnapshot({ state, forecast = null, comparison = nu
   if (route) validateRouteBundle(route, [context.model, ...(context.compare && context.compare !== context.model ? [context.compare] : [])]);
   if (cameras) validateCameras(cameras);
   if (charts) validateCharts(charts, { captured: true });
+  if (charts?.selectedLow && Math.abs(Date.parse(charts.selectedLow.validAt)-Date.parse(context.time))>90*60000) throw new ArchiveError('Mapa nízké oblačnosti patří jinému času přehledu.','context');
   const body = cloneValue({ schemaVersion: 1, createdAt: iso(createdAt, 'Uložení briefingu'), state: context, forecast, comparison, aviation, astronomy, clouds, satellite, route, cameras, charts, sourceErrors, notes: String(notes), radarImageDataUrl: validRaster(radarImageDataUrl) });
   // Keep a captured image once, alongside the metadata that identifies it.
   if (body.radarImageDataUrl && body.aviation?.radar?.imageDataUrl === body.radarImageDataUrl) delete body.aviation.radar.imageDataUrl;
@@ -158,6 +159,7 @@ function validateSnapshot(snapshot) {
   if (snapshot.route) validateRouteBundle(snapshot.route, [snapshot.state.model, ...(snapshot.state.compare && snapshot.state.compare !== snapshot.state.model ? [snapshot.state.compare] : [])]);
   if (snapshot.cameras) validateCameras(snapshot.cameras);
   if (snapshot.charts) validateCharts(snapshot.charts, { captured: true });
+  if (snapshot.charts?.selectedLow && Math.abs(Date.parse(snapshot.charts.selectedLow.validAt)-Date.parse(snapshot.state.time))>90*60000) throw new ArchiveError('Mapa nízké oblačnosti patří jinému času přehledu.','context');
   return snapshot;
 }
 

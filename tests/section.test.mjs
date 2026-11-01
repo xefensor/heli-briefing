@@ -15,6 +15,8 @@ test('section preserves nearest hourly time, zero/gaps, Bpv separation and all s
  assert.equal(section.rows[0].values.wind,0);assert.equal(section.rows.at(-1).values.gust,null);assert.equal(section.rows[0].runTime,null);assert.equal(section.terrain.units,'m Bpv');assert.ok(section.terrain.values.includes(null));
  assert.throws(()=>validateSection(section,schedule,'icon'),/neodpovídá/);
  const changed=structuredClone(section);changed.rows[1].lat+=1;assert.throws(()=>validateSection(changed,schedule,'aladin'),/jiné poloze/);
+ const invalid=structuredClone(section);invalid.rows[0].profile.levels[0].pressureHpa='<b>bad</b>';assert.throws(()=>validateSection(invalid,schedule,'aladin'),/hladinu/);
+ const wrongHour=structuredClone(section);wrongHour.rows[0].profile.validAt='2026-11-01T13:00:00.000Z';assert.throws(()=>validateSection(wrongHour,schedule,'aladin'),/hodinovému vzorku/);
  const html=renderSection(section);assert.match(html,/Bpv/);assert.match(html,/neinterpoluje/);assert.doesNotMatch(html,/role="button"|tabindex="0"/);assert.match(renderSection(section,{interactive:true}),/role="button"/);
 });
 test('rate limit does not trigger a burst; prior terrain retains original retrieval time',async()=>{
