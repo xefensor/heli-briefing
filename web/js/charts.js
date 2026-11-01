@@ -98,8 +98,9 @@ function emptySvg(height, message, label) {
  */
 export function renderChart({
   times = [], series = [], selectedTime = null, timezone = 'Europe/Prague',
-  height = 190, yLabel = '', min, max,
+  width = 720, height = 190, yLabel = '', min, max,
 } = {}) {
+  const WIDTH = finite(width) ? Math.max(320, Math.min(1000, width)) : 720;
   height = finite(height) ? Math.max(140, Math.min(600, height)) : 190;
   const instants = times.map((time) => Date.parse(time));
   if (!instants.length) return emptySvg(height, 'Pro zvolené období nejsou data.', yLabel);
@@ -129,7 +130,7 @@ export function renderChart({
   const x = (time) => rounded(LEFT + (start === end ? 0.5 : (time - start) / (end - start)) * plotWidth);
   const y = (value) => rounded(TOP + (high - value) / (high - low) * plotHeight);
   const grid = niceTicks(low, high).map((value) => `<g class="chart-grid"><line x1="${LEFT}" y1="${y(value)}" x2="${WIDTH - RIGHT}" y2="${y(value)}" stroke="currentColor" opacity="0.12"/><text x="${LEFT - 9}" y="${y(value) + 4}" text-anchor="end" fill="currentColor">${escapeHtml(valueLabel(value))}</text></g>`).join('');
-  const ticks = buildTimeTicks(times, timezone).map((tick) => {
+  const ticks = buildTimeTicks(times, timezone, WIDTH < 480 ? 4 : 7).map((tick) => {
     const tickX = x(instants[tick.index]);
     const anchor = tick.index === 0 ? 'start' : tick.index === times.length - 1 ? 'end' : 'middle';
     return `<g class="chart-tick"><line x1="${tickX}" y1="${TOP}" x2="${tickX}" y2="${height - BOTTOM}" stroke="currentColor" opacity="0.07"/><text x="${tickX}" y="${height - 22}" text-anchor="${anchor}" fill="currentColor">${escapeHtml(tick.label)}</text>${tick.dateLabel ? `<text x="${tickX}" y="${height - 7}" text-anchor="${anchor}" fill="currentColor" opacity="0.6">${escapeHtml(tick.dateLabel)}</text>` : ''}</g>`;

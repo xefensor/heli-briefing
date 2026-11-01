@@ -3,12 +3,14 @@ import { renderChart, escapeHtml as esc } from './charts.js';
 import { getAstronomy } from './astro.js';
 import { formatNumber as num, formatTime as clock, ageLabel, reportState, toDateTimeInput, fromDateTimeInput, parseSharedState, haversineKm } from './briefing.js';
 import { renderMetarSummary, renderTafPeriods } from './report-views.js';
+import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
 import { createMonitor } from './monitor.js';
 import { fetchClouds, queryClouds, CLOUD_STATUS_LABELS } from './clouds.js';
 import { createBriefingSnapshot, renderBriefingHtml, briefingFilename, saveBriefing, listBriefings, loadBriefing, deleteBriefing } from './archive.js';
 
 const $ = (id) => document.getElementById(id);
+const plotWidth = (id, offset = 32) => Math.max(320, Math.min(1000, ($(id)?.clientWidth || 720) - offset));
 const PLACES = {
   lkcs: { name: 'Planá · České Budějovice', lat: 48.9463, lon: 14.4294 },
   lkhs: { name: 'Hosín · České Budějovice', lat: 49.0400, lon: 14.4967 },
@@ -25,6 +27,7 @@ const STATIONS = [
   { id: 'LOWL', name: 'Linz', lat: 48.2332, lon: 14.1875 },
   { id: 'LOWW', name: 'Wien', lat: 48.1103, lon: 16.5697 },
 ];
+let navigationSearch = location.search;
 const shared = parseSharedState(location.search);
 const state = {
   place: 'lkcs', ...PLACES.lkcs, model: 'aladin', compare: '', hours: 48,
@@ -83,6 +86,7 @@ function writeUrl() {
   const url = new URL(location.href);
   url.search = new URLSearchParams({ lat: state.lat.toFixed(5), lon: state.lon.toFixed(5), name: state.name, model: state.model, compare: state.compare, time: state.time, hours: String(state.hours), timezone: state.timezone }).toString();
   history.replaceState(null, '', url);
+  navigationSearch = url.search;
 }
 
 function updateControls() {
@@ -197,7 +201,7 @@ function renderCharts() {
     const selectedValues = chart.fields.map(([key, label]) => `${label}: ${v(get(forecast, key, state.time), chart.unit, ['temperature', 'visibility', 'rain'].includes(chart.id) ? 1 : 0)}`).join(' · ');
     const sampleIndex = nearestTimeIndex(forecast.times, state.time);
     const sampleLabel = sampleIndex < 0 ? 'Mimo časovou osu' : `Vzorek ${fullTime(forecast.times[sampleIndex])}`;
-    return `<article class="chart-card" data-chart-card="${chart.id}"><div class="chart-header"><h3 class="chart-title">${chart.title}</h3><span class="chart-unit">${chart.unit}</span></div><div class="chart-value">${esc(selectedValues)}</div><div class="chart-surface" tabindex="0" role="group" aria-label="${esc(chart.title)}. ${esc(sampleLabel)}. Šipkami změň hodinu.">${renderChart({ times, series, selectedTime: state.time, timezone: state.timezone, height: 250, yLabel: chart.unit, min: chart.min, max: chart.max })}</div><div class="chart-legend">${series.map((s) => `<span><i style="background:${s.color}"></i>${esc(s.label)}${s.dash ? ' · přerušovaně' : ''}</span>`).join('')}</div><p class="chart-caption">${esc(sampleLabel)}. ${chart.note}</p></article>`;
+    return `<article class="chart-card" data-chart-card="${chart.id}"><div class="chart-reading"><div class="chart-header"><h3 class="chart-title">${chart.title}</h3></div><div class="chart-value">${esc(selectedValues)}</div><p class="chart-sample">${esc(sampleLabel)}</p><p class="chart-hover-value" hidden></p></div><div class="chart-surface" tabindex="0" role="group" aria-label="${esc(chart.title)}. ${esc(sampleLabel)}. Šipkami změň hodinu.">${renderChart({ times, series, selectedTime: state.time, timezone: state.timezone, width: plotWidth('charts', innerWidth > 1100 ? 256 : 32), height: 200, yLabel: chart.unit, min: chart.min, max: chart.max })}</div><div class="chart-legend">${series.map((s) => `<span><i style="background:${s.color}"></i>${esc(s.label)}${s.dash ? ' · přerušovaně' : ''}</span>`).join('')}</div><p class="chart-caption">${chart.note}</p></article>`;
   }).join('');
   $('comparison').hidden = !state.compare;
   if (state.compare) $('comparison').innerHTML = comparison
@@ -220,6 +224,19 @@ function renderReportFreshness() {
   $('reports-status').innerHTML = (aviationLoadError ? `<p class="feed-error">Obnova balíčku selhala: ${esc(aviationLoadError)}. Zachovány původní časy zpráv.</p>` : '') + (old ? '<p class="feed-error">Balíček nebyl úspěšně obnoven nejméně hodinu. Ověř zprávy přímo u zdroje.</p>' : '') + sections.filter(section => ['stale', 'unavailable'].includes(section.status)).map(section => `<p class="feed-error">${section.status === 'stale' ? 'Obnova zdroje selhala; zachovány starší zprávy.' : 'Zdroj zpráv není dostupný.'} ${esc(section.error || '')}</p>`).join('');
 }
 
+function renderStationOverview() {
+  if (!aviation) return;
+  $('station-overview').innerHTML = `<table class="station-overview"><caption>Regionální stanice · pozorování na letišti, nikoli ve vybraném bodě</caption><thead><tr><th>Stanice / vzdálenost</th><th>METAR / čas</th><th>Vítr</th><th>Dohlednost</th><th>Ceiling · ft AGL</th><th>TAF pro čas přehledu</th></tr></thead><tbody>${[...STATIONS].sort((a,b) => haversineKm(state.lat,state.lon,a.lat,a.lon)-haversineKm(state.lat,state.lon,b.lat,b.lon)).map(station => {
+    const metar = aviation.metar?.items?.find(item => item.station === station.id);
+    const taf = aviation.taf?.items?.find(item => item.station === station.id);
+    const summary = metar ? summarizeMetar(metar) : null;
+    const wind = summary?.status === 'available' ? summary.wind : null;
+    const ceiling = summary?.ceiling;
+    const status = reportState(taf, Date.parse(state.time));
+    return `<tr><th scope="row"><a href="#station-${station.id}">${station.id} · ${esc(station.name)}</a><small>${num(haversineKm(state.lat,state.lon,station.lat,station.lon))} km od bodu</small></th><td>${metar ? `<span data-age="${esc(metar.observedAt || '')}">${esc(ageLabel(metar.observedAt))}</span><small>${metar.observedAt ? esc(fullTime(metar.observedAt)) : 'Čas neuveden'}</small><span class="tag" data-report-status="METAR" data-report-id="${esc(metar.id)}" data-tone="${esc(reportState(metar).tone)}">${esc(reportState(metar).label)}</span>` : 'Nedostupný'}</td><td>${wind ? esc(`${wind.variable ? 'VRB' : v(wind.direction,'°')} / ${v(wind.speedKt,'kt')}${wind.gustKt == null ? '' : ` G ${v(wind.gustKt,'kt')}`}`) : '—'}</td><td>${esc(summary?.status === 'available' ? summary.visibility.text : '—')}</td><td>${esc(ceiling?.status === 'reported' ? num(ceiling.valueFtAgl) : ceiling?.status === 'cavok' ? 'CAVOK' : ceiling?.status === 'not-reported' ? 'BKN/OVC/VV neuvedeno' : '—')}</td><td>${taf ? `<span class="tag" data-report-status="TAF" data-report-id="${esc(taf.id)}" data-tone="${esc(status.tone)}">${esc(status.label)}</span>` : 'Nedostupný'}</td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+
 function renderReports() {
   if (!aviation) return;
   renderReportFreshness();
@@ -235,8 +252,9 @@ function renderReports() {
     const metar = aviation.metar?.items?.find(item => item.station === station.id);
     const taf = aviation.taf?.items?.find(item => item.station === station.id);
     const distance = haversineKm(state.lat, state.lon, station.lat, station.lon);
-    return `<article class="station-card"><div class="station-title"><button type="button" class="station-pick" data-station="${station.id}" title="Vybrat místo předpovědi ${station.id}"><strong>${station.id}</strong> ${station.name}</button><span class="muted">${num(distance)} km od bodu</span></div>${itemHtml(metar, 'METAR')}${itemHtml(taf, 'TAF')}</article>`;
+    return `<article class="station-card" id="station-${station.id}"><div class="station-title"><button type="button" class="station-pick" data-station="${station.id}" title="Vybrat místo předpovědi ${station.id}"><strong>${station.id}</strong> ${station.name}</button><span class="muted">${num(distance)} km od bodu</span></div>${itemHtml(metar, 'METAR')}${itemHtml(taf, 'TAF')}</article>`;
   }).join('');
+  renderStationOverview();
   renderSigmets();
   renderRadar();
 }
@@ -259,7 +277,7 @@ function renderHistory() {
   $('observation-history').innerHTML = [
     { title: 'Pozorovaná dohlednost', values: series.visibility.map(value => value === null ? null : value / 1000), unit: 'km', color: 'var(--chart-cyan)', note: 'Body jsou skutečná pozorování, bez spojování intervalů. 9999 a CAVOK jsou dolní mez ≥10 km, v grafu umístěná na 10 km; další meze podle originálu.' },
     { title: 'Pozorovaný ceiling / VV', values: series.ceiling, unit: 'ft AGL', color: 'var(--chart-amber)', note: 'Nejnižší uvedená BKN/OVC nebo vertikální dohlednost VV. Mezery zahrnují zprávy bez číselného ceilingu; neznamenají 0 ft.' },
-  ].map(chart => `<article class="chart-card"><div class="chart-header"><h3 class="chart-title">${chart.title}</h3><span class="chart-unit">${chart.unit}</span></div><div class="chart-surface">${renderChart({ times: series.times, series: [{ label: historyStation, color: chart.color, values: chart.values, unit: chart.unit, pointsOnly: true }], selectedTime: null, timezone: state.timezone, height: 250, yLabel: chart.unit, min: 0 })}</div><p class="chart-caption">${chart.note}</p></article>`).join('');
+  ].map(chart => `<article class="chart-card"><div class="chart-header"><h3 class="chart-title">${chart.title}</h3><span class="chart-unit">${chart.unit}</span></div><div class="chart-surface">${renderChart({ times: series.times, series: [{ label: historyStation, color: chart.color, values: chart.values, unit: chart.unit, pointsOnly: true }], selectedTime: null, timezone: state.timezone, width: plotWidth('observation-history'), height: 210, yLabel: chart.unit, min: 0 })}</div><p class="chart-caption">${chart.note}</p></article>`).join('');
 }
 
 function renderSigmets() {
@@ -445,7 +463,7 @@ function renderClouds() {
   $('cloud-meta').textContent = result.runTime ? `DWD · ICON-D2 · nativní síť · běh ${fullTime(result.runTime)} · vzorek ${result.validAt ? fullTime(result.validAt) : '—'} · staženo ${fullTime(result.retrievedAt)}${result.cell ? ` · buňka ${result.cell.lat.toFixed(4)}, ${result.cell.lon.toFixed(4)} (${num(result.distanceKm, 2)} km od bodu), terén modelu ${v(result.cell.elevationMsl, 'm MSL')}` : ''}.` : 'Čekám na skutečný běh nativního modelu; hodnoty se neodhadují z teploty ani pokrytí oblačností.';
   const start = Date.parse(chartTimes()[0] || new Date(Math.floor(Date.now() / 3600000) * 3600000).toISOString());
   const indices = result.series.times.map((time, index) => ({ time, index })).filter(item => Date.parse(item.time) >= start && Date.parse(item.time) < start + state.hours * 3600000);
-  $('cloud-chart').innerHTML = renderChart({ times: indices.map(item => item.time), series: [{ label: 'ICON-D2 · CEILING', color: 'var(--chart-amber)', unit: 'm MSL', values: indices.map(item => result.series.values[item.index]) }], selectedTime: state.time, timezone: state.timezone, height: 210, yLabel: 'm MSL', min: 0 });
+  $('cloud-chart').innerHTML = renderChart({ times: indices.map(item => item.time), series: [{ label: 'ICON-D2 · CEILING', color: 'var(--chart-amber)', unit: 'm MSL', values: indices.map(item => result.series.values[item.index]) }], selectedTime: state.time, timezone: state.timezone, width: plotWidth('cloud-chart'), height: 210, yLabel: 'm MSL', min: 0 });
 }
 
 function downloadBriefing(snapshot) {
@@ -587,6 +605,29 @@ $('share').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(location.href); $('share').textContent = 'Odkaz zkopírován'; setTimeout(() => { $('share').textContent = 'Kopírovat odkaz'; }, 2500); }
   catch { $('share').textContent = 'Zkopíruj adresu z prohlížeče'; }
 });
+function previewChartTime(time) {
+  for (const card of $('charts').querySelectorAll('[data-chart-card]')) {
+    const label = card.querySelector('.chart-hover-value');
+    const svg = card.querySelector('svg');
+    svg?.querySelector('.chart-preview-cursor')?.remove();
+    if (!label) continue;
+    label.hidden = !time;
+    if (!time || !svg || !forecast) continue;
+    const chart = CHARTS.find(item => item.id === card.dataset.chartCard);
+    label.textContent = `Náhled ${clock(time,state.timezone)} · ` + chart.fields.map(([key,name]) => {
+      const value = at(forecast,key,time);
+      return `${name}: ${v(value == null ? null : value / (chart.divisor || 1),chart.unit,1)}`;
+    }).join(' · ');
+    const hit = [...svg.querySelectorAll('[data-time]')].find(element => element.dataset.time === time);
+    if (!hit) continue;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    const x = Number(hit.getAttribute('x')) + Number(hit.getAttribute('width')) / 2;
+    for (const [key,value] of Object.entries({x1:x,x2:x,y1:18,y2:160,class:'chart-preview-cursor',stroke:'var(--teal)','stroke-width':1.5,'pointer-events':'none'})) line.setAttribute(key,value);
+    svg.append(line);
+  }
+}
+$('charts').addEventListener('pointermove', event => { if (event.pointerType === 'touch') return; const time = event.target.closest('[data-time]')?.dataset.time; previewChartTime(time || null); });
+$('charts').addEventListener('pointerleave', () => previewChartTime(null));
 $('charts').addEventListener('click', (event) => { const time = event.target.closest('[data-time]')?.dataset.time; if (time) selectTime(time); });
 $('charts').addEventListener('keydown', (event) => {
   if (!forecast || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
@@ -624,7 +665,7 @@ $('preview-download').addEventListener('click', () => { if (previewSnapshot) dow
 $('preview-print').addEventListener('click', () => $('saved-preview-frame').contentWindow?.print());
 $('cloud-chart').addEventListener('click', event => { const time = event.target.closest('[data-time]')?.dataset.time; if (time) selectTime(time); });
 window.addEventListener('beforeprint', () => { stopRadar(); $('print-notes').textContent = $('notes').value; updateControls(); });
-window.addEventListener('popstate', () => location.reload());
+window.addEventListener('popstate', () => { if (location.search !== navigationSearch) location.reload(); });
 
 $('radar-toggle').checked = true;
 updateControls();
@@ -652,3 +693,6 @@ window.addEventListener('online', () => { void monitor.wake('online'); });
 window.addEventListener('offline', () => { void monitor.wake('offline'); });
 window.addEventListener('pagehide', () => { stopRadar(); monitor.stop(); });
 window.addEventListener('pageshow', () => { if (!monitor.getState().active) { monitor.start(); void monitor.wake('pageshow'); } });
+
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { renderCharts(); renderClouds(); if (aviation) renderHistory(); map?.invalidateSize(); }, 180); });

@@ -84,3 +84,16 @@ test('invalid time ordering is an explicit failure rather than an invented plot'
   assert.match(svg, /Časovou osu nelze zobrazit/);
   assert.doesNotMatch(svg, /chart-line/);
 });
+
+
+test('narrow charts retain the full horizon with fewer legible time ticks and matching pointer geometry', () => {
+  const times = hours('2026-11-01T00:00:00Z', 48);
+  const svg = renderChart({width:340,times,series:[{values:times.map((_,index)=>index)}]});
+  assert.match(svg,/viewBox="0 0 340 190"/);
+  assert.match(svg,/data-plot-right="322"/);
+  assert.equal((svg.match(/class="chart-tick"/g)||[]).length,4);
+  assert.match(svg,/data-index="47"/);
+  const mock = {getBoundingClientRect:()=>({left:0,width:340}),viewBox:{baseVal:{width:340}},dataset:{plotLeft:'48',plotRight:'322'}};
+  assert.equal(indexFromPointer({clientX:322},mock,times),47);
+  assert.equal(indexFromPointer({clientX:48},mock,times),0);
+});

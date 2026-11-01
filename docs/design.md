@@ -68,3 +68,17 @@ These are observed documentation patterns and design interpretations, not instru
 User requests establish the need for richness and low friction; they do not select a final panel arrangement. The original establishes page content and print intent, not a validated preparation workflow or feature priority. Forum comments establish individual use cases, not population-wide preferences. Official product manuals show interface mechanics, not proof that those mechanics fit this preparation workflow. South Bohemia is the initial confirmed context; a HEMS-only audience has not been established. Offline use, alerts, saved locations and automatic assessments remain proposals or open decisions.
 
 Before accepting a design, verify that a pilot can identify the selected place, forecast source and time context; compare the agreed graphs; find a report's station and age; distinguish a model from an observation; and inspect missing or conflicting data without reconstructing context. Repeat on the intended mobile/tablet sizes and with keyboard/screen-reader access. Record what was tested, what failed and what Xef accepted; do not report a proposed interaction as implemented or validated.
+
+
+## Implemented readability pass · 1 November 2026
+
+The owner explicitly requested further implementation and a substantial UI/readability correction. The revised workspace applies the existing interface research: DWD/Meteoblue aligned time panels, Windy-style consistent comparison context and a MAVIS-inspired station comparison. These are our implementation choices, not copied assets or measured usability results.
+
+- Put the selected model's eight forecast graphs first, with full-width aligned rows and neighbouring title/selected values on desktop. The independently labelled ICON-D2 ceiling follows them.
+- Use 16 px body text, 13–14 px supporting information, clearer headings and stronger text contrast. SVG plots use their intended display width with fewer mobile ticks instead of shrinking a 720-unit chart to an unreadable narrow display.
+- Keep location, model and time in the desktop control rail; arrange the same controls in readable rows on narrow screens. Add direct section links without hiding core graphs or reports. Hash navigation preserves live/pinned context.
+- Add transient pointer preview lines/readouts across the forecast charts without changing the pinned selection. Click/keyboard selection retains the shared selected hour.
+- Enlarge the regional map. Present regional station evidence in a distance-sorted comparison table before full-width original/decoded reports. On mobile, TAF groups stack vertically and the station comparison can scroll within its own region.
+- Retain source timestamps, bounds, missing states, datum labels, raw reports and saved briefing behavior. Add explicit warning/error styling for report states. No provider or weather derivation changed.
+
+Selected local browser checks covered light/dark desktop, a 390 px iframe (375 px content plus scrollbar), all eight populated graphs, nine overview stations, model-comparison overlays, coordinated keyboard selection and section navigation retaining live mode. Narrow content width equalled scroll width. The new responsive geometry regression and existing suite passed (106 tests total). Pointer-hover behavior is implemented but was not independently exercised by the available browser controls. Actual pilot preparation, print/download completion and full accessibility review remain outstanding.

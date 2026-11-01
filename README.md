@@ -6,6 +6,8 @@ The goal is to bring a regional weather picture, detailed graphs, local observat
 
 **Status:** v0.2 evaluation [published on GitHub Pages](https://xefensor.github.io/heli-briefing/), with deployment confirmed on **1 November 2026**. Source in `web/` uses browser-native JavaScript modules, HTML, CSS and SVG charts. The rebuild is guided by research into pilot needs, aviation interfaces and data sources. The pilot-authored original supplies context and candidate information needs; its features and workflow remain open to redesign. Pilot validation, the exact reporting schedule and some data agreements remain open.
 
+**Latest interface pass:** larger type, aligned full-width forecast rows, a larger regional map, direct section navigation and a distance-sorted station comparison above readable complete reports. See [design and validation](docs/design.md#implemented-readability-pass--1-november-2026).
+
 **v0.2 includes:** an independently labelled native ICON-D2 ceiling diagnostic, conservative structured reports and twelve-hour METAR history, a two-hour radar sequence, automatic freshness checks, a report-output preview and frozen HTML export with browser-local archives. [Release evidence and verification limits](docs/deployment.md) distinguish passing tests, browser checks and publication. Integrated cameras, satellite layers and full vertical route profiles remain future scope.
 
 ## Start here
