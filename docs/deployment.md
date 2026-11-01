@@ -2,9 +2,18 @@
 
 [Documentation index](README.md) · [Hosting decision](decisions/0004-github-pages-first-build.md) · [v0.2 data scope](decisions/0005-complete-briefing-data.md)
 
-The first evaluation version is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. The browser application/build has no npm installation step or application framework dependency. Native GRIB ingestion uses separately installed, pinned Python decoder packages.
+The v0.2 evaluation is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. The browser application/build has no npm installation step or application framework dependency. Native GRIB ingestion uses separately installed, pinned Python decoder packages.
 
-Publication was confirmed on **2026-11-01**: [workflow run 41315499572](https://github.com/xefensor/heli-briefing/actions/runs/41315499572) completed its build and deployment for source commit [`51e42778f2d5bfd4f36db30c771db85fdf9adeb3`](https://github.com/xefensor/heli-briefing/commit/51e42778f2d5bfd4f36db30c771db85fdf9adeb3) and returned the live URL above. The live check confirmed real ALADIN values, eight rendered charts, ČÚZK map tiles and the ČHMÚ radar image. The deployed aviation snapshot carried a 14:18 UTC retrieval time. This is the verified v0.1 baseline; v0.2 changes below remain in progress until their own tests and deployment are recorded. Pilot usability remains unvalidated.
+The first v0.2 publication was confirmed on **2026-11-01**: [workflow run 41317467329](https://github.com/xefensor/heli-briefing/actions/runs/41317467329) successfully built and deployed source commit [`bdec823f38f8e310207b91214a5b9ec3afd07b6c`](https://github.com/xefensor/heli-briefing/commit/bdec823f38f8e310207b91214a5b9ec3afd07b6c). The earlier [v0.1 workflow](https://github.com/xefensor/heli-briefing/actions/runs/41315499572) remains historical publication evidence.
+
+## v0.2 verification record
+
+- Local deterministic checks passed: **105 tests**, comprising 77 JavaScript and 28 Python tests.
+- Actual native DWD ingestion produced **49 hourly valid times and 6,693 native cells** in the regional crop.
+- Local browser checks covered desktop and 390 px layouts without horizontal overflow, an honest outside-region native-cloud state, and a pinned **2 November 10:00** inspection time retained across refreshes and clock ticks.
+- The radar loop displayed actual past acquisition times. Frozen report preview rendered the charts, native cloud data, METAR history and radar with original timestamps.
+- The report-output preview dialog is implemented. File-download completion was not captured by the browser check; do not describe that event as verified. Public HTTPS runtime checks and pilot usability are separate from the local checks and successful deployment above.
+- Public HTTPS checks subsequently loaded the native cloud panel and validated the actual deployed JSON: `status: ok`, run 12 UTC, retrieved 14:42:49 UTC, 6,693 cells and 49 valid hours. The LKCS nearest 15 UTC sample was 1,534 m MSL, with the native cell 0.58 km away. `build-info.json` matched the v0.2 release commit. The cloud browser reported a failed download operation during the HTTPS export test; the saved preview and captured data were verified, but file delivery remains unverified in that environment.
 
 ## Local checks and build
 
@@ -52,15 +61,15 @@ The workflow has no provider secrets. Repository access is read-only; the deploy
 - Upstream failures must produce explicit failure state. Previously retrieved content may be retained only with its original retrieval time and a stale/error indicator. No invented reports or weather values are allowed.
 - GitHub schedules are best-effort. They may run late, and public-repository schedules may be disabled after inactivity. Read the displayed retrieval and product times; do not treat the configured twenty-minute interval as a freshness guarantee.
 
-## v0.2 runtime behaviour being implemented
+## Implemented v0.2 runtime behaviour
 
 - While the page is active, a thirty-second tick updates ages. Forecast requests are due every ten minutes and report/radar/cloud snapshot checks every five minutes. Hidden/offline pages pause network activity and check again on return. A pinned inspection time is retained across refreshes; a live viewing mode may advance with the clock. Polling more often does not make the deployment snapshots newer.
 - The native cloud layer comes from DWD ICON-D2 `CEILING` on its native mesh, cropped to the documented South Bohemian region. Its own model/run/validity remains visible even when another point-forecast model is selected. Values are metres MSL for the nonconvective greater-than-50% cloud diagnostic, not observed ceiling. Missing native values remain undefined and must not be labelled clear sky.
 - Structured METAR summaries preserve missing fields, visibility bounds and raw text. TAF change periods are displayed explicitly rather than flattened into an overall permission to fly. A twelve-hour METAR history remains tied to each reporting station and actual observation time.
 - The radar sequence holds up to twenty-four observed frames over two hours with acquisition times. Missing frames or incomplete history remain explicit. Animation does not imply a radar forecast.
-- A frozen HTML export captures the current briefing context and available data without making later live requests. Up to ten local archives are intended for the same browser; local storage is not an account or server backup. Preserve source/run/validity/retrieval metadata and missing-data states in exports.
+- The report-output dialog previews a frozen briefing before output. HTML export captures the current briefing context and available data without making later live requests. Up to ten local archives are kept in the same browser; local storage is not an account or server backup. Source/run/validity/retrieval metadata and missing-data states remain part of the captured briefing.
 
-These are v0.2 implementation targets. Update this status only after the corresponding checks and deployed behaviour are confirmed.
+These behaviours are implemented in v0.2. The verification record above states which checks were actually completed. Integrated cameras, satellite layers and full vertical route profiles remain open scope.
 
 ## Provider access before professional production
 

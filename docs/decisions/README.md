@@ -8,7 +8,7 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 | --- | --- |
 | Use the `heli-briefing` repository for project documentation and guidance. | The owner created the repository and authorised setup through the GitHub connector. |
 | [Build and publish the first version on GitHub Pages](0004-github-pages-first-build.md). | The owner explicitly authorised implementation and publication. Browser-native modules and a deployment-time report collector are the first-build implementation choices; publication must be verified separately. |
-| [Complete the briefing data path in v0.2](0005-complete-briefing-data.md). | Current implementation scope extends the evaluation with monitoring, native ceiling data, structured reports/history, observed radar history and frozen briefing output. Completion/publication require their own checks. |
+| [Complete the briefing data path in v0.2](0005-complete-briefing-data.md). | Implemented monitoring, native ceiling data, structured reports/history, observed radar history and frozen briefing preview/output. The first v0.2 deployment succeeded; 105 local tests and selected browser checks passed. |
 | [Rebuild using all three research tracks](0003-research-informed-redesign.md). | The owner clarified that the original is a starting point to improve/rethink using pilot-needs, aviation-interface and data-source research. Its features and workflow are not an accepted specification. |
 | Use the original as contextual evidence before asking the owner to speculate. | The owner identified the primary user and directed us to inspect the pilot-authored page. Its information needs and defects are recorded in the [inventory](../research/original-site.md). |
 | Preserve rich data and graphs while reducing repeated interaction. | Explicit owner feedback on previous iterations. |
@@ -30,10 +30,10 @@ Keep owner-confirmed requirements separate from engineering recommendations. Sou
 
 [Decision 0004](0004-github-pages-first-build.md) records the owner's subsequent build/publication instruction and the first static implementation. It selects GitHub Pages and the initial data path without approving all proposed features or establishing professional production access. Current commands and initial enablement requirements are in the [deployment guide](../deployment.md).
 
-[Decision 0005](0005-complete-briefing-data.md) records the v0.2 completion scope and native cloud ingestion/caching choice. The previously verified v0.1 deployment remains the release baseline until v0.2 checks and publication are recorded.
+[Decision 0005](0005-complete-briefing-data.md) records the implemented v0.2 scope and native cloud ingestion/caching choice. The first v0.2 deployment succeeded on 2026-11-01; its source commit, workflow, test counts, selected browser checks and remaining verification limits are recorded in that decision and the [deployment guide](../deployment.md).
 
 ## Open
 
-The primary user, initial South Bohemian context, first browser-native implementation and GitHub Pages target are established. Exact reporting cadence, additional operation-specific needs, extended geography, validated final interface layout, future backend/storage, code/documentation licence, paid services and remaining redistribution agreements remain open. Build and publication are authorised by the owner's explicit request; a successful deployment and professional operational suitability require separate evidence.
+The primary user, initial South Bohemian context, browser-native implementation and GitHub Pages publication are established. Exact reporting cadence, additional operation-specific needs, extended geography, validated final interface layout, integrated cameras/satellite, full vertical route profiles, future backend/storage, code/documentation licence, professional provider access and remaining redistribution agreements remain open. Browser file-download completion and pilot preparation/output validation remain separate checks.
 
 Use the [decision template](template.md) for a substantial new decision. Record date, status, context, choice, consequences and supporting sources. Mark a superseded decision and link its replacement instead of silently rewriting history.

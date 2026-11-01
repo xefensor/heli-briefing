@@ -2,7 +2,7 @@
 
 Date: 2026-11-01
 
-Status: accepted implementation scope; in progress, not yet a verified v0.2 release
+Status: implemented in v0.2; first evaluation deployment confirmed 2026-11-01
 
 ## Context
 
@@ -18,7 +18,7 @@ Implement the following together while retaining the existing static browser app
 | Native cloud diagnostic | Fetch DWD ICON-D2 native `CEILING`, preserving its model/run/validity, native-grid cell positions, terrain reference and missing-value bitmap. Display it as an independent source, including when the selected point forecast is ALADIN or ECMWF. |
 | Report detail | Conservative structured METAR summaries and explicit TAF change periods with raw text available; preserve unknown fields, bounds, cancellation, NIL and expiry. Add twelve hours of station-specific METAR history. |
 | Radar history | Up to twenty-four observed frames spanning two hours, each with acquisition time and honest missing frames. This is observed history, not extrapolation. |
-| Briefing output | Frozen HTML export of the inspected context/data and up to ten browser-local archives. Preserve source/time and missing-data context; opening a frozen export must not silently replace it with newer data. |
+| Briefing output | Report-output dialog with a frozen preview, HTML export of the inspected context/data and up to ten browser-local archives. Preserve source/time and missing-data context; opening a frozen export must not silently replace it with newer data. |
 
 ## Native cloud ingestion and cache
 
@@ -35,7 +35,16 @@ The DWD diagnostic is a height in **metres MSL** where scale/sub-scale cloud fra
 - TAF period summaries are an interpretation beside the original bulletin. Missing or unknown groups must not become invented conditions, and overlapping temporary/probability periods must not flatten into false certainty.
 - Browser archives are local to that browser/origin and may be cleared or unavailable. They are neither a shared account nor durable server storage. Exports need no secret keys or recipient management.
 - The application stays an open-source evaluation. No paid Open-Meteo or other professional production access has been configured; any private provider credential requires an appropriate server-side service.
-- Unit checks, live ingestion, browser behaviour and deployment are separate evidence. Mark this release complete only after the corresponding checks pass and the deployed result is verified.
+- Unit checks, live ingestion, browser behaviour and deployment remain separate evidence. The record below states the completed checks; pilot validation and unobserved browser events must not be inferred from them.
+- Integrated cameras, satellite layers and full vertical route profiles remain open scope.
+
+## Implementation and release evidence
+
+On 2026-11-01, [workflow run 41317467329](https://github.com/xefensor/heli-briefing/actions/runs/41317467329) successfully built and deployed the first v0.2 source commit [`bdec823f38f8e310207b91214a5b9ec3afd07b6c`](https://github.com/xefensor/heli-briefing/commit/bdec823f38f8e310207b91214a5b9ec3afd07b6c) to [GitHub Pages](https://xefensor.github.io/heli-briefing/).
+
+Local validation passed 105 tests: 77 JavaScript and 28 Python. Actual native ingestion yielded 49 hourly valid times and 6,693 regional native cells. Local browser checks found no horizontal overflow at desktop/390 px widths, showed an honest outside-region native-cloud state, and retained a pinned 2 November 10:00 inspection time across refreshes and clock ticks. Radar animation used actual past acquisition times. Frozen report preview rendered charts, native cloud data, METAR history and radar with original timestamps.
+
+The report-output preview is implemented; browser file-download completion has not been captured. These local checks and successful publication do not establish every public HTTPS interaction, pilot usability, local forecast skill or configured professional production access. See the [deployment verification record](../deployment.md).
 
 See [deployment](../deployment.md), [roadmap](../roadmap.md) and [data integrity](../data/integrity.md).
 
