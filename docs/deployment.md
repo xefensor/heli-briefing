@@ -1,6 +1,14 @@
 # Build and publish
 
-## Current deployment · v0.6 native browser recovery
+## Current release · v0.7 further browser recovery
+
+[Decision 0016](decisions/0016-further-browser-source-recovery.md) adds direct ŘLP SIGMET/AIREP image display, explicit local original low-cloud attachment and a separate ClearToFly processed ceiling in ft AGL. Both decoder workers run in the browser. GitHub Pages remains code/assets only, with no extension, project proxy/backend or weather build.
+
+Actual local checks loaded the 1500 × 900 warning map and imported/decoded a real 1654 × 1169 original ČHMÚ frame. Its regional overlay retained the manual/filename-unverified notice and disabled radar. The import leaves source issue/retrieval unknown and does not update automatically. A separate AGL view loaded six hourly values and 1,434 actual raster centres, showing RUC at 4,084 ft AGL for 13:45 CZ with its own 12:00 CZ run. Pinning 3 November 03:00 CZ displayed real ICON-D2 at 2,683 ft AGL (run 2 November 10:00 CZ), while the main model was ECMWF and the native ICON-EU reading remained 1,279 m MSL. Body content/scroll width matched at 1348 px. These are decoder/source/UI checks, not local forecast-skill validation.
+
+Final local checks passed **325 tests (283 JavaScript, 42 Python)**, a **60-file static build** with asset `0898bd027ad3fb7cf039`, all **39 Markdown link checks** and whitespace checks. The 390 px responsive view had matching 375 px body content/scroll width, eight populated core plots and a processed AGL regional plot. Full frozen output retained both native MSL and processed AGL region SVGs, the SIGMET/AIREP online link and no remote image/iframe loads. Its body content/scroll widths matched at 1287 px on desktop and 330 px in the phone dialog. The preview now exposes a persistent real HTML download link with the captured filename; this browser environment still returned no completed download for either the normal event or documented file-link fallback, so file delivery and native print/PDF remain unverified. Actual publication evidence is appended after deployment. The whole professional project remains incomplete at the source/access/pilot/native-output boundaries in the release checklist. Earlier entries are historical checkpoints.
+
+## Previous deployment · v0.6 native browser recovery
 
 [Decision 0015](decisions/0015-native-browser-recovery.md) adds the original three ČHMÚ camera views through their public In-počasí/Ventusky JPEG distributor and actual native ICON-EU CEILING through the CORS-enabled Source Cooperative archive. A small JavaScript GRIB/AEC decoder runs in a bounded worker. The main application ships no WASM, weather snapshots, collection schedule, project backend or proxy. The original ČHMÚ low-cloud map and direct ICON-D2 remain separate unavailable products.
 

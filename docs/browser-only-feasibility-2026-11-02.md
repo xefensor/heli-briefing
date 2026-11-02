@@ -8,6 +8,8 @@ Checked **2 November 2026**. [Decision 0012](decisions/0012-browser-only-runtime
 
 **Native browser recovery:** [decision 0015](decisions/0015-native-browser-recovery.md) subsequently restores the three original camera views inline and native ICON-EU CEILING with point, series and regional display through a small JavaScript worker. It supersedes the earlier camera/native-EU feasibility limits below. Exact ČHMÚ low-cloud and direct ICON-D2 remain unavailable.
 
+**Further recovery:** [decision 0016](decisions/0016-further-browser-source-recovery.md) adds direct SIGMET/AIREP imagery, a manually imported original low-cloud frame and a separate ClearToFly processed ceiling path in ft AGL. This does not establish complete warning coverage, automatic original-map access or native D2 MSL parity.
+
 ## Requirement and completion boundary
 
 The owner requires an ordinary website: no browser extension, native app, project-operated data backend/proxy or deployment-time weather collection. Static application hosting remains GitHub Pages.

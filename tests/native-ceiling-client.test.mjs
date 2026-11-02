@@ -49,3 +49,15 @@ test('deadline cancels stalled native work and unavailable worker support is exp
   assert.equal(WorkerStub.instances.at(-1).messages.at(-1).type,'cancel'); client.stop();
   await assert.rejects(createNativeCeilingClient({WorkerClass:null}).request({}),/nepodporuje/);
 });
+
+// Independent AGL processing uses the same cancellation protocol and its own worker/cache.
+test('an explicitly selected second worker keeps processed AGL separate from native MSL', async () => {
+  const url = new URL('../web/js/processed-ceiling-worker.js', import.meta.url);
+  const client = createNativeCeilingClient({WorkerClass:WorkerStub,workerUrl:url});
+  const result = client.request({lat:49,selectedTime:'2026-11-02T12:00:00Z'});
+  const worker = WorkerStub.instances.at(-1);
+  assert.equal(worker.url,url);
+  worker.emit({id:worker.messages[0].id,result:{valueAglFt:0,units:'ft AGL'}});
+  assert.deepEqual(await result,{valueAglFt:0,units:'ft AGL'});
+  client.stop();
+});

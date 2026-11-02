@@ -1,5 +1,7 @@
 # Native cloud-height forecast
 
+Current browser additions are in [decision 0016](../decisions/0016-further-browser-source-recovery.md): separately processed RUC/D2/EU ft AGL rasters coexist with [native ICON-EU m MSL](../decisions/0015-native-browser-recovery.md). They are not a native-D2 or terrain-conversion substitute. Earlier ingestion records below remain historical.
+
 [Data catalogue](sources.md) · [Integrity requirements](integrity.md)
 
 Checked and implemented on **2026-11-01**. This is a separate **DWD ICON-D2 CEILING** diagnostic; it does not inherit the surface-model selector's ALADIN or ECMWF label.

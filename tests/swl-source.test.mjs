@@ -35,10 +35,10 @@ test('native image confirmation needs bounded decoded dimensions, uses no CORS a
 });
 
 test('a loaded SWL confirms display and retrieval only, never validity or issuing time', async () => {
-  let requested;
-  const data = await fetchBrowserCharts({ now: clock, loadImage: async url => { requested = url; return image; } });
+  const requested = [];
+  const data = await fetchBrowserCharts({ now: clock, loadImage: async url => { requested.push(url); return image; } });
   validateCharts(data);
-  assert.equal(data.swl.imageUrl, requested);
+  assert.deepEqual(new Set(requested), new Set([data.swl.imageUrl, data.sigmetImage.imageUrl]));
   assert.equal(data.swl.confirmedBy, 'image-load');
   assert.equal(data.swl.status, 'ok');
   assert.equal(data.swl.retrievedAt, new Date(at).toISOString());
@@ -78,7 +78,7 @@ test('abort propagates and does not turn a retained image into refresh success',
 
 test('frozen SWL keeps only online source/time and never makes remote image requests', async () => {
   const live = await fetchBrowserCharts({ now: clock, loadImage: async () => image });
-  assert.throws(() => validateCharts(live, { captured: true }), /offline snímek/);
+  assert.throws(() => validateCharts(live, { captured: true }), /offline snímek|Zachycená mapa SIGMET/);
   const captured = await captureCharts(live, new Date(at).toISOString(), { fetcher: () => { throw new Error('unexpected byte request'); } });
   validateCharts(captured, { captured: true });
   assert.equal(captured.swl.imageUrl, null);

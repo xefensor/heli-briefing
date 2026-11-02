@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { createBriefingSnapshot, renderBriefingHtml, renderBriefingText } from '../web/js/archive.js';
 import { sourceReview, reportProviderName, reportSources, observationHistoryInfo, renderAviationAttribution } from '../web/js/handoff.js';
 import { createBrowserCameras, fetchBrowserCameras } from '../web/js/cameras.js';
-import { createBrowserCharts } from '../web/js/aviation-charts.js';
+import { createBrowserCharts, captureCharts } from '../web/js/aviation-charts.js';
+import { fetchSigmetImage, SIGMET_IMAGE_URL } from '../web/js/sigmet-image-source.js';
+import { parseLowCloudFiles, LOW_CLOUD_PAGE } from '../web/js/lowcloud-file-source.js';
+import { createProcessedCeilingSource, PROCESSED_CEILING_ORIGIN } from '../web/js/processed-ceiling-source.js';
+import { fixtureTiff, fixtureCell } from './processed-geotiff-fixtures.mjs';
 
 const NOW = '2026-11-02T10:15:00.000Z';
 const SWIM = 'https://swim.chmi.cz/api.php?action=list&format=txt';
@@ -380,4 +384,177 @@ test('a missing selected native hour retains the genuine partial series without 
   assert.match(text,/Samostatný ICON-EU CEILING: nedostupný/);
   assert.match(text,/2\.11\.2026 10:00 UTC · 880 m MSL/);
   assert.match(text,/2\.11\.2026 12:00 UTC · 0 m MSL/);
+});
+
+const loadMap=async()=>({width:2000,height:1100});
+test('SIGMET/AIREP image evidence stays online-only and separate from the structured warning inventory in every output',async()=>{
+  const value=input();value.charts=directSwl();value.charts.sigmetImage=await fetchSigmetImage({now:()=>Date.parse(NOW),loadImage:loadMap});
+  const imageUrl=value.charts.sigmetImage.imageUrl,snapshot=createBriefingSnapshot(value);
+  assert.equal(snapshot.charts.sigmetImage.imageUrl,null);assert.equal(snapshot.charts.sigmetImage.onlineImageUrl,imageUrl);
+  assert.equal(snapshot.charts.sigmetImage.onlineOnly,true);assert.equal(snapshot.charts.sigmetImage.imageDataUrl,null);
+  assert.equal(snapshot.charts.sigmetImage.coverageComplete,false);
+  for(const key of ['issuedAt','validFrom','validTo','observedAt','updatedAt'])assert.equal(snapshot.charts.sigmetImage[key],null);
+  assert.equal(value.charts.sigmetImage.imageUrl,imageUrl);
+  assert.equal(createBriefingSnapshot({...value,charts:snapshot.charts}).charts.sigmetImage.onlineImageUrl,imageUrl);
+  assert.equal(reportSources(snapshot),'ČHMÚ MET-SWIM');
+  for(const mode of ['full','reports']){
+    const html=renderBriefingHtml(snapshot,{mode}),text=renderBriefingText(snapshot,{mode}),row=sourceReview(snapshot,{mode}).find(row=>row.name==='Mapa SIGMET / AIREP');
+    assert.equal(row.tone,'warn');assert.match(row.text,/úplnost pokrytí nejsou ověřeny/);
+    assert.ok(html.includes(`href="${imageUrl}"`));assert.doesNotMatch(html,/<img[^>]+src="https?:|<iframe|<script/);
+    assert.match(html,/Prázdná mapa[^<]*nepotvrzuj/);
+    assert.match(text,/MAPA SIGMET \/ AIREP · POUZE ONLINE/);
+    assert.match(text,/Čas načtení není vydáním ani platností/);
+    assert.match(text,/Úplnost pokrytí SIGMET\/AIREP není potvrzena/);
+    assert.match(text,/ŘLP ČR · meteorologická data ČHMÚ/);
+    assert.ok(text.includes(imageUrl));
+  }
+});
+
+test('failed SIGMET map renewal retains the actual older load time while a first failure claims no loaded image',async()=>{
+  const value=input();value.charts=directSwl();
+  const previous=await fetchSigmetImage({now:()=>Date.parse(NOW),loadImage:loadMap});
+  value.createdAt='2026-11-02T11:15:00Z';
+  value.charts.sigmetImage=await fetchSigmetImage({previous,now:()=>Date.parse(value.createdAt),loadImage:async()=>{throw Error('offline');}});
+  let snapshot=createBriefingSnapshot(value),text=renderBriefingText(snapshot),html=renderBriefingHtml(snapshot);
+  assert.equal(snapshot.charts.sigmetImage.status,'stale');assert.equal(snapshot.charts.sigmetImage.retrievedAt,NOW);
+  assert.equal(snapshot.charts.sigmetImage.checkedAt,'2026-11-02T11:15:00.000Z');
+  assert.match(text,/Poslední potvrzené načtení 2\.11\.2026 10:15 UTC · obnova selhala/);
+  assert.match(text,/Kontrola obnovy 2\.11\.2026 11:15 UTC/);
+  assert.match(text,/zdrojová adresa může nyní ukazovat jiný obraz/);
+  assert.doesNotMatch(html,/Samostatná aktuální mapa|<img[^>]+src="https?:/);
+  value.charts.sigmetImage=await fetchSigmetImage({now:()=>Date.parse(value.createdAt),loadImage:async()=>{throw Error('offline');}});
+  snapshot=createBriefingSnapshot(value);
+  const row=sourceReview(snapshot).find(row=>row.name==='Mapa SIGMET / AIREP');
+  assert.equal(snapshot.charts.sigmetImage.retrievedAt,null);assert.equal(snapshot.charts.sigmetImage.onlineImageUrl,undefined);
+  assert.match(row.text,/Načtení nepotvrzeno/);assert.doesNotMatch(row.text,/Poslední potvrzené načtení/);
+  assert.ok(renderBriefingHtml(snapshot,{mode:'reports'}).includes(`href="${SIGMET_IMAGE_URL}"`));
+});
+
+test('SIGMET image export rejects fabricated validity, completeness, embedded bytes and malformed captured proof',async()=>{
+  const original=await fetchSigmetImage({now:()=>Date.parse(NOW),loadImage:loadMap});
+  for(const mutate of [
+    image=>{image.issuedAt=NOW;},image=>{image.validTo=NOW;},image=>{image.coverageComplete=true;},
+    image=>{image.imageDataUrl=png;},image=>{image.imageUrl='https://meteo.rlp.cz.evil.example/sigmetmap.png';},
+  ]){
+    const value=input();value.charts=directSwl();value.charts.sigmetImage=structuredClone(original);mutate(value.charts.sigmetImage);
+    assert.throws(()=>createBriefingSnapshot(value),/SIGMET/);
+  }
+  const snapshot=createBriefingSnapshot({...input(),charts:{...directSwl(),sigmetImage:original}});
+  for(const mutate of [image=>{image.retrievedAt=null;},image=>{image.confirmedBy=null;},image=>{image.width=10;}]){
+    const edited=structuredClone(snapshot);mutate(edited.charts.sigmetImage);
+    assert.throws(()=>renderBriefingHtml(edited),/SIGMET/);
+  }
+});
+
+test('historical charts without a SIGMET image remain readable without inventing map availability',()=>{
+  const value=input();value.charts=directSwl();delete value.charts.sigmetImage;
+  const snapshot=createBriefingSnapshot(value);
+  assert.equal(snapshot.charts.sigmetImage,undefined);
+  assert.equal(sourceReview(snapshot).find(row=>row.name==='Mapa SIGMET / AIREP'),undefined);
+  assert.doesNotMatch(renderBriefingHtml(snapshot,{mode:'reports'}),/class="sigmet-image-evidence"/);
+  assert.doesNotMatch(renderBriefingText(snapshot),/MAPA SIGMET \/ AIREP · POUZE ONLINE/);
+});
+
+const localPng='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAPklEQVR4nO3BMQEAAADCoPVPbQsvoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgKcBnKQAAaZ1lY4AAAAASUVORK5CYII=';
+async function localCharts(names=['202611020900.png','202611021200.png']){
+  const files=names.map(name=>new File([Buffer.from(localPng.split(',')[1],'base64')],name,{type:'image/png',lastModified:0}));
+  const parsed=await parseLowCloudFiles(files,{now:NOW,decodeImage:async(_bytes,{width,height})=>({width,height})});
+  return {...directSwl(),lowCloud:{delivery:'local-file',status:'manual',frames:parsed.frames,importedAt:parsed.importedAt,error:null,sourceUrl:LOW_CLOUD_PAGE,projection:'EPSG:3857',bounds:[10.5,47.766666666667,20.316666666667,51.366666666667]}};
+}
+
+test('local low-cloud attachment embeds only the selected PNG and keeps import time separate from its unverified filename time',async()=>{
+  const value=input();value.charts=await localCharts();let requests=0;
+  const prepared=await captureCharts(value.charts,value.state.time,{fetcher:async()=>{requests++;throw Error('Unexpected fetch');}});
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot),frame=snapshot.charts.selectedLow;
+  assert.equal(requests,0);assert.equal(value.charts.lowCloud.frames.length,2);assert.equal(snapshot.charts.lowCloud.frames.length,0);
+  assert.equal(frame.originalFileName,'202611020900.png');assert.equal(prepared.selectedLow.originalFileName,frame.originalFileName);
+  assert.equal(frame.validAt,'2026-11-02T09:00:00.000Z');assert.equal(frame.importedAt,NOW);
+  assert.equal(frame.issuedAt,null);assert.equal(frame.retrievedAt,null);assert.equal(frame.validityConfirmed,false);
+  assert.equal(frame.timeBasis,'filename-unverified');assert.equal(frame.imageDataUrl,localPng);
+  assert.equal(snapshot.state.time,NOW);assert.equal(createBriefingSnapshot({...value,charts:prepared}).charts.selectedLow.imageDataUrl,localPng);
+  assert.equal(sourceReview(snapshot).find(row=>row.name==='Nízká oblačnost ČHMÚ').tone,'warn');
+  assert.equal(html.split(`src="${localPng}"`).length-1,1);
+  assert.match(html,/Platnost z názvu souboru není nezávisle ověřena/);
+  assert.match(text,/Čas v názvu souboru 2\.11\.2026 09:00 UTC není ověřenou platností/);
+  assert.match(text,/Nahráno 2\.11\.2026 10:15 UTC; původní vydání a stažení nejsou známy/);
+  assert.match(text,/Soubor se sám neaktualizuje/);
+  assert.doesNotMatch(html,/<img[^>]+src="https?:|<iframe|<script/);
+  assert.doesNotMatch(renderBriefingHtml(snapshot,{mode:'reports'}),/Místní soubor uživatele|src="data:image/);
+});
+
+test('manual low-cloud export cannot upgrade filename time to verified validity or retrieval evidence',async()=>{
+  const original=await localCharts();
+  for(const mutate of [frame=>{frame.validityConfirmed=true;},frame=>{frame.retrievedAt=NOW;},frame=>{frame.validAt=NOW;},frame=>{frame.imageDataUrl=png;}]){
+    const value=input();value.charts=structuredClone(original);mutate(value.charts.lowCloud.frames[0]);
+    assert.throws(()=>createBriefingSnapshot(value),/Místní|místní|PNG/);
+  }
+});
+
+test('a missing local low-cloud slot does not inherit a distant imported image',async()=>{
+  const value=input();value.state.time='2026-11-02T12:00:00Z';value.charts=await localCharts(['202611020900.png','202611021500.png']);
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot);
+  assert.equal(snapshot.charts.selectedLow,null);assert.equal(snapshot.charts.lowCloud.importedAt,NOW);
+  assert.match(text,/Pro čas přehledu není vybraný rámec v dosahu 90 minut/);
+  assert.match(html,/Jiná hodina ji nenahrazuje/);
+  assert.doesNotMatch(html,/<img[^>]+src="data:image\/png/);
+});
+
+async function processedInput({missing=[],omit=[],unknownRun=false}={}){
+  const runId='2026110209_2026110211_2026110206',point=fixtureCell(0,0),selectedTime='2026-11-02T11:37:00Z';
+  const filename=hour=>`ceiling_${runId}_h${String(hour).padStart(2,'0')}m00.tif`;
+  const frames=Array.from({length:6},(_,hour)=>({filename:filename(hour),hour,minute:0,minutesOffset:hour*60,source:hour<2?'RUC':hour<4?'D2':'EU'})).filter(frame=>!omit.includes(frame.hour));
+  const latest={run_id:runId,timestamp:'2026-11-02T12:00:00Z',viewers:{ceiling:`viewers/ceiling-viewer-${runId}.html`}};
+  const html=`<script>window.ICON_CONFIG={frames:${JSON.stringify(frames)},baseTime:'2026-11-02T11:00:00Z',cogBaseUrl:'${PROCESSED_CEILING_ORIGIN}/cog',runId:'${runId}',productType:'ceiling'};</script>${unknownRun?'':'<footer>D2 2026-11-02 09Z · RUC 2026-11-02 11Z · EU 2026-11-02 06Z</footer>'}`;
+  const source=createProcessedCeilingSource({now:()=>Date.parse('2026-11-02T12:37:00Z'),fetchImpl:async url=>{
+    if(String(url).endsWith('/latest.json'))return new Response(JSON.stringify(latest),{headers:{'content-type':'application/json'}});
+    if(String(url).includes('/viewers/'))return new Response(html,{headers:{'content-type':'text/html'}});
+    const hour=Number(/_h(\d+)m00\.tif$/.exec(url)[1]);
+    return new Response(fixtureTiff({values:Array.from({length:16},(_,index)=>index===0&&missing.includes(hour)?NaN:hour*100+index)}),{headers:{'content-type':'image/tiff'}});
+  }});
+  const value=input();value.createdAt='2026-11-02T12:37:00Z';value.state={...value.state,lat:point.lat,lon:point.lon,time:selectedTime};
+  value.processedCeiling=await source.load({...point,selectedTime});
+  return value;
+}
+
+test('processed AGL export preserves mixed per-frame models/runs and nulls independently of native MSL data',async()=>{
+  const value=await processedInput({missing:[1],omit:[3]});
+  value.clouds={model:'ICON-D2',product:'CEILING',units:'m MSL',status:'available',valueMsl:960,validAt:'2026-11-02T12:00:00Z',runTime:'2026-11-02T09:00:00Z',retrievedAt:'2026-11-02T12:30:00Z',series:{times:['2026-11-02T12:00:00Z'],values:[960]}};
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot);
+  assert.equal(snapshot.processedCeiling.units,'ft AGL');assert.equal(snapshot.processedCeiling.selectedStatus,'missing');
+  assert.deepEqual(snapshot.processedCeiling.series.values,[0,null,200,null,400,500]);
+  assert.equal(snapshot.processedCeiling.series.frames[2].model,'ICON-D2');
+  assert.equal(snapshot.processedCeiling.series.frames[4].model,'ICON-EU');
+  assert.equal(snapshot.processedCeiling.series.frames[2].runTime,'2026-11-02T09:00:00.000Z');
+  assert.equal(snapshot.clouds.units,'m MSL');assert.equal(snapshot.clouds.valueMsl,960);
+  assert.equal(sourceReview(snapshot).find(row=>row.name==='ClearToFly · CEILING (ft AGL)').tone,'warn');
+  assert.match(html,/ClearToFly/);assert.match(html,/ft AGL/);assert.match(html,/DWD ICON-D2 CEILING/);assert.match(html,/960 m MSL/);
+  assert.match(text,/ZPRACOVANÝ CEILING · ClearToFly · ft AGL/);
+  assert.match(text,/2\.11\.2026 11:00 UTC · 0 ft AGL/);
+  assert.match(text,/ICON-D2 · běh 2\.11\.2026 09:00 UTC/);
+  assert.match(text,/ICON-EU · běh 2\.11\.2026 06:00 UTC/);
+  assert.match(text,/převod na AGL, použitý terén a podmínky poskytovatele nejsou v přehledu ověřeny/);
+  assert.ok(html.includes(`href="${snapshot.processedCeiling.sourceUrl}"`));
+  assert.doesNotMatch(html,/<img[^>]+src="https?:|<image|<iframe|<script/);
+  assert.doesNotMatch(renderBriefingHtml(snapshot,{mode:'reports'}),/ClearToFly|ZPRACOVANÝ CEILING/);
+  value.processedCeiling.series.values[0]=999;assert.equal(snapshot.processedCeiling.series.values[0],0);
+});
+
+test('processed source reference time remains separate when the provider has not identified a model run',async()=>{
+  const value=await processedInput({unknownRun:true}),snapshot=createBriefingSnapshot(value),text=renderBriefingText(snapshot);
+  assert.equal(snapshot.processedCeiling.runTime,null);
+  assert.ok(snapshot.processedCeiling.series.frames.every(frame=>frame.runTime===null));
+  assert.equal(snapshot.processedCeiling.providerReferenceTime,'2026-11-02T11:00:00.000Z');
+  assert.match(text,/Referenční čas poskytovatele 2\.11\.2026 11:00 UTC není během modelu/);
+  assert.match(text,/ICON-D2-RUC · běh čas neuveden/);
+  assert.doesNotMatch(text,/ICON-D2-RUC · běh 2\.11\.2026 11:00 UTC/);
+});
+
+test('processed source capture rejects a different context, unit or raster quantity while preserving an equivalent cached request',async()=>{
+  const value=await processedInput();
+  assert.doesNotThrow(()=>createBriefingSnapshot({...value,state:{...value.state,time:'2026-11-02T11:36:00Z'}}));
+  for(const state of [{...value.state,lat:value.state.lat+.1},{...value.state,time:'2026-11-02T11:29:00Z'},{...value.state,time:'2026-11-02T11:45:00Z'},{...value.state,time:'2026-11-02T12:36:00Z'}])assert.throws(()=>createBriefingSnapshot({...value,state}),/CEILING|míst|čas|kontext/);
+  for(const mutate of [data=>{data.units='m MSL';},data=>{data.product='CLCL';},data=>{data.regional.units='m MSL';},data=>{data.series.frames[0].validAt='2026-11-02T10:00:00Z';}]){
+    const edited=structuredClone(value);mutate(edited.processedCeiling);
+    assert.throws(()=>createBriefingSnapshot(edited),/CEILING|ceiling|rastr|ClearToFly/);
+  }
 });

@@ -1,5 +1,5 @@
 /** Keep bounded native GRIB work off the UI thread; the worker owns its cache. */
-export function createNativeCeilingClient({ WorkerClass = globalThis.Worker, timeoutMs = 90000 } = {}) {
+export function createNativeCeilingClient({ WorkerClass = globalThis.Worker, timeoutMs = 90000, workerUrl = new URL('./native-ceiling-worker.js', import.meta.url) } = {}) {
   let worker = null, sequence = 0;
   const pending = new Map();
   const abortError = () => new DOMException('Načítání ceilingu bylo zrušeno.', 'AbortError');
@@ -18,7 +18,7 @@ export function createNativeCeilingClient({ WorkerClass = globalThis.Worker, tim
   function connect() {
     if (worker) return worker;
     if (typeof WorkerClass !== 'function') throw new Error('Prohlížeč nepodporuje pracovní proces pro nativní ceiling.');
-    worker = new WorkerClass(new URL('./native-ceiling-worker.js', import.meta.url), { type: 'module' });
+    worker = new WorkerClass(workerUrl, { type: 'module' });
     worker.onmessage = ({ data }) => {
       if (!data || !pending.has(data.id)) return;
       if (typeof data.progress === 'string') pending.get(data.id).onProgress?.(data.progress);
@@ -37,7 +37,7 @@ export function createNativeCeilingClient({ WorkerClass = globalThis.Worker, tim
       const abort = () => { target.postMessage({ type: 'cancel', id }); finish(id, signal?.reason || abortError()); };
       const timer = setTimeout(() => {
         target.postMessage({ type: 'cancel', id });
-        finish(id, new Error('Načítání nativního ceilingu překročilo časový limit.'));
+        finish(id, new Error('Načítání ceilingu překročilo časový limit.'));
       }, timeoutMs);
       pending.set(id, { resolve, reject, signal, onProgress, timer, abort });
       signal?.addEventListener('abort', abort, { once: true });

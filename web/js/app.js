@@ -10,6 +10,7 @@ import { mountPlaceControls } from './place-controls.js';
 import { mountRouteWorkspace } from './route-controls.js';
 import { readPlaces } from './places.js';
 import { mountImagery } from './imagery-controls.js';
+import { mountProcessedCeiling } from './processed-ceiling-controls.js';
 import { renderMetarSummary, renderTafPeriods, renderReportGuide } from './report-views.js';
 import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
@@ -93,6 +94,7 @@ let radarTimer = null;
 let reportView = 'both';
 let previewSnapshot = null;
 let previewMode = 'full';
+let previewDownloadUrl = null;
 let satellite = null;
 let satelliteError = null;
 let satelliteSequence = 0;
@@ -123,15 +125,18 @@ const routeWorkspace = mountRouteWorkspace({ getContext: () => state,
   onMap: points => { if (map && points.length) map.fitBounds(points.map(point => [point.lat, point.lon]), { padding: [25, 25], maxZoom: 11 }); $('region-panel').scrollIntoView({ behavior: 'smooth' }); },
 });
 
-const imagery = mountImagery({ getContext: () => state, onLowCloud: showLowCloudMap });
+const imagery = mountImagery({ getContext: () => state, onLowCloud: showLowCloudMap, onChange: updateOutputAvailability });
+const processedCeiling = mountProcessedCeiling({ getContext: () => state, onChange: updateOutputAvailability });
 function showLowCloudMap(frame, focus = false) {
   if (!map || !window.L) return;
-  if (!frame?.imagePath) { lowCloudLayer?.remove(); lowCloudLayer = null; lowCloudPath = null; $('map-layer-note').textContent = ''; return; }
-  if (frame.imagePath !== lowCloudPath) {
+  const image = frame?.imageDataUrl || frame?.imagePath;
+  const imageKey = frame?.id || image;
+  if (!image) { lowCloudLayer?.remove(); lowCloudLayer = null; lowCloudPath = null; $('map-layer-note').textContent = ''; return; }
+  if (imageKey !== lowCloudPath) {
     lowCloudLayer?.remove(); $('radar-toggle').checked = false; stopRadar(); radarLayer?.remove(); renderRadar();
-    lowCloudLayer = window.L.imageOverlay(frame.imagePath, [[47.766666666667,10.5],[51.366666666667,20.316666666667]], {opacity:.75,alt:`Předpověď nízké oblačnosti ČHMÚ pro ${fullTime(frame.validAt)}`,attribution:'Nízká oblačnost: ČHMÚ · CC BY 4.0'}).addTo(map); lowCloudPath = frame.imagePath;
+    lowCloudLayer = window.L.imageOverlay(image, [[47.766666666667,10.5],[51.366666666667,20.316666666667]], {opacity:.75,alt:`Předpověď nízké oblačnosti ČHMÚ pro ${fullTime(frame.validAt)}`,attribution:'Nízká oblačnost: ČHMÚ · CC BY 4.0'}).addTo(map); lowCloudPath = imageKey;
   }
-  $('map-layer-note').textContent = `PŘEDPOVĚĎ ČHMÚ nízké oblačnosti · mapa pro ${fullTime(frame.validAt)} · radar je vypnutý. Výšky podle legendy v hFT AMSL.`;
+  $('map-layer-note').textContent = `${frame.delivery === 'local-file' ? 'MÍSTNÍ SOUBOR · původ a čas z názvu neověřeny · ' : ''}PŘEDPOVĚĎ ČHMÚ nízké oblačnosti · mapa pro ${fullTime(frame.validAt)} · radar je vypnutý. Výšky podle legendy v hFT AMSL.`;
   if (focus) $('region-panel').scrollIntoView({behavior:'smooth'});
 }
 
@@ -146,6 +151,7 @@ function updateControls() {
   placeControls.update();
   routeWorkspace.sync();
   imagery.sync();
+  processedCeiling.sync();
   scheduleNativeClouds();
   updateOutputAvailability();
   document.querySelectorAll('[data-model]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.model === state.model)));
@@ -335,7 +341,7 @@ function renderReports() {
     const metar = aviation.metar?.items?.find(item => item.station === station.id);
     const taf = aviation.taf?.items?.find(item => item.station === station.id);
     const distance = haversineKm(state.lat, state.lon, station.lat, station.lon);
-    return `<article class="station-card" id="station-${station.id}"><div class="station-title"><button type="button" class="station-pick" data-station="${station.id}" title="Vybrat místo předpovědi ${station.id}"><strong>${station.id}</strong> ${station.name}</button><span class="muted">${num(distance)} km od bodu</span></div><div class="station-bulletins">${itemHtml(metar, 'METAR')}${itemHtml(taf, 'TAF')}</div>${!metar || !taf ? `<p class="station-source-link"><a href="https://aviationweather.gov/data/metar/?id=${station.id}" target="_blank" rel="noopener noreferrer">${station.id} · ověřit další hlášení u AWC ↗</a></p>` : ''}</article>`;
+    return `<article class="station-card" id="station-${station.id}"><div class="station-title"><button type="button" class="station-pick" data-station="${station.id}" title="Vybrat místo předpovědi ${station.id}"><strong>${station.id}</strong> ${station.name}</button><span class="muted">${num(distance)} km od bodu</span></div><div class="station-bulletins">${itemHtml(metar, 'METAR')}${itemHtml(taf, 'TAF')}</div>${station.id === 'LKHS' ? '<p class="station-source-link"><a href="https://app.weathercloud.net/d5920751771#current" target="_blank" rel="noopener noreferrer">Hosín · místní meteostanice ↗</a> · <a href="https://www.letiste-hosin.cz/cs/pro-piloty/informace-pro-piloty/" target="_blank" rel="noopener noreferrer">Zdroj odkazu: letiště ↗</a></p><p class="section-note">Samostatná meteostanice, nikoli METAR nebo TAF. Aktuálnost, jednotky a měřené veličiny ověř přímo u zdroje.</p>' : ''}${!metar || !taf ? `<p class="station-source-link"><a href="https://aviationweather.gov/data/metar/?id=${station.id}" target="_blank" rel="noopener noreferrer">${station.id} · ověřit další hlášení u AWC ↗</a></p>` : ''}</article>`;
   }).join('');
   if(focusedStation) $('reports').querySelector(`[data-station="${focusedStation}"]`)?.focus({preventScroll:true});
   renderStationOverview();
@@ -379,7 +385,7 @@ function renderSigmets() {
   $('significant-status').textContent = future ? 'SIGMET · budoucí stav nelze určit' : uncertain ? 'SIGMET · ověřit aktuálnost' : active.length ? `SIGMET · ${active.length} pro čas přehledu` : 'SIGMET · 0 v balíčku pro tento čas';
   $('significant-status').dataset.tone = uncertain || future || active.length ? 'warn' : 'neutral';
   $('sigmets').innerHTML = status + (active.length ? active.map((item) => `<details class="report-details" data-sigmet-id="${esc(item.id || `${item.fir}:${item.validFrom}`)}" open><summary>${esc(item.fir || 'SIGMET')} · ${esc(fullTime(item.validTo))}</summary><pre class="report-raw">${esc(item.raw)}</pre></details>`).join('') : `<p class="muted">Načtené soubory neobsahují SIGMET s platností pro vybraný čas. Pokrytí FIR LKAA / LOVV / EDMM / LZBB není úplné. Ověř aktuální zdroj; nejde o potvrzení bez výstrah.</p>`) + ((section.items || []).some(item => !active.includes(item)) ? `<details class="report-details"><summary>Další zprávy zdroje · mimo vybranou platnost nebo neznámý čas</summary>${(section.items || []).filter(item=>!active.includes(item)).map(item=>`<p class="station-meta">${esc(item.fir || 'SIGMET')} · ${item.validFrom?esc(fullTime(item.validFrom)):'počátek neuveden'}–${item.validTo?esc(fullTime(item.validTo)):'konec neuveden'} · ${esc(reportState(item,Date.parse(state.time)).label)}</p><pre class="report-raw">${esc(item.raw)}</pre>`).join('')}</details>` : '') + (unknown ? `<p class="feed-error">${unknown} zpráv má neznámou platnost; nelze určit překryv.</p>` : '') + (Date.parse(state.time) > Date.now() + 3600000 ? '<p class="chart-caption">Aktuální balíček nepředpovídá, jaké výstrahy budou vydány v budoucnu.</p>' : '') + `<p class="chart-caption">SIGMET stažen ${section.retrievedAt ? esc(fullTime(section.retrievedAt)) : '—'}.</p>`;
-  $('sigmets').insertAdjacentHTML('beforeend','<p class="chart-caption"><a href="https://meteo.rlp.cz/sigmetmap.png" target="_blank" rel="noopener noreferrer">ŘLP · původní mapa SIGMET / AIREP ↗</a> · samostatný online zdroj; ověř čas aktualizace v mapě. Její otevření nepotvrzuje úplnost načtených zpráv.</p>');
+  $('sigmets').insertAdjacentHTML('beforeend','<p class="chart-caption"><a href="#sigmet-image-panel">Mapa SIGMET / AIREP v přehledu ↓</a> · <a href="https://meteo.rlp.cz/sigmetmap.png" target="_blank" rel="noopener noreferrer">ŘLP · původní mapa SIGMET / AIREP ↗</a> · samostatný online zdroj; ověř čas aktualizace v mapě. Její otevření nepotvrzuje úplnost načtených zpráv.</p>');
   for(const node of $('sigmets').querySelectorAll('[data-sigmet-id]')) { if(openStates.has(node.dataset.sigmetId)) node.open=openStates.get(node.dataset.sigmetId); if(node.dataset.sigmetId===focusedId) node.querySelector('summary')?.focus({preventScroll:true}); }
 }
 
@@ -476,7 +482,7 @@ function renderRadar() {
 }
 
 function updateOutputAvailability() {
-  const busy = preparing || loading || aviationLoading || cloudLoading;
+  const busy = preparing || loading || aviationLoading || cloudLoading || processedCeiling.busy() || imagery.busy();
   for (const id of ['prepare-output','save-briefing']) {
     $(id).disabled = busy;
     $(id).title = aviationLoading ? 'Čekám na přímé načtení leteckých zpráv.' : loading ? 'Čekám na předpověď.' : 'Otevřít zachycený briefing';
@@ -668,7 +674,13 @@ function updatePreview() {
   $('preview-feedback').textContent=previewMode==='reports'?'Výpis obsahuje originální METAR, TAF a SIGMET včetně platnosti a chybějících zpráv.':'Celý briefing obsahuje grafy, pozorování, obrazové zdroje a poznámky. Přesná hodinová příloha zůstává v HTML, standardní tisk ji vynechá.';
   $('copy-fallback').hidden=true;
   $('preview-print').disabled=true;
-  $('saved-preview-frame').srcdoc=renderBriefingHtml(previewSnapshot,{mode:previewMode});
+  const html = renderBriefingHtml(previewSnapshot,{mode:previewMode});
+  $('saved-preview-frame').srcdoc = html;
+  const previousDownloadUrl = previewDownloadUrl;
+  previewDownloadUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+  $('preview-download').href = previewDownloadUrl;
+  $('preview-download').download = briefingFilename(previewSnapshot,{mode:previewMode});
+  if (previousDownloadUrl) setTimeout(() => URL.revokeObjectURL(previousDownloadUrl), 60000);
   document.querySelectorAll('[data-output-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.outputMode===previewMode)));
 }
 function openPreview(snapshot) {
@@ -702,7 +714,7 @@ async function renderArchive() {
 async function saveCurrentBriefing() {
   if (preparing) return;
   stopRadar();
-  if (loading || aviationLoading) { $('archive-status').textContent = 'Předpověď nebo letecké zprávy se právě obnovují. Počkej na dokončení a potom připrav briefing.'; return; }
+  if (loading || aviationLoading || cloudLoading || processedCeiling.busy() || imagery.busy()) { $('archive-status').textContent = 'Předpověď nebo letecké zdroje se právě obnovují. Počkej na dokončení a potom připrav briefing.'; return; }
   const radar = radarProduct || aviation?.radar;
   const frame = radarFrames()[radarIndex];
   const imageMatches = radar?.imageFetchStatus === 'ok' && radar.imageObservedAt === (frame?.observedAt || radar.observedAt) && radar.imageUrl === (frame?.url || radar.url);
@@ -718,7 +730,7 @@ async function saveCurrentBriefing() {
     preparing = true;
     $('prepare-output').disabled = true; $('save-briefing').disabled = true;
     $('archive-status').textContent = 'Připravuji zachycený briefing a obrazové zdroje…';
-    const baseSnapshot = createBriefingSnapshot({ state: {...state, historyStation}, route: routeWorkspace.snapshot(), forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
+    const baseSnapshot = createBriefingSnapshot({ state: {...state, historyStation}, route: routeWorkspace.snapshot(), forecast, comparison, aviation: capturedAviation, astronomy: getAstronomy({ lat: state.lat, lon: state.lon, date: new Date(state.time) }), notes: $('notes').value, clouds: selectedClouds(), processedCeiling: processedCeiling.snapshot(), satellite, radarImageDataUrl: imageMatches ? radar.imageDataUrl : null, sourceErrors: { forecast: loadError, aviation: aviationLoadError, comparison: compareError, clouds: cloudError, satellite: satelliteError } });
     const capturedImages = await imagery.capture(baseSnapshot.state.time);
     const snapshot = createBriefingSnapshot({...baseSnapshot, ...capturedImages, createdAt:new Date().toISOString()});
     let storageError = null;
@@ -900,7 +912,6 @@ $('archive-list').addEventListener('click', async event => {
 $('satellite-enlarge').addEventListener('click',()=>{renderSatellitePanel();$('satellite-large').innerHTML=$('satellite').innerHTML;$('satellite-dialog').showModal();});
 $('satellite-close').addEventListener('click',()=>$('satellite-dialog').close());
 $('preview-close').addEventListener('click', () => $('saved-preview').close());
-$('preview-download').addEventListener('click', () => { if (previewSnapshot) downloadBriefing(previewSnapshot,previewMode); });
 $('output-mode').addEventListener('click',event=>{const mode=event.target.closest('[data-output-mode]')?.dataset.outputMode;if(!['full','reports'].includes(mode)||mode===previewMode)return;previewMode=mode;updatePreview();});
 $('preview-copy').addEventListener('click',async()=>{
   if(!previewSnapshot)return;
@@ -930,7 +941,7 @@ monitor = createMonitor({
     if (reason === 'manual') radarFailures.clear();
     const tasks = [];
     if (refreshForecast) { tasks.push(loadForecast(true, signal).then(result => ['forecast', result])); void routeWorkspace.refresh(reason === 'manual'); }
-    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadSatellite(true, signal), imagery.refresh(true, signal), $('radar-toggle').checked?loadRadar(radarHistoryLoaded,signal):Promise.resolve({ok:true}), loadNativeClouds(true, signal, reason === 'manual')]).then(([reports,image,extra,radar,native])=>['aviation',reports.ok&&image.ok&&extra.ok&&radar.ok&&native.ok?{ok:true}:{ok:false,error:reports.error||image.error||extra.error||radar.error||native.error}]));
+    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadSatellite(true, signal), imagery.refresh(true, signal), $('radar-toggle').checked?loadRadar(radarHistoryLoaded,signal):Promise.resolve({ok:true}), loadNativeClouds(true, signal, reason === 'manual'), processedCeiling.refresh(reason === 'manual', signal)]).then(([reports,image,extra,radar,native,processed])=>['aviation',reports.ok&&image.ok&&extra.ok&&radar.ok&&native.ok&&processed.ok?{ok:true}:{ok:false,error:reports.error||image.error||extra.error||radar.error||native.error||processed.error}]));
     return Object.fromEntries(await Promise.all(tasks));
   },
 });

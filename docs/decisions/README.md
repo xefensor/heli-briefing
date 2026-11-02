@@ -33,6 +33,8 @@ The next [source-gap recovery](0014-browser-source-gap-recovery.md) restores SWL
 
 The next [native browser recovery](0015-native-browser-recovery.md) implements automatic camera display, native ICON-EU decoding without WASM, point/region ceiling and accurate frozen output.
 
+The next [further browser recovery](0016-further-browser-source-recovery.md) adds direct SIGMET/AIREP imagery, explicit original-map local import and independently processed AGL rasters with per-frame model/run metadata.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |

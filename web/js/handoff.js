@@ -4,6 +4,7 @@ import {nearestTimeIndex} from './weather.js';
 import {satelliteState} from './satellite.js';
 import {routeText} from './route.js';
 import {cameraState} from './cameras.js';
+import {isAllowedSigmetImageUrl,SIGMET_IMAGE_URL} from './sigmet-image-source.js';
 
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
 const value=(number,unit='',digits=0)=>finite(number)?`${formatNumber(number,digits)}${unit?' '+unit:''}`:'—';
@@ -69,6 +70,50 @@ function sourceLinks(snapshot){
  const urls=[...new Set(['metar','taf','sigmet'].flatMap(key=>[snapshot.aviation?.[key]?.sourceUrl,snapshot.aviation?.[key]?.supplementSourceUrl,...array(snapshot.aviation?.[key]?.items).map(item=>item.sourceUrl)]).filter(Boolean))];
  return urls.map(value=>sourceAnchor(value,'Původní zdroj zpráv')).filter(Boolean).join(' · ');
 }
+function sigmetImageEvidence(snapshot){
+ const image=snapshot.charts?.sigmetImage;
+ if(!image)return null;
+ const at=Date.parse(image.retrievedAt),created=Date.parse(snapshot.createdAt),imageUrl=image.onlineImageUrl||image.imageUrl,confirmed=isAllowedSigmetImageUrl(imageUrl)&&image.confirmedBy==='image-load'&&Number.isFinite(at)&&at<=created+300000;
+ const attribution=image.attribution||'ŘLP ČR · veřejná mapa SIGMET/AIREP';
+ const text=`${attribution}. ${confirmed?'Poslední potvrzené načtení '+stamp(image.retrievedAt,snapshot.state.timezone):'Načtení obrazu nebylo potvrzeno'}${at>created+300000?' · uvedený čas načtení je v budoucnosti':''}${image.status==='stale'?' · obnova selhala; zdrojová adresa může nyní ukazovat jiný obraz':''}. Kontrola obnovy ${stamp(image.checkedAt,snapshot.state.timezone)}. Pouze online; obraz není vložen do offline briefingu. Čas načtení není vydáním ani platností. Vydání a platnost nejsou strojově ověřeny; mapa není vázána na čas přehledu. Úplnost pokrytí SIGMET/AIREP není potvrzena. Prázdná mapa nepotvrzuje nepřítomnost výstrah.${image.error?' '+String(image.error):''}`;
+ const summary=`${confirmed?'Poslední potvrzené načtení '+stamp(image.retrievedAt,snapshot.state.timezone):'Načtení nepotvrzeno'}${image.status==='stale'?' · obnova selhala':''}. Pouze online; vydání, platnost a úplnost pokrytí nejsou ověřeny. Prázdná mapa nepotvrzuje nepřítomnost výstrah.${image.error?' '+String(image.error):''}`;
+ return {text,summary,url:isAllowedSigmetImageUrl(imageUrl)?imageUrl:SIGMET_IMAGE_URL};
+}
+function renderSigmetImageEvidence(snapshot){
+ const evidence=sigmetImageEvidence(snapshot);
+ return evidence?`<aside class="sigmet-image-evidence"><h3>Mapa SIGMET / AIREP · pouze online</h3><p class="attention">${esc(evidence.text)}</p><p class="small">${sourceAnchor(evidence.url,'Otevřít zdrojovou mapu SIGMET/AIREP')}</p></aside>`:'';
+}
+function localLowCloudEvidence(snapshot){
+ const frame=snapshot.charts?.selectedLow;
+ if(!frame&&snapshot.charts?.lowCloud?.delivery==='local-file')return `Místní soubory uživatele nahrány ${stamp(snapshot.charts.lowCloud.importedAt,snapshot.state.timezone)}. Pro čas přehledu není vybraný rámec v dosahu 90 minut od času v názvu souboru. Platnost nebyla ověřena; chybějící obraz není nahrazen jiným časem.`;
+ if(frame?.delivery!=='local-file'&&frame?.timeBasis!=='filename-unverified')return null;
+ return `Místní soubor uživatele ${frame.originalFileName||'PNG'}. Čas v názvu souboru ${stamp(frame.validAt,snapshot.state.timezone)} není ověřenou platností. Nahráno ${stamp(frame.importedAt,snapshot.state.timezone)}; původní vydání a stažení nejsou známy. Obsah a čas ověř proti původnímu produktu ČHMÚ. Soubor se sám neaktualizuje; ${frame.imageDataUrl?'obraz je vložen do HTML':'obraz není vložen'}.${frame.sourceUrl?' Zdrojový odkaz '+frame.sourceUrl:''}`;
+}
+function processedCeilingSummary(snapshot){
+ const data=snapshot.processedCeiling,zone=snapshot.state.timezone;
+ if(!data)return null;
+ return `${data.selectedStatus==='ok'&&finite(data.valueAglFt)?value(data.valueAglFt,'ft AGL'):'Vybraná buňka nemá ověřenou číselnou hodnotu'} · ${data.model||'model neuveden'} · vzorek ${stamp(data.validAt,zone)} · běh ${stamp(data.runTime,zone)}${data.stale?' · aktuálnost nepotvrzena':''}${data.status==='partial'?' · neúplná časová řada':''}. Samostatný zpracovaný produkt ClearToFly; převod na AGL, použitý terén a podmínky poskytovatele nejsou v přehledu ověřeny. Chybějící hodnota nepotvrzuje jasnou oblohu.`;
+}
+function processedCeilingText(snapshot){
+ const data=snapshot.processedCeiling,zone=snapshot.state.timezone;
+ if(!data)return [];
+ const lines=['','ZPRACOVANÝ CEILING · ClearToFly · ft AGL',processedCeilingSummary(snapshot),
+  `Stav ${data.status} · vzorek ${data.selectedStatus} · staženo ${stamp(data.retrievedAt,zone)} · publikace katalogu ${stamp(data.publicationTime,zone)}`,
+  `Původní požadavek ${stamp(data.request?.selectedTime,zone)} · ${data.request?formatCoordinates(data.request.lat,data.request.lon,5):'bod neuveden'}. Skutečný čas vybraného snímku zůstává samostatný.`,
+  `Referenční čas poskytovatele ${stamp(data.providerReferenceTime,zone)} není během modelu.${data.providerReferenceNote?' '+data.providerReferenceNote:''}`,
+  'Zpracovaný rastr není nativní pole CEILING v m MSL. Výšky nejsou dopočítávány odečtením zdejšího terénu.'];
+ if(data.cell)lines.push(`Buňka zpracovaného rastru ${formatCoordinates(data.cell.lat,data.cell.lon,5)} · řádek ${data.cell.row}, sloupec ${data.cell.col}, index ${data.cell.index} · vzdálenost ${value(data.distanceKm,'km',1)}.`);
+ if(array(data.series?.times).length)lines.push('ČASOVÁ ŘADA · jednotlivé modely a běhy',...data.series.times.map((time,index)=>{
+  const frame=data.series.frames?.[index]||{};
+  return `${stamp(time,zone)} · ${value(data.series.values?.[index]??null,'ft AGL')} · ${frame.model||'model neuveden'} · běh ${stamp(frame.runTime,zone)} · staženo ${stamp(frame.retrievedAt,zone)}${frame.error?' · '+String(frame.error):''}${frame.sourceUrl?' · '+frame.sourceUrl:''}`;
+ }));
+ if(data.regional)lines.push(`Regionální výřez zpracovaného rastru · ${data.regional.model} · platnost ${stamp(data.regional.validAt,zone)} · ${array(data.regional.nodes).length} skutečných středů buněk · ft AGL. Mapa je vložena v plném HTML.`);
+ for(const error of array(data.errors))lines.push(`Neúplný zdroj ${stamp(error.validAt,zone)} · ${error.error||'chyba neuvedena'}`);
+ if(data.attribution)lines.push(data.attribution);
+ if(data.sourceUrl)lines.push('Zdroj vybraného snímku: '+data.sourceUrl);
+ if(data.catalogueUrl)lines.push('Katalog poskytovatele: '+data.catalogueUrl);
+ return lines;
+}
 
 /** Readiness describes captured evidence, never flight permission. */
 export function sourceReview(snapshot,{mode='full'}={}) {
@@ -92,6 +137,7 @@ export function sourceReview(snapshot,{mode='full'}={}) {
   if(other){const i=nearestTimeIndex(other.times,snapshot.state.time);rows.push({name:`Porovnání ${other.label}`,tone:i<0||other.transport?.stale?'warn':'neutral',text:i<0?'Pro vybraný čas není vzorek':`${stamp(other.times[i],snapshot.state.timezone)}${other.transport?.stale?' · starší data po chybě obnovy':''}`});}
   const cloud=snapshot.clouds;
   rows.push({name:nativeCloudName(cloud),tone:nativeCloudIdentity(cloud)&&cloud.status==='available'&&finite(cloud.valueMsl)&&!cloud.stale&&!cloud.error?'neutral':'warn',text:`${nativeCloudIdentity(cloud)&&finite(cloud.valueMsl)?value(cloud.valueMsl,'m MSL'):'Pro bod/čas není ověřená hodnota dostupná'} · vzorek ${stamp(cloud?.validAt,snapshot.state.timezone)} · běh ${stamp(cloud?.runTime,snapshot.state.timezone)}${cloud?.stale?' · starší běh / obnova nepotvrzena':''}${cloud?.error?' · '+String(cloud.error):''}`});
+  if(snapshot.processedCeiling)rows.push({name:'ClearToFly · CEILING (ft AGL)',tone:'warn',text:processedCeilingSummary(snapshot)});
   const history=observationHistoryInfo(snapshot);
   if(history)rows.push({name:'Historie METAR',tone:history.partial?'warn':'neutral',text:history.text});
   const radar=snapshot.aviation?.radar;
@@ -101,12 +147,14 @@ export function sourceReview(snapshot,{mode='full'}={}) {
   if(snapshot.cameras?.onlineViewer)rows.push({name:'Městská kamera · Radnice',tone:'warn',text:'Samostatný městský pohled, nikoli náhrada kamery ČHMÚ. Pouze online; přesný čas pořízení není poskytován a video není zachyceno v souboru.'});
   const swl=snapshot.charts?.swl, swlValid=Boolean(swl?.imageDataUrl)&&selected>=Date.parse(swl.validFrom)&&selected<Date.parse(swl.validTo);
   rows.push({name:'SWL ČHMÚ',tone:!displayOnlySwl(swl)&&swlValid&&swl.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:displayOnlySwl(swl)?`ČHMÚ · distribuce ŘLP ČR · ${swl.confirmedBy==='image-load'?`původní obraz načten ${stamp(swl.retrievedAt,snapshot.state.timezone)}`:'načtení obrazu nepotvrzeno'}${swl.status==='stale'?' · obnova selhala':''}. Obraz je pouze online, není vložen. Vydání a platnost čti v záhlaví mapy v UTC; pro čas přehledu nejsou strojově ověřeny.`:snapshot.charts?.delivery==='browser-direct'&&!swl?.imageDataUrl?'Obraz není vložen; zachován odkaz na oficiální produkt.':swlValid?`Vložená mapa pokrývá čas přehledu${swl.status==='stale'?' · obnova nepotvrzena':''}`:'Vložená mapa není dostupná nebo nepokrývá čas přehledu'});
-  const low=snapshot.charts?.selectedLow;
-  rows.push({name:'Nízká oblačnost ČHMÚ',tone:low?.imageDataUrl&&snapshot.charts?.lowCloud?.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:snapshot.charts?.delivery==='browser-direct'&&!low?.imageDataUrl?'Automatické vložení v prohlížeči není dostupné; zachován odkaz na oficiální produkt.':low?.imageDataUrl?`Mapa ${stamp(low.validAt,snapshot.state.timezone)} · vydání neposkytnuto`:'Pro vybraný čas není vložená mapa'});
+  const low=snapshot.charts?.selectedLow,localLow=localLowCloudEvidence(snapshot);
+  rows.push({name:'Nízká oblačnost ČHMÚ',tone:!localLow&&low?.imageDataUrl&&snapshot.charts?.lowCloud?.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:localLow|| (snapshot.charts?.delivery==='browser-direct'&&!low?.imageDataUrl?'Automatické vložení v prohlížeči není dostupné; zachován odkaz na oficiální produkt.':low?.imageDataUrl?`Mapa ${stamp(low.validAt,snapshot.state.timezone)} · vydání neposkytnuto`:'Pro vybraný čas není vložená mapa')});
   if(snapshot.route?.section){const section=snapshot.route.section, missing=section.rows.filter(row=>!row.validAt||row.stale||row.error||row.profile.status!=='available').length;rows.push({name:'Řez / terén',tone:missing||section.terrain.status!=='available'?'warn':'neutral',text:`${section.rows.length} sloupců${missing?` · ${missing} neúplných / starších`:''} · terén ${section.terrain.values.filter(finite).length} / ${section.terrain.values.length} · m Bpv, oddělený od MSL`});}
   const sat=satelliteState(snapshot.satellite,now);
   rows.push({name:'Satelit',tone:sat.status==='available'?'neutral':'warn',text:sat.image?`${stamp(snapshot.satellite.observedAt,snapshot.state.timezone)}${sat.status==='stale'?' · starší snímek':''}`:'Snímek není dostupný'});
  }
+ const sigmetImage=sigmetImageEvidence(snapshot);
+ if(sigmetImage)rows.push({name:'Mapa SIGMET / AIREP',tone:'warn',text:sigmetImage.summary});
  if(typeof snapshot.aviation?.supplementWarning==='string'&&snapshot.aviation.supplementWarning)rows.push({name:'MET Norway · informace poskytovatele',tone:'warn',text:snapshot.aviation.supplementWarning});
  for(const [name,error]of Object.entries(snapshot.sourceErrors||{}))if(error&&(mode==='full'||name==='aviation'))rows.push({name,tone:'warn',text:String(error)});
  return rows;
@@ -136,7 +184,7 @@ export function renderReportPack(snapshot){
  const reports=stations(snapshot).map(station=>`<article class="bulletin-station"><h3>${esc(station)}</h3><pre>${esc(bulletin(snapshot,'metar',station))}</pre><pre>${esc(bulletin(snapshot,'taf',station))}</pre></article>`).join('');
  const sigmet=snapshot.aviation?.sigmet;
  const coverage=['metar','taf','sigmet'].flatMap(key=>reportCoverageNotes(snapshot,key).map(note=>`<p class="attention">${key.toUpperCase()}: ${esc(note)}</p>`)).join('');
- return `<section class="report-pack"><h2>Regionální METAR / TAF · originální zprávy</h2><p class="small">METAR stav je hodnocen k uložení, TAF k času přehledu. Chybějící či prošlá zpráva není potvrzení dobrého počasí. Zdroj: ${esc(reportSources(snapshot))}.</p><p class="small">METAR stažen ${esc(stamp(snapshot.aviation?.metar?.retrievedAt,snapshot.state.timezone))} · TAF stažen ${esc(stamp(snapshot.aviation?.taf?.retrievedAt,snapshot.state.timezone))}. Časy jednotlivých zpráv zůstávají vlastní.</p><p class="small">${sourceLinks(snapshot)}</p>${coverage}${reports||'<p>Zprávy nejsou dostupné.</p>'}<h2>SIGMET · zachycený regionální výpis</h2><p class="small">Zdroj ${esc(reportProviderName(snapshot,'sigmet'))} · staženo ${esc(stamp(sigmet?.retrievedAt,snapshot.state.timezone))}. Výpis zachovává zprávy včetně těch mimo vybraný čas; rozhoduje uvedená platnost.</p>${array(sigmet?.items).map(item=>`<article class="bulletin-station"><h3>${esc(item.fir||'SIGMET')} · ${esc(reportState(item,Date.parse(snapshot.state.time)).label)}</h3><p>${esc(reportProviderName(snapshot,'sigmet',item))} · ${esc(stamp(item.validFrom,snapshot.state.timezone))} – ${esc(stamp(item.validTo,snapshot.state.timezone))}</p>${reportTransportNote(item)?`<p class="attention">${esc(reportTransportNote(item))}</p>`:''}<pre>${esc(item.raw||'Originální text nedostupný.')}</pre></article>`).join('')||'<p>V zachyceném výpisu nejsou zprávy SIGMET. Ověř zdroj; nejde o potvrzení bez výstrah.</p>'}</section>`;
+ return `<section class="report-pack"><h2>Regionální METAR / TAF · originální zprávy</h2><p class="small">METAR stav je hodnocen k uložení, TAF k času přehledu. Chybějící či prošlá zpráva není potvrzení dobrého počasí. Zdroj: ${esc(reportSources(snapshot))}.</p><p class="small">METAR stažen ${esc(stamp(snapshot.aviation?.metar?.retrievedAt,snapshot.state.timezone))} · TAF stažen ${esc(stamp(snapshot.aviation?.taf?.retrievedAt,snapshot.state.timezone))}. Časy jednotlivých zpráv zůstávají vlastní.</p><p class="small">${sourceLinks(snapshot)}</p>${coverage}${reports||'<p>Zprávy nejsou dostupné.</p>'}<h2>SIGMET · zachycený regionální výpis</h2><p class="small">Zdroj ${esc(reportProviderName(snapshot,'sigmet'))} · staženo ${esc(stamp(sigmet?.retrievedAt,snapshot.state.timezone))}. Výpis zachovává zprávy včetně těch mimo vybraný čas; rozhoduje uvedená platnost.</p>${array(sigmet?.items).map(item=>`<article class="bulletin-station"><h3>${esc(item.fir||'SIGMET')} · ${esc(reportState(item,Date.parse(snapshot.state.time)).label)}</h3><p>${esc(reportProviderName(snapshot,'sigmet',item))} · ${esc(stamp(item.validFrom,snapshot.state.timezone))} – ${esc(stamp(item.validTo,snapshot.state.timezone))}</p>${reportTransportNote(item)?`<p class="attention">${esc(reportTransportNote(item))}</p>`:''}<pre>${esc(item.raw||'Originální text nedostupný.')}</pre></article>`).join('')||'<p>V zachyceném výpisu nejsou zprávy SIGMET. Ověř zdroj; nejde o potvrzení bez výstrah.</p>'}${renderSigmetImageEvidence(snapshot)}</section>`;
 }
 export function formatBriefingText(snapshot,{mode='full'}={}){
  const zone=snapshot.state.timezone;
@@ -155,13 +203,13 @@ export function formatBriefingText(snapshot,{mode='full'}={}){
    if(cloud.sourceUrl)lines.push(cloud.sourceUrl);
    if(cloud.documentationUrl)lines.push(cloud.documentationUrl);
   }
-  lines.push(...routeText(snapshot.route,zone));
+  lines.push(...processedCeilingText(snapshot),...routeText(snapshot.route,zone));
   if(snapshot.route?.section){const section=snapshot.route.section;lines.push('',`ŘEZ · ${section.label} · ${section.rows.length} sloupců`, `Terén ČÚZK: ${section.terrain.values.filter(finite).length} / ${section.terrain.values.length} vzorků m Bpv; oddělený od meteorologického MSL. Není analýzou překážek.`);}
   lines.push('', 'KAMERY ČHMÚ',...array(snapshot.cameras?.items).map(item=>item.displayOnly?`${item.name} · ${item.attribution||'ČHMÚ'} · pouze online, obraz není v offline souboru · čas pořízení neověřen · poslední potvrzené načtení ${stamp(item.retrievedAt,zone)} · ${cameraState(item,Date.parse(snapshot.createdAt))}${item.fileBucketAt?' · hodinová složka souboru '+stamp(item.fileBucketAt,zone)+' (není čas pořízení)':''}${item.variant==='thumbnail'?' · pouze malý náhled':''}${item.error?' · '+item.error:''}${item.onlineImageUrl||item.imageUrl?' · obraz '+(item.onlineImageUrl||item.imageUrl):''}${item.pageUrl?' · zdroj '+item.pageUrl:''}`:`${item.name} · ${stamp(item.observedAt,zone)} · ${cameraState(item,Date.parse(snapshot.createdAt))}${item.pageUrl?' · zdroj '+item.pageUrl:''}${item.reason==='cors'?' · obraz není v prohlížeči dostupný pro vložení':''}`));
   const viewer=snapshot.cameras?.onlineViewer;
   if(viewer)lines.push('MĚSTSKÁ KAMERA · SAMOSTATNÝ POHLED',`${viewer.provider||'Město České Budějovice'} · ${viewer.name||'Radnice'} · pouze online; přesný čas pořízení není poskytován; video není v uloženém souboru.`,viewer.viewerUrl||viewer.pageUrl||'https://www.c-budejovice.cz/webove-kamery');
   const swl=snapshot.charts?.swl, low=snapshot.charts?.selectedLow;
-  lines.push(displayOnlySwl(swl)?`SWL ČHMÚ · distribuce ŘLP ČR: pouze online, obraz není vložen. ${swl.confirmedBy==='image-load'?`Původní obraz načten ${stamp(swl.retrievedAt,zone)}; tento čas není vydáním ani platností.`:'Načtení obrazu nebylo potvrzeno.'} Vydání a platnost ověř v záhlaví původní mapy v UTC; vztah k času přehledu není strojově ověřen. Zdroj ${swl.onlineImageUrl||swl.sourceUrl||swl.pageUrl||'neuveden'}`:`SWL ČHMÚ: ${stamp(swl?.validFrom,zone)} – ${stamp(swl?.validTo,zone)} · vydáno ${stamp(swl?.issuedAt,zone)} · obraz ${swl?.imageDataUrl?'vložen v HTML':'nedostupný'}${swl?.pageUrl?' · zdroj '+swl.pageUrl:''}`,`Nízká oblačnost ČHMÚ: ${stamp(low?.validAt,zone)} · čas vydání neposkytnut · obraz ${low?.imageDataUrl?'vložen v HTML':'nedostupný'}${snapshot.charts?.lowCloud?.pageUrl?' · zdroj '+snapshot.charts.lowCloud.pageUrl:''}`);
+  lines.push(displayOnlySwl(swl)?`SWL ČHMÚ · distribuce ŘLP ČR: pouze online, obraz není vložen. ${swl.confirmedBy==='image-load'?`Původní obraz načten ${stamp(swl.retrievedAt,zone)}; tento čas není vydáním ani platností.`:'Načtení obrazu nebylo potvrzeno.'} Vydání a platnost ověř v záhlaví původní mapy v UTC; vztah k času přehledu není strojově ověřen. Zdroj ${swl.onlineImageUrl||swl.sourceUrl||swl.pageUrl||'neuveden'}`:`SWL ČHMÚ: ${stamp(swl?.validFrom,zone)} – ${stamp(swl?.validTo,zone)} · vydáno ${stamp(swl?.issuedAt,zone)} · obraz ${swl?.imageDataUrl?'vložen v HTML':'nedostupný'}${swl?.pageUrl?' · zdroj '+swl.pageUrl:''}`,localLowCloudEvidence(snapshot)||`Nízká oblačnost ČHMÚ: ${stamp(low?.validAt,zone)} · čas vydání neposkytnut · obraz ${low?.imageDataUrl?'vložen v HTML':'nedostupný'}${snapshot.charts?.lowCloud?.pageUrl?' · zdroj '+snapshot.charts.lowCloud.pageUrl:''}`);
   const radar=snapshot.aviation?.radar;
   if(radar)lines.push(`RADAR ČHMÚ · ${confirmedRadar(radar)?stamp(radar.observedAt,zone):'obraz nebyl potvrzeně načten'} · ${displayOnlyRadar(radar)?'pouze online, obraz kvůli CORS není vložen; zachován čas a odkaz':snapshot.radarImageDataUrl?'obraz vložen v HTML':'obraz nebyl zachycen'}`,radar.url||radar.sourceUrl||'Zdrojový odkaz není dostupný.');
  }
@@ -170,6 +218,8 @@ export function formatBriefingText(snapshot,{mode='full'}={}){
  lines.push('','SIGMET');
  for(const item of array(snapshot.aviation?.sigmet?.items))lines.push(`${item.fir||'SIGMET'} · ${reportState(item,Date.parse(snapshot.state.time)).label} · ${reportProviderName(snapshot,'sigmet',item)} · ${stamp(item.validFrom,zone)} – ${stamp(item.validTo,zone)}`,...(reportTransportNote(item)?['UPOZORNĚNÍ · '+reportTransportNote(item)]:[]),item.raw||'Originální text nedostupný.');
  if(!array(snapshot.aviation?.sigmet?.items).length)lines.push('Balíček neobsahuje SIGMET; nejde o potvrzení bez výstrah.');
+ const sigmetImage=sigmetImageEvidence(snapshot);
+ if(sigmetImage)lines.push('','MAPA SIGMET / AIREP · POUZE ONLINE',sigmetImage.text,sigmetImage.url||'Zdrojový odkaz není dostupný.');
  lines.push('',`Zdroj zpráv: ${reportSources(snapshot)}. Modely: Open-Meteo / ČHMÚ / DWD / ECMWF.`,'Text zachycuje stav při uložení. Plný HTML briefing obsahuje skutečně zachycené grafy/data a výslovně označuje obrazové zdroje dostupné jen online. Sám se neaktualizuje.');
  return lines.join('\n');
 }

@@ -118,3 +118,10 @@ The owner requested a substantial review and a more professional interface after
 ## Native browser recovery · 2 November 2026
 
 [Decision 0015](decisions/0015-native-browser-recovery.md) puts the three original camera photos before the optional municipal player, with one-action enlargement and a source-clock check rather than a fabricated age. Native ICON-EU starts with a numeric sample, six-hour graph and regional map already visible. Additional hours load through one explicit range button; the worker keeps decoding off the UI thread and preserves data across main-model changes. Current point/time controls select the relevant actual native cell/hour while the independent model/run stays visible. A regional height map uses labelled real centres and metre-MSL legend, not smooth inferred coverage or flight-permission colours. Offline output keeps its numeric field/map while remote photos remain clearly online-only. Pinned-view lifecycle, per-frame download time and failed-range labels were reviewed as part of this iteration.
+
+
+## Further source recovery · 2 November 2026
+
+[Decision 0016](decisions/0016-further-browser-source-recovery.md) applies the three studies to remaining data gaps. The original warning image is directly inspectable beside SWL with one-action enlargement and a jump from the warning summary. An optional original low-cloud file follows the existing place/time/map context; the manual origin and unverified filename time remain visible in both live and captured views. It adds no new dashboard mode.
+
+The processed AGL ceiling has its own visible point/graph/region card beneath the native MSL product. Model/run/reference differences stay explicit and exact hourly metadata remains inspectable. The RUC point can have a fifteen-minute validity while its graph retains hourly samples; the caption explains that distinction. Neutral numeric height colours carry no flight category. The main model selector retains its existing scope. Local-file parsing and model work gate output until capture can preserve the selected context; hidden/offline pages cancel network work and resume without changing pinned time.

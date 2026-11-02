@@ -11,8 +11,9 @@ import { CLOUD_STATUS_LABELS } from './clouds.js';
 import { validateRouteBundle, renderRouteBriefing, ROUTE_PRINT_CSS } from './route.js';
 import { SECTION_PRINT_CSS } from './section.js';
 import { validateCameras, captureCameras, renderCameras, CAMERAS_PRINT_CSS } from './cameras.js';
-import { validateCharts, renderAviationCharts, CHARTS_PRINT_CSS } from './aviation-charts.js';
+import { validateCharts, selectedLowCloud, renderAviationCharts, CHARTS_PRINT_CSS } from './aviation-charts.js';
 import { validateNativeCeilingRegional, renderNativeCeilingMap } from './native-ceiling-map.js';
+import { validateProcessedCeiling, renderProcessedCeiling, PROCESSED_CEILING_PRINT_CSS } from './processed-ceiling-view.js';
 
 export const ARCHIVE_KEY = 'heli-briefing-archive-v1';
 export const ARCHIVE_MAX_ITEMS = 10;
@@ -134,13 +135,17 @@ function validRaster(value) {
 const radarDisplayOnly=radar=>radar?.displayOnly===true||radar?.imageFetchStatus==='unsupported-cors';
 
 /** Capture metadata only for a CORS-inaccessible chart, with no image request. */
-function chartsForCapture(charts){
+function chartsForCapture(charts,time){
   if(!charts)return null;
   validateCharts(charts,{captured:false});
-  const captured=cloneValue(charts),swl=captured.swl;
-  if(swl.displayOnly===true){
-    if(swl.imageUrl){swl.onlineImageUrl=swl.imageUrl;swl.onlineOnly=true;}
-    swl.imageUrl=null;swl.imagePath=null;swl.imageDataUrl=null;
+  const captured=cloneValue(charts);
+  for(const item of [captured.swl,captured.sigmetImage].filter(Boolean))if(item.displayOnly===true){
+    if(item.imageUrl){item.onlineImageUrl=item.imageUrl;item.onlineOnly=true;}
+    item.imageUrl=null;item.imagePath=null;item.imageDataUrl=null;
+  }
+  if(captured.lowCloud.delivery==='local-file'){
+    captured.selectedLow=captured.lowCloud.frames.length?selectedLowCloud(captured,time):captured.selectedLow||null;
+    captured.lowCloud={...captured.lowCloud,frames:[]};
   }
   validateCharts(captured,{captured:true});
   return captured;
@@ -159,17 +164,26 @@ function validateCapturedCloud(cloud){
   if(selected.some(node=>node.index!==cloud.cell.index||node.lat!==cloud.cell.lat||node.lon!==cloud.cell.lon||node.valueMsl!==cloud.valueMsl))throw new ArchiveError('Regionální CEILING neodpovídá hodnotě nebo buňce vybraného bodu.','context');
 }
 
+function validateProcessedContext(data,state){
+  if(!data)return;
+  try{validateProcessedCeiling(data);}catch(error){throw new ArchiveError(`Neplatný zpracovaný CEILING: ${error.message}`,'invalid');}
+  const requested=Date.parse(data.request.selectedTime),selected=Date.parse(state.time),quarter=time=>Math.ceil(time/900000-.5)*900000;
+  if(data.request.lat!==state.lat||data.request.lon!==state.lon||Math.floor(requested/HOUR)!==Math.floor(selected/HOUR)||Math.ceil(requested/HOUR-.5)!==Math.ceil(selected/HOUR-.5)||quarter(requested)!==quarter(selected))throw new ArchiveError('Zpracovaný CEILING patří jinému místu nebo času přehledu.','context');
+}
+
 /** Freeze data actually available now. Creation time never replaces source times. */
-export function createBriefingSnapshot({ state, forecast = null, comparison = null, aviation = null, astronomy = null, notes = '', clouds = null, satellite = null, route = null, cameras = null, charts = null, sourceErrors = null, radarImageDataUrl = null, createdAt = new Date().toISOString() } = {}) {
+export function createBriefingSnapshot({ state, forecast = null, comparison = null, aviation = null, astronomy = null, notes = '', clouds = null, processedCeiling = null, satellite = null, route = null, cameras = null, charts = null, sourceErrors = null, radarImageDataUrl = null, createdAt = new Date().toISOString() } = {}) {
   const context = stateValue(state);
   validateForecast(forecast, context, context.model);
   if (comparison) validateForecast(comparison, context, context.compare);
   if (route) validateRouteBundle(route, [context.model, ...(context.compare && context.compare !== context.model ? [context.compare] : [])]);
   validateCapturedCloud(clouds);
+  const capturedProcessed=processedCeiling?cloneValue(processedCeiling):null;
+  validateProcessedContext(capturedProcessed,context);
   const capturedCameras=cameras?captureCameras(cameras):null;
-  const capturedCharts=chartsForCapture(charts);
+  const capturedCharts=chartsForCapture(charts,context.time);
   if (charts?.selectedLow && Math.abs(Date.parse(charts.selectedLow.validAt)-Date.parse(context.time))>90*60000) throw new ArchiveError('Mapa nízké oblačnosti patří jinému času přehledu.','context');
-  const body = cloneValue({ schemaVersion: 1, createdAt: iso(createdAt, 'Uložení briefingu'), state: context, forecast, comparison, aviation, astronomy, clouds, satellite, route, cameras:capturedCameras, charts:capturedCharts, sourceErrors, notes: String(notes), radarImageDataUrl: radarDisplayOnly(aviation?.radar)?null:validRaster(radarImageDataUrl) });
+  const body = cloneValue({ schemaVersion: 1, createdAt: iso(createdAt, 'Uložení briefingu'), state: context, forecast, comparison, aviation, astronomy, clouds, processedCeiling:capturedProcessed, satellite, route, cameras:capturedCameras, charts:capturedCharts, sourceErrors, notes: String(notes), radarImageDataUrl: radarDisplayOnly(aviation?.radar)?null:validRaster(radarImageDataUrl) });
   if(radarDisplayOnly(body.aviation?.radar))body.aviation.radar.imageDataUrl=null;
   // Keep a captured image once, alongside the metadata that identifies it.
   if (body.radarImageDataUrl && body.aviation?.radar?.imageDataUrl === body.radarImageDataUrl) delete body.aviation.radar.imageDataUrl;
@@ -190,6 +204,7 @@ function validateSnapshot(snapshot) {
   if (snapshot.cameras) validateCameras(snapshot.cameras,{captured:true});
   if (snapshot.charts) validateCharts(snapshot.charts, { captured: true });
   validateCapturedCloud(snapshot.clouds);
+  validateProcessedContext(snapshot.processedCeiling,snapshot.state);
   if (snapshot.charts?.selectedLow && Math.abs(Date.parse(snapshot.charts.selectedLow.validAt)-Date.parse(snapshot.state.time))>90*60000) throw new ArchiveError('Mapa nízké oblačnosti patří jinému času přehledu.','context');
   return snapshot;
 }
@@ -465,5 +480,5 @@ export function renderBriefingHtml(snapshot, {mode='full'}={}) {
   const inspectedIndex = snapshot.forecast ? nearestTimeIndex(snapshot.forecast.times, snapshot.state.time) : -1;
   const sample = inspectedIndex >= 0 ? snapshot.forecast.times[inspectedIndex] : null;
   const notes = snapshot.notes?.trim() ? esc(snapshot.notes) : 'Bez poznámek.';
-  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer"><title>${esc(snapshot.title)} · uložený briefing</title><style>${CSS}${ROUTE_PRINT_CSS}${SECTION_PRINT_CSS}${CAMERAS_PRINT_CSS}${CHARTS_PRINT_CSS}</style></head><body class="${mode==='reports'?'reports-only':'full-briefing'}"><main><header><div class="kicker">Heli Briefing · ${mode==='reports'?'METAR / TAF pro předání':'uložený datový snímek'}</div><h1>${esc(snapshot.state.name)}</h1><p>Čas přehledu: <strong>${esc(stamp(snapshot.state.time, zone))}</strong> · ${esc(formatCoordinates(snapshot.state.lat, snapshot.state.lon, 5))}${mode==='full'?` · rozsah ${snapshot.state.hours} h`:''}</p><p>Uloženo ${esc(stamp(snapshot.createdAt, zone))} · ID ${esc(snapshot.id)}</p></header><p class="frozen">Tento soubor zachycuje data dostupná při uložení a sám se neaktualizuje. Čas uložení nenahrazuje čas pozorování, vydání ani platnosti. Stav a stáří zpráv jsou hodnoceny pro uložený kontext.</p>${renderSourceReview(snapshot,{mode})}<section><h2>Poznámky k briefingu</h2><div class="notes">${notes}</div></section>${mode==='reports'?renderReportPack(snapshot):`<section class="point-summary"><h2>Vybraný hodinový vzorek</h2><ul>${selectedForecastLines(snapshot).map(line=>`<li>${esc(line)}</li>`).join('')}</ul></section><section><h2>Modelová předpověď</h2>${forecastProvenance(snapshot.forecast, zone)}${snapshot.comparison ? `<h3>Porovnání</h3>${forecastProvenance(snapshot.comparison, zone)}` : ''}<p class="small">Nejbližší hodinový vzorek pro číselné hodnoty: ${esc(stamp(sample, zone))}. Grafy uchovávají jednotlivé časy a mezery; oblačnost v procentech není základna ani ceiling. Tlaková hladina 925 hPa není pevná výška AGL.</p>${forecastCharts(snapshot)}</section><section><h2>Výškový profil · ${esc(snapshot.forecast?.label || snapshot.state.model)}</h2><p>Vzorek ${esc(stamp(profileAt(snapshot.forecast,snapshot.state.time).validAt,zone))} · výšky MSL</p>${renderProfile(snapshot.forecast,snapshot.state.time)}</section><section><h2>Satelitní obraz · GeoColour</h2>${renderSatellite(snapshot.satellite,{...snapshot.state,now:Date.parse(snapshot.createdAt),error:snapshot.sourceErrors?.satellite})}</section>${snapshot.route ? `<section><h2>Počasí v bodech plánované trasy</h2>${renderRouteBriefing(snapshot.route,{zone})}</section>` : ''}<section><h2>Kamery · ${snapshot.cameras?.delivery==='browser-direct'?'oficiální zdroje a samostatný online pohled':'zachycené snímky'}</h2>${renderCameras(snapshot.cameras,{...snapshot.state,now:Date.parse(snapshot.createdAt),error:snapshot.cameras?.transportError})}</section><section><h2>SWL a nízká oblačnost · ${snapshot.charts?.delivery==='browser-direct'?'oficiální zdroje ČHMÚ':'zachycené mapy ČHMÚ'}</h2>${renderAviationCharts(snapshot.charts,{...snapshot.state,error:snapshot.charts?.transportError})}</section>${nativeCloudSection(snapshot)}${savedSourceErrors(snapshot)}${aviationSection(snapshot, 'metar', 'Pozorování METAR')}${observationHistorySection(snapshot)}${aviationSection(snapshot, 'taf', 'Regionální předpovědi TAF')}${aviationSection(snapshot, 'sigmet', 'SIGMET · uložený regionální balíček')}${astronomySection(snapshot)}${imagerySection(snapshot)}<details class="exact-appendix"><summary>Přesná hodinová data předpovědi · příloha pro čtení</summary><p>Příloha zůstává v HTML souboru; standardní tisk ji vynechává.</p>${exactForecastTable(snapshot.forecast, snapshot.forecast?.times || [], zone)}${exactForecastTable(snapshot.comparison, snapshot.comparison?.times || [], zone)}</details>${rawDataAppendix(snapshot)}`}<footer><p>Počasí: Open-Meteo / ČHMÚ / DWD / ECMWF · ${sourceLink('https://creativecommons.org/licenses/by/4.0/', 'CC BY 4.0')}. Zprávy: ${esc(reportSources(snapshot))}. Radar: ČHMÚ. Astronomie: ${esc(snapshot.astronomy?.source || 'neuvedena')}.</p>${renderAviationAttribution(snapshot)}<p>Pomlčky označují nedostupná data; žádné hodnoty nebyly vytvořeny jako náhrada. Původní zprávy a platnost mají přednost před stručným výkladem. Vývojová verze nepředstavuje rozhodnutí o provedení letu.</p></footer></main></body></html>`;
+  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer"><title>${esc(snapshot.title)} · uložený briefing</title><style>${CSS}${ROUTE_PRINT_CSS}${SECTION_PRINT_CSS}${CAMERAS_PRINT_CSS}${CHARTS_PRINT_CSS}${PROCESSED_CEILING_PRINT_CSS}</style></head><body class="${mode==='reports'?'reports-only':'full-briefing'}"><main><header><div class="kicker">Heli Briefing · ${mode==='reports'?'METAR / TAF pro předání':'uložený datový snímek'}</div><h1>${esc(snapshot.state.name)}</h1><p>Čas přehledu: <strong>${esc(stamp(snapshot.state.time, zone))}</strong> · ${esc(formatCoordinates(snapshot.state.lat, snapshot.state.lon, 5))}${mode==='full'?` · rozsah ${snapshot.state.hours} h`:''}</p><p>Uloženo ${esc(stamp(snapshot.createdAt, zone))} · ID ${esc(snapshot.id)}</p></header><p class="frozen">Tento soubor zachycuje data dostupná při uložení a sám se neaktualizuje. Čas uložení nenahrazuje čas pozorování, vydání ani platnosti. Stav a stáří zpráv jsou hodnoceny pro uložený kontext.</p>${renderSourceReview(snapshot,{mode})}<section><h2>Poznámky k briefingu</h2><div class="notes">${notes}</div></section>${mode==='reports'?renderReportPack(snapshot):`<section class="point-summary"><h2>Vybraný hodinový vzorek</h2><ul>${selectedForecastLines(snapshot).map(line=>`<li>${esc(line)}</li>`).join('')}</ul></section><section><h2>Modelová předpověď</h2>${forecastProvenance(snapshot.forecast, zone)}${snapshot.comparison ? `<h3>Porovnání</h3>${forecastProvenance(snapshot.comparison, zone)}` : ''}<p class="small">Nejbližší hodinový vzorek pro číselné hodnoty: ${esc(stamp(sample, zone))}. Grafy uchovávají jednotlivé časy a mezery; oblačnost v procentech není základna ani ceiling. Tlaková hladina 925 hPa není pevná výška AGL.</p>${forecastCharts(snapshot)}</section><section><h2>Výškový profil · ${esc(snapshot.forecast?.label || snapshot.state.model)}</h2><p>Vzorek ${esc(stamp(profileAt(snapshot.forecast,snapshot.state.time).validAt,zone))} · výšky MSL</p>${renderProfile(snapshot.forecast,snapshot.state.time)}</section><section><h2>Satelitní obraz · GeoColour</h2>${renderSatellite(snapshot.satellite,{...snapshot.state,now:Date.parse(snapshot.createdAt),error:snapshot.sourceErrors?.satellite})}</section>${snapshot.route ? `<section><h2>Počasí v bodech plánované trasy</h2>${renderRouteBriefing(snapshot.route,{zone})}</section>` : ''}<section><h2>Kamery · ${snapshot.cameras?.delivery==='browser-direct'?'oficiální zdroje a samostatný online pohled':'zachycené snímky'}</h2>${renderCameras(snapshot.cameras,{...snapshot.state,now:Date.parse(snapshot.createdAt),error:snapshot.cameras?.transportError})}</section><section><h2>${snapshot.charts?.sigmetImage?'SWL, SIGMET/AIREP a nízká oblačnost':'SWL a nízká oblačnost'} · ${snapshot.charts?.delivery==='browser-direct'?'oficiální zdroje ČHMÚ':'zachycené mapy ČHMÚ'}</h2>${renderAviationCharts(snapshot.charts,{...snapshot.state,error:snapshot.charts?.transportError})}</section>${nativeCloudSection(snapshot)}${snapshot.processedCeiling?`<section><h2>Zpracovaný CEILING · ft AGL</h2>${renderProcessedCeiling(snapshot.processedCeiling,{...snapshot.state,width:760})}<p class="small">${sourceLink(snapshot.processedCeiling.sourceUrl,'Zpracovaný rastr vybraného snímku')}</p></section>`:''}${savedSourceErrors(snapshot)}${aviationSection(snapshot, 'metar', 'Pozorování METAR')}${observationHistorySection(snapshot)}${aviationSection(snapshot, 'taf', 'Regionální předpovědi TAF')}${aviationSection(snapshot, 'sigmet', 'SIGMET · uložený regionální balíček')}${astronomySection(snapshot)}${imagerySection(snapshot)}<details class="exact-appendix"><summary>Přesná hodinová data předpovědi · příloha pro čtení</summary><p>Příloha zůstává v HTML souboru; standardní tisk ji vynechává.</p>${exactForecastTable(snapshot.forecast, snapshot.forecast?.times || [], zone)}${exactForecastTable(snapshot.comparison, snapshot.comparison?.times || [], zone)}</details>${rawDataAppendix(snapshot)}`}<footer><p>Počasí: Open-Meteo / ČHMÚ / DWD / ECMWF · ${sourceLink('https://creativecommons.org/licenses/by/4.0/', 'CC BY 4.0')}. Zprávy: ${esc(reportSources(snapshot))}. Radar: ČHMÚ. Astronomie: ${esc(snapshot.astronomy?.source || 'neuvedena')}.</p>${renderAviationAttribution(snapshot)}<p>Pomlčky označují nedostupná data; žádné hodnoty nebyly vytvořeny jako náhrada. Původní zprávy a platnost mají přednost před stručným výkladem. Vývojová verze nepředstavuje rozhodnutí o provedení letu.</p></footer></main></body></html>`;
 }

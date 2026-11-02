@@ -1,11 +1,13 @@
 import { createBrowserCameras, fetchBrowserCameras, captureCameras, renderCameras, MUNICIPAL_CAMERA } from './cameras.js';
 import { createBrowserCharts, fetchBrowserCharts, renderAviationCharts, selectedLowCloud, captureCharts } from './aviation-charts.js';
 import { formatTime } from './briefing.js';
+import { parseLowCloudFiles } from './lowcloud-file-source.js';
+import { chartImageKey } from './browser-chart-views.js';
 
-export function mountImagery({ getContext, onLowCloud }) {
+export function mountImagery({ getContext, onLowCloud, onChange = () => {} }) {
   const $ = id => document.getElementById(id);
   let cameras = createBrowserCameras(), charts = createBrowserCharts(), mapActive = false;
-  let renderedKey = '', dialogReturnFocus = null, chartRequest = null;
+  let renderedKey = '', dialogReturnFocus = null, chartRequest = null, importing = false;
   const imageErrors = new Set();
   // This is an ordinary cross-origin provider page. Load it only on request,
   // and keep its DOM outside the repeatedly rendered camera/source summaries.
@@ -76,8 +78,11 @@ export function mountImagery({ getContext, onLowCloud }) {
     $('cameras').innerHTML = renderCameras(cameras, { ...state, interactive: true });
     $('aviation-chart-content').innerHTML = renderAviationCharts(charts, { ...state, interactive: true, imageErrors });
     const button = $('lowcloud-map'), low = selectedLowCloud(charts, state.time);
-    if (button) { button.setAttribute('aria-pressed', String(mapActive)); button.disabled = !mapActive && (!low?.imagePath || imageErrors.has(low.imagePath)); }
-    if (mapActive) onLowCloud(low?.imagePath && !imageErrors.has(low.imagePath) ? low : null);
+    if (button) { button.setAttribute('aria-pressed', String(mapActive)); button.disabled = !mapActive && (!(low?.imageDataUrl || low?.imagePath) || imageErrors.has(chartImageKey(low))); }
+    const importButton = $('lowcloud-import');
+    if (importButton) { importButton.disabled = importing; if (importing) importButton.textContent = 'Kontroluji místní soubory…'; }
+    if ($('lowcloud-clear')) $('lowcloud-clear').disabled = importing;
+    if (mapActive) onLowCloud((low?.imageDataUrl || low?.imagePath) && !imageErrors.has(chartImageKey(low)) ? low : null);
     restoreFocus(focusedControl);
   }
   function showImage(item, title, subtitle, trigger) {
@@ -102,20 +107,37 @@ export function mountImagery({ getContext, onLowCloud }) {
   $('aviation-chart-content').addEventListener('click', event => {
     const kind = event.target.closest('[data-chart-enlarge]')?.dataset.chartEnlarge;
     if (kind) {
-      const item = kind === 'swl' ? charts?.swl : selectedLowCloud(charts, getContext().time);
+      const item = kind === 'swl' ? charts?.swl : kind === 'sigmet' ? charts?.sigmetImage : selectedLowCloud(charts, getContext().time);
       if (item?.imagePath || item?.imageUrl || item?.imageDataUrl) {
-        const subtitle = kind !== 'swl' ? `Platnost ${formatTime(item.validAt,'UTC',true)} UTC · vydání neposkytnuto.`
+        const subtitle = kind === 'sigmet' ? 'ŘLP / ČHMÚ · aktualizaci čti v záhlaví UTC; úplnost výstrah není ověřena.' : kind !== 'swl' ? `${item.delivery === 'local-file' ? 'Místní soubor · neověřený čas z názvu: ' : 'Platnost '}${formatTime(item.validAt,'UTC',true)} UTC · vydání neposkytnuto.`
           : item.displayOnly ? 'ČHMÚ / ŘLP · vydání a platnost čti v záhlaví mapy (UTC). Mapa není svázána s časem přehledu.'
           : `Platnost ${formatTime(item.validFrom,'UTC',true)} – ${formatTime(item.validTo,'UTC',true)} UTC · původní velikost; posuň mapu vodorovně.`;
-        showImage(item, kind === 'swl' ? 'SWL · původní mapa ČHMÚ' : 'Nízká oblačnost · ČHMÚ', subtitle, event.target.closest('[data-chart-enlarge]'));
+        showImage(item, kind === 'swl' ? 'SWL · původní mapa ČHMÚ' : kind === 'sigmet' ? 'SIGMET / AIREP · mapa ŘLP' : 'Nízká oblačnost · místní soubor', subtitle, event.target.closest('[data-chart-enlarge]'));
       }
     }
+    if (event.target.closest('#lowcloud-import')) $('lowcloud-files').click();
+    if (event.target.closest('#lowcloud-clear')) { charts.lowCloud = createBrowserCharts().lowCloud; mapActive = false; onLowCloud(null); $('lowcloud-files').value = ''; render(true); }
     if (event.target.closest('#lowcloud-map')) { mapActive = !mapActive; onLowCloud(mapActive ? selectedLowCloud(charts, getContext().time) : null, mapActive); render(); }
+  });
+  $('lowcloud-files').addEventListener('change', async event => {
+    const files = [...event.target.files];
+    if (!files.length || importing) return;
+    importing = true; render(true); onChange();
+    try {
+      const imported = await parseLowCloudFiles(files);
+      const merged = new Map((charts.lowCloud?.delivery === 'local-file' ? charts.lowCloud.frames : []).map(frame => [frame.validAt, frame]));
+      for (const frame of imported.frames) merged.set(frame.validAt, frame);
+      const frames = [...merged.values()].sort((a, b) => Date.parse(a.validAt) - Date.parse(b.validAt));
+      if (frames.length > 12 || frames.reduce((sum, frame) => sum + frame.imageBytes, 0) > 6 * 1024 * 1024) throw new Error('Místní sada smí mít nejvýše 12 rámců a 6 MiB obrazových dat. Nejprve odeber starší sadu.');
+      charts.lowCloud = { delivery: 'local-file', status: 'manual', frames, importedAt: imported.importedAt, error: null };
+      mapActive = false; onLowCloud(null); imageErrors.clear();
+    } catch (error) { charts.lowCloud = { ...charts.lowCloud, importError: error.message }; }
+    finally { importing = false; event.target.value = ''; render(true); onChange(); $('lowcloud-import')?.focus({ preventScroll: true }); }
   });
   $('cameras').addEventListener('error', event => { const id = event.target.dataset?.cameraImage; if (id && cameras) { cameras = { ...cameras, items: cameras.items.map(item => item.id === id ? { ...item, status:'unavailable', imageDataUrl:null, error:'Snímek nelze zobrazit.' } : item) }; render(true); } }, true);
   $('aviation-chart-content').addEventListener('error', event => { const path = event.target.dataset?.chartPath; if (path) { imageErrors.add(path); render(true); } }, true);
   render(true);
-  return { sync: render, hideLowCloud() { mapActive = false; onLowCloud(null); render(); }, snapshotCameras: () => captureCameras(cameras),
+  return { sync: render, busy: () => importing, hideLowCloud() { mapActive = false; onLowCloud(null); render(); }, snapshotCameras: () => captureCameras(cameras),
     async capture(time) { return { cameras: this.snapshotCameras(), charts: await captureCharts(charts, time) }; },
     async refresh(_force = false, signal) {
       if (chartRequest) return chartRequest;
@@ -128,7 +150,7 @@ export function mountImagery({ getContext, onLowCloud }) {
           cameras = newCameras; charts = newCharts;
           if (charts.swl.status === 'ok') imageErrors.clear();
           render(true);
-          return { ok: charts.swl.status === 'ok' && cameras.status === 'ok', error: charts.swl.error || cameras.error };
+          return { ok: charts.swl.status === 'ok' && charts.sigmetImage?.status === 'ok' && cameras.status === 'ok', error: charts.swl.error || charts.sigmetImage?.error || cameras.error };
         } catch (error) {
           return { ok: false, error: error.message };
         }
