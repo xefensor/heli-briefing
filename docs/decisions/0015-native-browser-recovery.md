@@ -2,7 +2,7 @@
 
 Date: 2026-11-02
 
-Status: implemented locally with actual browser checks; final suite and publication evidence belong in [deployment](../deployment.md). This supersedes the camera/ceiling implementation limits in [decision 0014](0014-browser-source-gap-recovery.md), not the remaining original low-cloud or professional-readiness dependencies.
+Status: implemented and published with actual local/public browser checks, 279 passing tests and a 52-file static artifact; detailed publication evidence is in [deployment](../deployment.md). This supersedes the camera/ceiling implementation limits in [decision 0014](0014-browser-source-gap-recovery.md), not the remaining original low-cloud or professional-readiness dependencies.
 
 ## Context and three-study review
 
@@ -44,7 +44,7 @@ The exact ČHMÚ low-cloud widget was found at its public standalone route, but 
 
 ## Verification and completion
 
-Actual local browser checks decoded all three cameras at 1600 px, displayed **3275.6 m MSL** from the native model, expanded six to twelve hours, and retained ICON-EU identity when the main forecast changed to ECMWF. Desktop content/scroll widths matched at 1348 px; the phone view matched at 375 px. Final deterministic checks, live publication and their scope must be recorded in [deployment](../deployment.md), not inferred from these local observations.
+Actual local browser checks decoded all three cameras at 1600 px, displayed **3275.6 m MSL** from the native model, expanded six to twelve hours, and retained ICON-EU identity when the main forecast changed to ECMWF. Desktop content/scroll widths matched at 1348 px; the phone view matched at 375 px. The complete suite passed 279 tests. The published Pages build independently loaded all three full-resolution camera images, six native hours, the regional plot and all eight main graphs; its frozen briefing retained native regional evidence without remote image/iframe loads. Exact build identity and verification scope are recorded in [deployment](../deployment.md).
 
 The whole professional project remains incomplete: original low-cloud access, complete warning coverage, provider/access agreements and intended-pilot/native-output acceptance remain open.
 
