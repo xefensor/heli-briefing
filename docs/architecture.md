@@ -1,8 +1,8 @@
 # Architecture and runtime constraint
 
-**Current implementation: ordinary-browser runtime, v0.5.1.** [Decision 0013](decisions/0013-direct-browser-integration.md) implements the owner-confirmed target: GitHub Pages hosts code/assets, and the browser requests compatible data directly. No extension, native app, project data backend/proxy or build-time weather collector is required.
+**Current implementation: ordinary-browser runtime, v0.6.** [Decision 0013](decisions/0013-direct-browser-integration.md) implements the owner-confirmed target: GitHub Pages hosts code/assets, and the browser requests compatible data directly. No extension, native app, project data backend/proxy or build-time weather collector is required.
 
-[Decision 0014](decisions/0014-browser-source-gap-recovery.md) adds direct SWL display and an explicitly identified report/history supplement. Its separate ceiling experiment is not a production adapter.
+[Decision 0014](decisions/0014-browser-source-gap-recovery.md) adds direct SWL display and an explicitly identified report/history supplement. [Decision 0015](decisions/0015-native-browser-recovery.md) subsequently adds original camera images and the narrow native JavaScript decoder in a persistent worker; the earlier WASM experiment remains separate.
 
 ## Current data path
 
@@ -13,11 +13,11 @@
 | Local report cache | At most 750 kB / 400 genuine observations over twelve hours. Actual source-archive and browser observations; restored reports remain unconfirmed until refreshed, with no invented history. |
 | Satellite adapter | Direct EUMETSAT capabilities and actual advertised GeoColour frame, bounded validated PNG bytes and retained original image time. |
 | Radar adapter | Normal image loads confirm candidate UTC frames. Four-image current check; up to 24 observed frames on playback. No CORS pixel read or false offline image capture. |
-| Camera/maps/ceiling | Municipal provider-controlled viewer on request, original SWL through normal ŘLP image loading and alternate same-camera links; low-cloud, embedded ČHMÚ cameras and native ICON-D2 ceiling remain unsupported. No source or meteorological quantity is silently substituted. |
+| Camera/maps/ceiling | Original ČHMÚ images through bounded normal In-počasí / Ventusky image loads, municipal viewer on request and original SWL through ŘLP image loading. Camera exposure time remains unverified; frozen output keeps links. Native ICON-EU CEILING uses a bounded worker, actual same-grid companions and hourly files, with real point/region values captured offline. Original low-cloud and direct ICON-D2 remain unsupported. No source or meteorological quantity is silently substituted. |
 | Browser workspace/output | Existing graphs, controls, route, astronomy, local notes/archive and frozen HTML/text; all source and export limitations remain visible. |
 | Static build/deploy | Copy/version code/assets only. Exclude all weather snapshots, publish on code changes or manual dispatch; no data schedule or ingestion dependencies. |
 
-The [source feasibility record](browser-only-feasibility-2026-11-02.md) retains actual endpoint and CORS/browser evidence. Complete station/time history, current SIGMET coverage and original camera/low-cloud/native-D2 parity remain source dependencies. The investigated ICON-EU archive and WASM decoder need separate production integration and native-grid checks. Native download/PDF and intended-pilot acceptance remain separately unverified.
+The [source feasibility record](browser-only-feasibility-2026-11-02.md) retains actual endpoint and CORS/browser evidence. Complete station/time history, current SIGMET coverage and original camera/low-cloud/native-D2 parity remain source dependencies. The native ICON-EU archive is now read by a tested JavaScript decoder, with bounded initial/expanded hourly sampling and original field clocks. The historical WASM proof is not loaded. Native download/PDF and intended-pilot acceptance remain separately unverified.
 
 ## Historical proposed responsibilities
 

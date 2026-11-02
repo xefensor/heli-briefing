@@ -169,3 +169,5 @@
 #municipal-camera-frame iframe{display:block;width:100%;height:clamp(430px,calc(75cqw + 100px),925px);border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
 @media(max-width:650px){.municipal-camera{padding:16px}.source-coverage{padding:12px 16px}.municipal-camera-actions .button{flex:1 1 160px}}
 @media print{#municipal-camera-frame{display:none}.municipal-camera-actions{display:none}}
+
+.native-ceiling-range{display:flex;align-items:center;gap:16px;padding:0 20px 18px;flex-wrap:wrap}.native-ceiling-range p{flex:1 1 380px;margin:0;font-size:13px;color:var(--muted)}#cloud-region{padding:0 20px 20px;min-width:0}#cloud-progress:empty{display:none}@media(max-width:600px){#cloud-region{padding:0 16px 16px}.native-ceiling-range{padding:0 16px 16px}.native-ceiling-range .button{width:100%}}

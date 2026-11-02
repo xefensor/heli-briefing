@@ -1,5 +1,15 @@
 # Build and publish
 
+## Current deployment · v0.6 native browser recovery
+
+[Decision 0015](decisions/0015-native-browser-recovery.md) adds the original three ČHMÚ camera views through their public In-počasí/Ventusky JPEG distributor and actual native ICON-EU CEILING through the CORS-enabled Source Cooperative archive. A small JavaScript GRIB/AEC decoder runs in a bounded worker. The main application ships no WASM, weather snapshots, collection schedule, project backend or proxy. The original ČHMÚ low-cloud map and direct ICON-D2 remain separate unavailable products.
+
+Local checks passed **279 tests (237 JavaScript, 42 Python)**, a **52-file static build** with asset version `f9693e2e87aba4cd470f`, all **38 Markdown link checks**, and whitespace checks. Actual desktop and 390 px responsive checks displayed all three full-resolution 1600 × 1200 camera views, all eight core plots, a native ceiling point and a 985-cell regional plot. Desktop content/scroll width matched at 1348 px; the responsive frame matched at 375 px. Camera exposure time remains unknown and must be read from the image itself. The distributor's mutable hourly JPEG was rechecked with changed source clocks/content and later HTTP modification times.
+
+The native six-hour request and explicit twelve-hour extension returned real frames. Changing the main forecast to ECMWF retained the separately labelled ICON-EU ceiling. Pinning another inspection hour selected the matching native frame. Full frozen output retained its native point, time series and regional SVG, embedded one decoded satellite image, and loaded no remote camera image or iframe; its three camera links remained online-only. Output content/scroll width matched at 1306 px on desktop and 330 px in the phone dialog; the phone output also retained the native regional SVG without remote image/iframe loads. A route sample also retained its own ICON-EU model/frame/retrieval metadata. Native file/PDF delivery, intended-pilot acceptance and the remaining professional source/access gates remain unverified.
+
+Publication and public-origin verification for this release are recorded below once completed. Earlier sections are historical checkpoints.
+
 ## Current deployment · v0.5 ordinary-browser runtime
 
 The main workspace uses direct browser data sources under [decision 0013](decisions/0013-direct-browser-integration.md). GitHub Pages hosts **code/assets only**. The workflow has no weather schedule, collectors, decoder installation or weather caches. It runs application/document checks, builds and deploys on application changes to `main` or explicit workflow dispatch.

@@ -4,6 +4,7 @@ Start with the product brief, then follow the evidence and implementation constr
 
 | Document | Purpose |
 | --- | --- |
+| [Native browser recovery](decisions/0015-native-browser-recovery.md) | Inline original cameras, a small native GRIB decoder, six-hour/expanded ceiling data and regional cell map. |
 | [Recovering missing products](decisions/0014-browser-source-gap-recovery.md) | Current SWL, supplemental reports/history, camera-viewer links and separate ceiling decoding research. |
 | [Direct browser integration](decisions/0013-direct-browser-integration.md) | Current runtime, code-only build, source coverage and output limits. |
 | [Browser-only feasibility](browser-only-feasibility-2026-11-02.md) | Owner constraint, actual browser source tests, runnable prototype and unresolved products. |

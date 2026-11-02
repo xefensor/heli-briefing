@@ -2,6 +2,8 @@
 
 Date: 2026-11-02. Status: implemented SWL display, supplemental reports/history and source links; ceiling decoder research is separate and is not integrated into the briefing. Publication and final checks are recorded in [deployment](../deployment.md).
 
+**Subsequent implementation:** [decision 0015](0015-native-browser-recovery.md) adds inline original camera views and a small JavaScript native ceiling decoder. The large-decoder and missing-inline-camera conclusions below describe this earlier research checkpoint.
+
 ## Context and three-study review
 
 The owner asked for further ways to display the products still missing after [decision 0013](0013-direct-browser-integration.md). The ordinary-browser constraint remains: no extension, native app, project backend/proxy or weather collection during deployment.

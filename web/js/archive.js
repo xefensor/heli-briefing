@@ -10,8 +10,9 @@ import { observationSeries } from './observations.js';
 import { CLOUD_STATUS_LABELS } from './clouds.js';
 import { validateRouteBundle, renderRouteBriefing, ROUTE_PRINT_CSS } from './route.js';
 import { SECTION_PRINT_CSS } from './section.js';
-import { validateCameras, renderCameras, CAMERAS_PRINT_CSS } from './cameras.js';
+import { validateCameras, captureCameras, renderCameras, CAMERAS_PRINT_CSS } from './cameras.js';
 import { validateCharts, renderAviationCharts, CHARTS_PRINT_CSS } from './aviation-charts.js';
+import { validateNativeCeilingRegional, renderNativeCeilingMap } from './native-ceiling-map.js';
 
 export const ARCHIVE_KEY = 'heli-briefing-archive-v1';
 export const ARCHIVE_MAX_ITEMS = 10;
@@ -145,16 +146,30 @@ function chartsForCapture(charts){
   return captured;
 }
 
+/** A regional field cannot acquire the selected point's model, run or grid identity. */
+function validateCapturedCloud(cloud){
+  if(!cloud?.regional)return;
+  let regional;
+  try{regional=validateNativeCeilingRegional(cloud.regional);}catch(error){throw new ArchiveError(`Neplatná regionální mapa CEILING: ${error.message}`,'invalid');}
+  const sameTime=(a,b)=>Number.isFinite(Date.parse(a))&&Date.parse(a)===Date.parse(b);
+  if(cloud.model!==regional.model||cloud.product!==regional.product||cloud.units!==regional.units||!sameTime(cloud.runTime,regional.runTime)||!sameTime(cloud.validAt,regional.validAt)||!sameTime(cloud.retrievedAt,regional.retrievedAt)||cloud.cell?.gridUuid!==regional.gridUuid){
+    throw new ArchiveError('Regionální CEILING neodpovídá modelu, běhu, platnosti nebo nativní síti vybraného bodu.','context');
+  }
+  const selected=[regional.selectedCell,regional.nodes.find(node=>node.index===cloud.cell.index)].filter(Boolean);
+  if(selected.some(node=>node.index!==cloud.cell.index||node.lat!==cloud.cell.lat||node.lon!==cloud.cell.lon||node.valueMsl!==cloud.valueMsl))throw new ArchiveError('Regionální CEILING neodpovídá hodnotě nebo buňce vybraného bodu.','context');
+}
+
 /** Freeze data actually available now. Creation time never replaces source times. */
 export function createBriefingSnapshot({ state, forecast = null, comparison = null, aviation = null, astronomy = null, notes = '', clouds = null, satellite = null, route = null, cameras = null, charts = null, sourceErrors = null, radarImageDataUrl = null, createdAt = new Date().toISOString() } = {}) {
   const context = stateValue(state);
   validateForecast(forecast, context, context.model);
   if (comparison) validateForecast(comparison, context, context.compare);
   if (route) validateRouteBundle(route, [context.model, ...(context.compare && context.compare !== context.model ? [context.compare] : [])]);
-  if (cameras) validateCameras(cameras);
+  validateCapturedCloud(clouds);
+  const capturedCameras=cameras?captureCameras(cameras):null;
   const capturedCharts=chartsForCapture(charts);
   if (charts?.selectedLow && Math.abs(Date.parse(charts.selectedLow.validAt)-Date.parse(context.time))>90*60000) throw new ArchiveError('Mapa nízké oblačnosti patří jinému času přehledu.','context');
-  const body = cloneValue({ schemaVersion: 1, createdAt: iso(createdAt, 'Uložení briefingu'), state: context, forecast, comparison, aviation, astronomy, clouds, satellite, route, cameras, charts:capturedCharts, sourceErrors, notes: String(notes), radarImageDataUrl: radarDisplayOnly(aviation?.radar)?null:validRaster(radarImageDataUrl) });
+  const body = cloneValue({ schemaVersion: 1, createdAt: iso(createdAt, 'Uložení briefingu'), state: context, forecast, comparison, aviation, astronomy, clouds, satellite, route, cameras:capturedCameras, charts:capturedCharts, sourceErrors, notes: String(notes), radarImageDataUrl: radarDisplayOnly(aviation?.radar)?null:validRaster(radarImageDataUrl) });
   if(radarDisplayOnly(body.aviation?.radar))body.aviation.radar.imageDataUrl=null;
   // Keep a captured image once, alongside the metadata that identifies it.
   if (body.radarImageDataUrl && body.aviation?.radar?.imageDataUrl === body.radarImageDataUrl) delete body.aviation.radar.imageDataUrl;
@@ -172,8 +187,9 @@ function validateSnapshot(snapshot) {
   validateForecast(snapshot.forecast, snapshot.state, snapshot.state.model);
   if (snapshot.comparison) validateForecast(snapshot.comparison, snapshot.state, snapshot.state.compare);
   if (snapshot.route) validateRouteBundle(snapshot.route, [snapshot.state.model, ...(snapshot.state.compare && snapshot.state.compare !== snapshot.state.model ? [snapshot.state.compare] : [])]);
-  if (snapshot.cameras) validateCameras(snapshot.cameras);
+  if (snapshot.cameras) validateCameras(snapshot.cameras,{captured:true});
   if (snapshot.charts) validateCharts(snapshot.charts, { captured: true });
+  validateCapturedCloud(snapshot.clouds);
   if (snapshot.charts?.selectedLow && Math.abs(Date.parse(snapshot.charts.selectedLow.validAt)-Date.parse(snapshot.state.time))>90*60000) throw new ArchiveError('Mapa nízké oblačnosti patří jinému času přehledu.','context');
   return snapshot;
 }
@@ -381,16 +397,18 @@ function imagerySection(snapshot) {
 
 function nativeCloudSection(snapshot) {
   const cloud = snapshot.clouds;
-  if (!cloud) return '<section><h2>Nezávislý cloudový produkt · ICON-D2</h2><p class="attention">Nativní produkt CEILING nebyl při uložení k dispozici.</p></section>';
-  if (cloud.model !== 'ICON-D2' || cloud.product !== 'CEILING' || cloud.units !== 'm MSL') {
+  if (!cloud) return '<section><h2>Nezávislý nativní cloudový produkt</h2><p class="attention">Nativní produkt CEILING nebyl při uložení k dispozici.</p></section>';
+  if (!['ICON-D2','ICON-EU'].includes(cloud.model) || cloud.product !== 'CEILING' || cloud.units !== 'm MSL') {
     return '<section><h2>Cloudový produkt</h2><p class="attention">Uložený produkt nemá ověřitelný model, parametr a výškovou referenci; hodnoty nejsou interpretovány.</p></section>';
   }
-  const zone = snapshot.state.timezone;
+  const zone = snapshot.state.timezone, label=`DWD ${cloud.model} CEILING`;
   const times = Array.isArray(cloud.series?.times) ? cloud.series.times : [];
   const values = Array.isArray(cloud.series?.values) ? cloud.series.values : [];
-  const status = CLOUD_STATUS_LABELS[cloud.status] || 'Stav nativního produktu není znám.';
-  const graph = renderChart({ times, series: [{ key: 'native-ceiling', label: 'DWD ICON-D2 · CEILING', color: '#866aa3', values, unit: 'm MSL' }], selectedTime: snapshot.state.time, timezone: zone, height: 250, yLabel: 'm MSL' });
-  return `<section><h2>Nezávislý cloudový produkt · DWD ICON-D2 CEILING</h2><p><strong>${esc(number(cloud.valueMsl, 'm MSL', 0))}</strong> · ${esc(status)}</p>${cloud.stale || cloud.error ? `<p class="attention">${cloud.stale ? 'Uložen starší nativní výstup; obnova nebyla potvrzena. ' : ''}${esc(cloud.error || '')}</p>` : ''}<p class="small">Tento produkt má vlastní model a běh. Není součástí zvolené povrchové předpovědi ${esc(snapshot.forecast?.label || snapshot.state.model)} a přepnutí této předpovědi jej nepřejmenovává.</p><dl class="metadata"><dt>Definice</dt><dd>Výška, kde velkoprostorové/podmřížkové pokrytí oblačností při pohledu vzhůru poprvé přesahuje 50 %; bez konvektivní složky.</dd><dt>Výšková reference</dt><dd>Metry nad hladinou moře (MSL), nikoli AGL a nikoli pozorovaný ceiling METAR.</dd><dt>Platnost vzorku</dt><dd>${esc(stamp(cloud.validAt, zone))}</dd><dt>Běh / staženo</dt><dd>${esc(stamp(cloud.runTime, zone))} / ${esc(stamp(cloud.retrievedAt, zone))}</dd><dt>Nejbližší nativní buňka</dt><dd>${cloud.cell ? `${esc(number(cloud.cell.lat, '° N', 5))}, ${esc(number(cloud.cell.lon, '° E', 5))} · vzdálenost ${esc(number(cloud.distanceKm, 'km'))} · terén modelu ${esc(number(cloud.cell.elevationMsl, 'm MSL', 0))}` : 'nedostupná'}</dd></dl><p>${sourceLink(cloud.sourceUrl, 'Nativní zdroj DWD')}</p><div class="chart">${graph}</div><p class="small">Chybějící nebo nedefinovaný CEILING není potvrzení jasné oblohy. Výšky nejsou převáděny na AGL.</p><details class="exact-appendix"><summary>Hodinové hodnoty ICON-D2 CEILING · příloha</summary><table><thead><tr><th>Platnost</th><th>ICON-D2 CEILING · m MSL</th></tr></thead><tbody>${times.map((time, index) => `<tr><td>${esc(stamp(time, zone))}</td><td>${esc(number(values[index] ?? null, '', 0))}</td></tr>`).join('') || '<tr><td colspan="2">Nativní hodinová řada není dostupná.</td></tr>'}</tbody></table></details></section>`;
+  const status = CLOUD_STATUS_LABELS[cloud.status] || (cloud.status==='stale'?'Starší nativní výstup; obnova nebyla potvrzena.':'Stav nativního produktu není znám.');
+  const graph = renderChart({ times, series: [{ key: 'native-ceiling', label, color: '#866aa3', values, unit: 'm MSL' }], selectedTime: snapshot.state.time, timezone: zone, height: 250, yLabel: 'm MSL' });
+  const definition=cloud.definition||'Výška, kde velkoprostorové/podmřížkové pokrytí oblačností při pohledu vzhůru poprvé přesahuje 50 %; bez konvektivní složky.';
+  const map=cloud.regional?`<h3>Regionální nativní pole · ${esc(cloud.regional.model)}</h3>${renderNativeCeilingMap(cloud.regional,{lat:snapshot.state.lat,lon:snapshot.state.lon,timezone:zone,width:760,selectedCell:cloud.cell?{...cloud.cell,valueMsl:cloud.valueMsl}:undefined})}<p class="small">Tato mapa zobrazuje nativní CEILING ${esc(cloud.model)} v metrech MSL. Jde o samostatný modelový produkt; není to mapa nízké oblačnosti ČHMÚ. Barevné buňky nejsou měřený ceiling ani výška nad místním terénem.</p>`:'';
+  return `<section><h2>Nezávislý cloudový produkt · ${esc(label)}</h2><p><strong>${esc(number(cloud.valueMsl, 'm MSL', 0))}</strong> · ${esc(status)}</p>${cloud.stale || cloud.error ? `<p class="attention">${cloud.stale ? 'Uložen starší nativní výstup; obnova nebyla potvrzena. ' : ''}${esc(cloud.error || '')}</p>` : ''}<p class="small">Tento produkt má vlastní model a běh. Není součástí zvolené povrchové předpovědi ${esc(snapshot.forecast?.label || snapshot.state.model)} a přepnutí této předpovědi jej nepřejmenovává.</p><dl class="metadata"><dt>Definice</dt><dd>${esc(definition)}</dd><dt>Výšková reference</dt><dd>Metry nad hladinou moře (MSL), nikoli AGL a nikoli pozorovaný ceiling METAR.</dd><dt>Platnost vzorku</dt><dd>${esc(stamp(cloud.validAt, zone))}</dd><dt>Běh / staženo</dt><dd>${esc(stamp(cloud.runTime, zone))} / ${esc(stamp(cloud.retrievedAt, zone))}</dd><dt>Nejbližší nativní buňka</dt><dd>${cloud.cell ? `${esc(number(cloud.cell.lat, '° N', 5))}, ${esc(number(cloud.cell.lon, '° E', 5))} · vzdálenost ${esc(number(cloud.distanceKm, 'km'))} · terén modelu ${esc(number(cloud.cell.elevationMsl, 'm MSL', 0))}` : 'nedostupná'}</dd>${cloud.cell?.index!=null?`<dt>Index buňky / UUID sítě</dt><dd>${esc(String(cloud.cell.index))} / ${esc(cloud.cell.gridUuid||'neuvedeno')}</dd>`:''}</dl><p class="small">${esc(cloud.attribution||'DWD')} · ${sourceLink(cloud.sourceUrl, 'Nativní zdroj DWD')}${cloud.documentationUrl?` · ${sourceLink(cloud.documentationUrl,'Definice produktu DWD')}`:''}</p><div class="chart">${graph}</div>${map}<p class="small">Chybějící nebo nedefinovaný CEILING není potvrzení jasné oblohy. Výšky nejsou převáděny na AGL.</p><details class="exact-appendix"><summary>Hodinové hodnoty ${esc(cloud.model)} CEILING · příloha</summary><table><thead><tr><th>Platnost</th><th>${esc(cloud.model)} CEILING · m MSL</th></tr></thead><tbody>${times.map((time, index) => `<tr><td>${esc(stamp(time, zone))}</td><td>${esc(number(values[index] ?? null, '', 0))}</td></tr>`).join('') || '<tr><td colspan="2">Nativní hodinová řada není dostupná.</td></tr>'}</tbody></table></details></section>`;
 }
 
 function observationHistorySection(snapshot) {

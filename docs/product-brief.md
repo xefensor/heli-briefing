@@ -1,6 +1,6 @@
 # Product brief
 
-Status: v0.5 direct-browser evaluation implemented; pilot acceptance remains unvalidated · Updated: 2026-11-02
+Status: v0.6 direct-browser evaluation implemented; pilot acceptance remains unvalidated · Updated: 2026-11-02
 
 [Repository overview](../README.md) · [Design brief](design.md)
 

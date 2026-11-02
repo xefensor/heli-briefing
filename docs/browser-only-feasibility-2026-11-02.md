@@ -6,6 +6,8 @@ Checked **2 November 2026**. [Decision 0012](decisions/0012-browser-only-runtime
 
 **Further source recovery:** [decision 0014](decisions/0014-browser-source-gap-recovery.md) documents recovered SWL, foreign reports and real archive history, plus an isolated browser ceiling decoder proof. The matrix below remains the earlier prototype checkpoint.
 
+**Native browser recovery:** [decision 0015](decisions/0015-native-browser-recovery.md) subsequently restores the three original camera views inline and native ICON-EU CEILING with point, series and regional display through a small JavaScript worker. It supersedes the earlier camera/native-EU feasibility limits below. Exact ČHMÚ low-cloud and direct ICON-D2 remain unavailable.
+
 ## Requirement and completion boundary
 
 The owner requires an ordinary website: no browser extension, native app, project-operated data backend/proxy or deployment-time weather collection. Static application hosting remains GitHub Pages.

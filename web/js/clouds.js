@@ -1,10 +1,10 @@
-/** Native ICON-D2 diagnostic, independent of the selected surface forecast. */
+/** Native DWD diagnostic, independent of the selected surface forecast. */
 const VALID_STATUSES = new Set(['ok', 'partial', 'stale', 'unavailable']);
 const finite = (value) => typeof value === 'number' && Number.isFinite(value);
 
 export function validateClouds(data) {
   if (!data || data.schemaVersion !== 1 || !VALID_STATUSES.has(data.status) ||
-      data.model !== 'ICON-D2' || data.product !== 'CEILING' || data.units !== 'm MSL' ||
+      !['ICON-D2', 'ICON-EU'].includes(data.model) || data.product !== 'CEILING' || data.units !== 'm MSL' ||
       !Array.isArray(data.points) || !Array.isArray(data.frames)) {
     throw new Error('Neočekávaný formát nativní předpovědi výšky oblačnosti.');
   }
@@ -49,7 +49,10 @@ export function queryClouds(data, { lat, lon, time, nowMs = Date.now() } = {}) {
   const base = {
     status: 'unavailable', valueMsl: null, cell: null, distanceKm: null,
     validAt: null, runTime: data?.runTime ?? null, retrievedAt: data?.retrievedAt ?? null,
-    sourceUrl: data?.sourceUrl ?? null, units: 'm MSL', model: 'ICON-D2', product: 'CEILING',
+    sourceUrl: data?.sourceUrl ?? null, units: 'm MSL', model: data?.model || 'ICON-D2', product: 'CEILING',
+    attribution: data?.attribution || 'DWD',
+    definition: data?.definition, documentationUrl: data?.documentationUrl,
+    archiveUrl: data?.archiveUrl, licenceUrl: data?.licenceUrl,
     stale: data?.status === 'stale', error: data?.error ?? null, series: emptySeries,
   };
   if (!finite(lat) || !finite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180 || !Number.isFinite(Date.parse(time))) {
@@ -64,9 +67,10 @@ export function queryClouds(data, { lat, lon, time, nowMs = Date.now() } = {}) {
     const distance = distanceKm(lat, lon, point.lat, point.lon);
     if (distance < nearest) { index = i; nearest = distance; }
   });
-  const maxDistance = Math.min(3.5, finite(data.grid?.maxDistanceKm) ? data.grid.maxDistanceKm : 3.5);
+  const limit = data.model === 'ICON-EU' ? 8 : 3.5;
+  const maxDistance = Math.min(limit, finite(data.grid?.maxDistanceKm) ? data.grid.maxDistanceKm : limit);
   if (index < 0 || nearest > maxDistance) return { ...base, status: 'outside-grid', distanceKm: nearest };
-  const cell = data.points[index];
+  const cell = { ...data.points[index], gridUuid: data.grid.uuid || null };
   const series = { times: data.frames.map(frame => frame.validAt), values: data.frames.map(frame => frame.values[index] ?? null) };
   const common = { ...base, cell, distanceKm: nearest, series, stale: base.stale || nowMs - Date.parse(data.runTime) > 9 * 3600000 };
   const instant = Date.parse(time);
@@ -84,13 +88,28 @@ export function queryClouds(data, { lat, lon, time, nowMs = Date.now() } = {}) {
   // distant hour even when it is still inside the collection's overall range.
   if (selected < 0 || delta > 30 * 60000) return { ...common, status: 'outside-horizon' };
   const frame = data.frames[selected];
+  if (frame.status && frame.status !== 'ok') return { ...common, status: 'unavailable',
+    valueMsl: null, validAt: null, retrievedAt: null, error: frame.error || 'Požadovaná hodina nebyla potvrzena u zdroje.',
+    sourceUrl: frame.sourceUrl || common.sourceUrl };
   const valueMsl = frame.values[index] ?? null;
-  return { ...common, status: valueMsl === null ? 'missing' : 'available', valueMsl, validAt: frame.validAt, sourceUrl: frame.sourceUrl || common.sourceUrl };
+  const retrievedAt = Object.hasOwn(frame, 'retrievedAt') ? frame.retrievedAt : common.retrievedAt;
+  const regional = data.model === 'ICON-EU' ? {
+    model: data.model, product: 'CEILING', units: 'm MSL', runTime: data.runTime,
+    validAt: frame.validAt, retrievedAt,
+    gridUuid: data.grid.uuid, bounds: [[south, west], [north, east]],
+    totalCells: data.grid.totalCellsInBounds || data.points.length,
+    subset: (data.grid.totalCellsInBounds || data.points.length) > data.points.length,
+    nodes: data.points.map((point, i) => ({ lat: point.lat, lon: point.lon, index: point.index, valueMsl: frame.values[i] ?? null })),
+    selectedCell: { ...cell, valueMsl },
+  } : undefined;
+  return { ...common, status: valueMsl === null ? 'missing' : 'available', valueMsl,
+    validAt: frame.validAt, retrievedAt, error: frame.error || common.error,
+    sourceUrl: frame.sourceUrl || common.sourceUrl, ...(regional ? { regional } : {}) };
 }
 
 export const CLOUD_STATUS_LABELS = Object.freeze({
   unavailable: 'Nativní cloudový produkt není dostupný.',
-  'outside-region': 'Bod je mimo zpracovanou jihočeskou oblast.',
+  'outside-region': 'Bod je mimo načtený regionální výřez.',
   'outside-grid': 'V tomto bodě není blízká buňka nativní sítě.',
   'outside-horizon': 'Pro vybraný čas není dostupný nativní výstup.',
   expired: 'Poslední nativní běh je již mimo svůj předpovědní horizont.',

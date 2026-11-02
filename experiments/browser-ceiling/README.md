@@ -2,6 +2,8 @@
 
 Research checkpoint, **2 November 2026**. This is a reproducible experiment, not an application adapter or a completed native ICON-D2 integration. See [decision 0014](../../docs/decisions/0014-browser-source-gap-recovery.md).
 
+The main application now uses a separate **small JavaScript native-grid decoder**, documented in [decision 0015](../../docs/decisions/0015-native-browser-recovery.md), with actual ICON-EU point, series and regional display. This older 41 MB WASM proof remains reproducible historical evidence and is excluded from deployment.
+
 ## Reproduce
 
 From the repository root, run:

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createBriefingSnapshot, renderBriefingHtml, renderBriefingText } from '../web/js/archive.js';
 import { sourceReview, reportProviderName, reportSources, observationHistoryInfo, renderAviationAttribution } from '../web/js/handoff.js';
-import { createBrowserCameras } from '../web/js/cameras.js';
+import { createBrowserCameras, fetchBrowserCameras } from '../web/js/cameras.js';
 import { createBrowserCharts } from '../web/js/aviation-charts.js';
 
 const NOW = '2026-11-02T10:15:00.000Z';
@@ -271,4 +271,113 @@ test('legacy embedded SWL retains its actual issue and validity interval',()=>{
   assert.equal(review.tone,'neutral');
   assert.match(review.text,/Vložená mapa pokrývá čas přehledu/);
   assert.ok(html.includes(`src="${png}"`));
+});
+
+test('confirmed original camera views freeze only source links and preserve unknown exposure and file buckets',async()=>{
+  const value=input();let requests=0;
+  value.cameras=await fetchBrowserCameras({now:()=>Date.parse(NOW),loadImage:async(url,{id})=>{
+    requests+=1;
+    if(id==='churanov'&&!url.includes('latest_thumb.jpg'))throw new Error('Full image unavailable');
+    return {width:1280,height:720};
+  }});
+  const original=value.cameras.items[0].imageUrl;
+  value.cameras.items[2].status='stale';value.cameras.items[2].error='Obnova obrazu selhala.';
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot),review=sourceReview(snapshot).find(row=>row.name==='Kamery ČHMÚ');
+  assert.equal(requests,5);
+  assert.equal(value.cameras.items[0].imageUrl,original);
+  assert.equal(snapshot.cameras.items[0].imageUrl,null);
+  assert.equal(snapshot.cameras.items[0].onlineImageUrl,original);
+  assert.equal(snapshot.cameras.items[0].onlineOnly,true);
+  assert.equal(snapshot.cameras.items[0].observedAt,null);
+  assert.equal(snapshot.cameras.items[0].fileBucketAt,'2026-11-02T10:00:00.000Z');
+  assert.equal(snapshot.cameras.items[1].variant,'thumbnail');
+  assert.equal(snapshot.cameras.items[1].fileBucketAt,null);
+  assert.ok(snapshot.cameras.items.every(item=>item.imageDataUrl===null));
+  assert.equal(createBriefingSnapshot({...value,cameras:snapshot.cameras}).cameras.items[0].onlineImageUrl,original);
+  assert.equal(review.tone,'warn');assert.match(review.text,/3 \/ 3 původních pohledů potvrzeně načteno online/);
+  assert.match(review.text,/Čas pořízení není ověřen/);
+  assert.match(html,/href="https:\/\/webcams\.ventusky\.com\/data\/55\/186428055\/hour\/20261102_1000\.jpg\?t=\d+"/);
+  assert.match(html,/Obnova obrazu selhala/);
+  assert.match(html,/Hodinová složka souboru [^<]+ UTC · není čas pořízení/);
+  assert.match(html,/Zdrojový soubor: malý náhled/);
+  assert.match(text,/hodinová složka souboru 2\.11\.2026 10:00 UTC \(není čas pořízení\)/);
+  assert.match(text,/poslední potvrzené načtení 2\.11\.2026 10:15 UTC/);
+  assert.match(text,/pouze malý náhled/);
+  assert.doesNotMatch(html,/<img[^>]+src="https?:|<canvas|<iframe|<script/);
+});
+
+test('frozen camera capture rejects invented exposure, pixel bytes and a different image host',async()=>{
+  const value=input();value.cameras=await fetchBrowserCameras({now:()=>Date.parse(NOW),loadImage:async()=>({width:1280,height:720})});
+  const original=structuredClone(value.cameras);
+  value.cameras.items[0].observedAt=NOW;
+  assert.throws(()=>createBriefingSnapshot(value),/původ|čas|obraz/);
+  value.cameras=structuredClone(original);value.cameras.items[0].imageDataUrl=png;
+  assert.throws(()=>createBriefingSnapshot(value),/původ|čas|obraz/);
+  value.cameras=structuredClone(original);value.cameras.items[0].imageUrl=value.cameras.items[0].imageUrl.replace('webcams.ventusky.com','webcams.ventusky.com.evil.example');
+  assert.throws(()=>createBriefingSnapshot(value),/kamerový obraz/);
+});
+
+function nativeEuPoint(){
+  const cell={lat:48.95,lon:14.43,index:824,gridUuid:'832c1507fbc73eb384139890094d2c60',elevationMsl:null};
+  const runTime='2026-11-02T06:00:00Z',validAt='2026-11-02T10:00:00Z',retrievedAt='2026-11-02T10:14:00Z';
+  return {
+    model:'ICON-EU',product:'CEILING',units:'m MSL',status:'available',valueMsl:880,cell,distanceKm:0.5,runTime,validAt,retrievedAt,
+    sourceUrl:'https://opendata.dwd.de/weather/nwp/v1/m/icon-eu/p/CEILING/',attribution:'DWD · CC BY 4.0',
+    documentationUrl:'https://www.dwd.de/SharedDocs/downloads/DE/modelldokumentationen/nwv/icon/icon_dbbeschr_aktuell.pdf?view=nasPublication',
+    definition:'První výška nad mořem s pokrytím nad 50 %, bez konvektivní složky.',
+    stale:false,error:'Část hodin nemá definovanou hodnotu.',
+    series:{times:[validAt,'2026-11-02T11:00:00Z','2026-11-02T12:00:00Z'],values:[880,null,0]},
+    regional:{model:'ICON-EU',product:'CEILING',units:'m MSL',runTime,validAt,retrievedAt,gridUuid:cell.gridUuid,bounds:[[48,13],[50,16]],totalCells:20,subset:true,
+      nodes:[{lat:cell.lat,lon:cell.lon,index:cell.index,valueMsl:880},{lat:49.1,lon:14.5,index:825,valueMsl:null},{lat:49.2,lon:14.6,index:826,valueMsl:0}],
+      selectedCell:{...cell,valueMsl:880}},
+  };
+}
+
+test('native ICON-EU export freezes its actual series and regional cell map with independent source clocks and MSL reference',()=>{
+  const value=input();value.clouds=nativeEuPoint();
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot),review=sourceReview(snapshot).find(row=>row.name==='ICON-EU CEILING');
+  assert.equal(snapshot.clouds.model,'ICON-EU');assert.equal(snapshot.clouds.series.values[1],null);assert.equal(snapshot.clouds.series.values[2],0);
+  assert.equal(snapshot.clouds.cell.elevationMsl,null);assert.equal(snapshot.clouds.regional.gridUuid,snapshot.clouds.cell.gridUuid);
+  assert.equal(review.tone,'warn');assert.match(review.text,/Část hodin nemá definovanou hodnotu/);
+  assert.match(html,/DWD ICON-EU CEILING/);assert.doesNotMatch(html,/DWD ICON-D2 CEILING/);
+  assert.match(html,/880 m MSL/);assert.match(html,/nikoli AGL a nikoli pozorovaný ceiling METAR/);
+  assert.match(html,/2\.11\.2026 06:00 UTC \/ 2\.11\.2026 10:14 UTC/);
+  assert.match(html,/832c1507fbc73eb384139890094d2c60/);
+  assert.match(html,/href="https:\/\/www\.dwd\.de\/SharedDocs\/downloads\/DE\/modelldokumentationen\/nwv\/icon\/icon_dbbeschr_aktuell\.pdf\?view=nasPublication"/);
+  assert.match(html,/<figure class="native-ceiling-map"/);
+  assert.equal((html.match(/data-cell-index=/g)||[]).length,3);
+  assert.match(html,/native-ceiling-node--missing/);assert.match(html,/3 \/ 20 skutečných buněk/);
+  assert.match(html,/není to mapa nízké oblačnosti ČHMÚ/);
+  assert.match(text,/2\.11\.2026 12:00 UTC · 0 m MSL/);assert.match(text,/Regionální mapa ICON-EU CEILING/);
+  assert.doesNotMatch(html,/<image|<img[^>]+src="https?:|<iframe|<script/);
+});
+
+test('regional ceiling cannot borrow a different run, valid time, UUID or selected cell value when captured or rendered',()=>{
+  for(const mutate of [
+    data=>{data.regional.runTime='2026-11-02T05:00:00Z';},
+    data=>{data.regional.validAt='2026-11-02T11:00:00Z';},
+    data=>{data.regional.gridUuid='932c1507fbc73eb384139890094d2c60';},
+    data=>{data.regional.selectedCell.valueMsl=1700;},
+    data=>{data.regional.nodes[0].valueMsl=1700;},
+  ]){
+    const value=input();value.clouds=nativeEuPoint();mutate(value.clouds);
+    assert.throws(()=>createBriefingSnapshot(value),/CEILING/);
+    const snapshot=structuredClone(createBriefingSnapshot({...input(),clouds:nativeEuPoint()}));mutate(snapshot.clouds);
+    assert.throws(()=>renderBriefingHtml(snapshot),/CEILING/);
+  }
+});
+
+test('a missing selected native hour retains the genuine partial series without a borrowed point value or regional map',()=>{
+  const value=input();value.clouds=nativeEuPoint();
+  Object.assign(value.clouds,{status:'outside-horizon',valueMsl:null,validAt:null,stale:true,error:'Vybraná hodina se ve zdroji nepodařila načíst.'});
+  delete value.clouds.regional;
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot),review=sourceReview(snapshot).find(row=>row.name==='ICON-EU CEILING');
+  assert.equal(review.tone,'warn');assert.doesNotMatch(review.text,/880 m MSL/);
+  assert.match(html,/Pro vybraný čas není dostupný nativní výstup/);
+  assert.match(html,/Vybraná hodina se ve zdroji nepodařila načíst/);
+  assert.match(html,/Hodinové hodnoty ICON-EU CEILING/);
+  assert.doesNotMatch(html,/<figure class="native-ceiling-map"/);
+  assert.match(text,/Samostatný ICON-EU CEILING: nedostupný/);
+  assert.match(text,/2\.11\.2026 10:00 UTC · 880 m MSL/);
+  assert.match(text,/2\.11\.2026 12:00 UTC · 0 m MSL/);
 });

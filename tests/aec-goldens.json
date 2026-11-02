@@ -1,0 +1,584 @@
+{
+  "source": "https://github.com/dmarkham/grib2/tree/146d5733902af5b41c45c7819b24079f7cdaebad/internal/aec/testdata/golden",
+  "generator": "https://github.com/dmarkham/grib2/blob/146d5733902af5b41c45c7819b24079f7cdaebad/internal/aec/conformance_test.go",
+  "licence": "MIT / Copyright (c) 2026 Dan Markham",
+  "vectors": [
+    {
+      "name": "pp_u8_bs16_zero5",
+      "bitsPerSample": 8,
+      "blockSize": 16,
+      "rsi": 64,
+      "flags": 8,
+      "gen": "zerorun5",
+      "samples": 1000,
+      "encoded": "8dGK2DGIWMzoRs+d2Jm0H+AP9jOP3kS6Vi06MyWSWJCOpeqfxuC56/YjWNxDNJ8zDeP+kKZ9BlElVpf2so0aO5oB8/DVM5RaCEbY0rFssbGd6p18cBQyU0D6uB5ZqGjXeOksrnWPn8l50ZSHRoob1Ygkz1vppZcE2Rt2YlGE2isnLXAyeQ87XyMV1A7EfO7BW+lNd/gDx8yogfF/mRQaoNkNBUQKiz/UWydOsjjw3/LKAnJw/vdXd3s4X3yCh0yu7l8YqbAB5fy059CbQLj0G/uPcSqgoaMfZMD6POotJS7Dx/4pK+saw+Knzrrd/YPu4IfOORDGOGF8K7LUauoNfWZXvwPhX5c4brLjhepakZYYHKcgyjIZB0IA8M2Qoio0qicpUYlcClpMD443jRLBw5umB8oJi83fm+E12pwhOBlAGVambpiQfDTFgzx+IdP/8b2oEuJdc75jO8zfaIvf7W3Ws5p+NELuu1o89uL5NKIKI+ljwn9uwuhNG6RcKIhL/f0BHomGWnJd0zAYU8wjbU8sJt+dknFzhyr2vf+APlCdHD8T9oRSCXFDiIFRSsOy67CJ8DIWI8Fzqths7DmQeahiLY2Tmt/YyegyPRnRkw+lANV5ziY3y3sJ3Wx4fu8Tzl7EVnVfK8TMrwf1fft+db07ck9Jvk7Q+eFzAiaVTYD/YA/BOALLQTOsabs7aSU99exT5mWtUOOE499pXab0mYygD+CGoM5YTs4FoX5I5qn617PredWWLiaKy2DlaIRkA6jp/R6pdGf1dmUEsl7tW4HH7+uVhAQ7quzYwcrT3GEsvQRh/ub5J/xOnlMwAAAAAAAAAAA=",
+      "sha256": "7ede800e4b72631e56dce13ed3d597fd7decb1671dd666553a31e909ff2fd2b5",
+      "head": [
+        142,
+        212,
+        255,
+        62,
+        140
+      ],
+      "tail": [
+        128,
+        226,
+        22,
+        229,
+        203
+      ]
+    },
+    {
+      "name": "pp_u16_bs32_zero5",
+      "bitsPerSample": 16,
+      "blockSize": 32,
+      "rsi": 16,
+      "flags": 8,
+      "gen": "zerorun5",
+      "samples": 1000,
+      "encoded": "8orvdH1Z2DN5H+HntBiBmbwpqOvlCwjWZs3xQ39e2wKSDlPt7L9XD/ZihKV5yxqlLkZasL3/nnTJPgVKk1hLkXAD8Wxdd+nyxmc7Iz9Hewa2KPJzqjRpgJ10smaFA7kPlNpZnamyLAcuW1rl9horxXqs3rgQzG61r63GeKcMU0HeNH6zQ8WadhOc6IC/RY1MT2fwrbtsUdonwrPULUKxQc22yGyw99R4b+xpP84RQfSmvOFSt60U6n08/zL3dBr1ccnD6WJFvBRgIUh9SOTWNLZNoJ8WUHbQRghbD5Lm+ineu6fcbAgSbdvd3EZdltHVq/a8HhrYcHnVSLgrg5XBTdmSdl8pS6MQ26Zy0nrwe76T0UN1CwaYRHC6rP/2RZxf6qVRN3uT0OiYzqY8yRTotsXq/ZQi1rYCe5iN1PV90x8yCADv+jg9f9t55Kb0sStORAfmIpK+9Mnydlse/BXMpD5P4Y5CVf1uvwSRSoNf8+bTaLMhZc3xZthLIM299at0dBquef6+XBct5LQZAQMmpaRhgZPHjKY+ulMszaMpXzKIfPyz+tbgC4rufT5JQL3SS71eXKabli9NPfwNYxW/PYG3WFtZ/TeoCISpxyddVMzaAunQhoGXS3Khb+0icYs3k9HSi7CQvhH9fJ/Ub9akWO3J0i1+GIQO7dH+d9ktz7nWOc9Hdl47XLfCG46j6GWulXZEg32L9LkX3P/5pMU5/Uspks8wJjlxOO6TzBluPeNtziG9SnwDrrWYqeYK/9AikRbODfA2BAAAB9FHjg6DHZRXiRbMAQ/yvxCAT3XNRCaj+26Qx4nEg5/wmi4w+ueAKzp1oM4dTt5qh2Mxn4Kj70aSFirEH7EN0/I9gOqpNYEK22BjnsXf9C6hCjxK9FtS9LChtl4zfOiS//xZgkqvZ7AdkskahahxZE3mf5yq+7q/TK1+DCwM06lH/+VKvDx3QP4rlcbdxvsZFHgOY1tKnQMJFoRep8daX8h1xvHyBYJfhUnL4G4esWoAbDwCwfUVy22v7fvFXeekNwe9k/rymo1akaa7wrVHT3D7I54pfoWbhUvy+LLtNRRP8RAtIq+RmhpB7OquT01NqcpB/S+XMvfjawSuHBya3FwdO/5ahcfgHdl+c1WLr6vyt6MIW7aj2X8ZIayLmWdwF6JXnV3h784N4XwFyVwksYCp70xGyCxD22+6zV+tAk7uxpa+CDATIAOju5tpaz/DQaEpYNUzJkgnWlr3tQDU9XMMs4I74m2599SFIxUQiRlKE0ub9zqg/5vmeWS7uwHJUga5++op9idtlxyZjRfBrXT34wNdKM03e/UANtp0YeZMKtTmgNMvpjw6xOU/XwIgfNABgYyS0VfFYvlcOvnNo1dse2J8YY6SVNzb9vpD+huYxar8cZX/kf7zdSKhEeDmPHDc1KHrrZyLqLXThRF73OG6+axczapMrDy1YcXdVRn7LfP//AE=",
+      "sha256": "7751fcf637afd119eca1612fcad431bb635327843d0325555f0e5a05d9d78f72",
+      "head": [
+        10414,
+        63303,
+        10850,
+        33591,
+        52278
+      ],
+      "tail": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "pp_u8_bs8_zero64",
+      "bitsPerSample": 8,
+      "blockSize": 8,
+      "rsi": 128,
+      "flags": 8,
+      "gen": "zerorun64",
+      "samples": 1100,
+      "encoded": "9eX+wUpXYb/gEPnlB6Us0u9G7nBe3nwCzq3r/QKpS4jL0W99ur7GRIzFel/whZ1aR5RXXePWVBsTalbevOUgT5olc29vu6Am0FORK516loLtnWvipD7auxnDam8Ej939aNUszGK5e1xMGV0QpbMnKn95+Hn25y3svwoMwnBpnhzEQc5TQn7/V9r6v6CwuqXYec/tCb4rRekckWYOSyMw0QfVsEYJX3FTuvTaMeWPyJmTvK90HcC/2nrXmcsRMBvtmAZzY9/bCejVix/IhI4McaC1ufOxwByjJ9mufVfj5MYIJDGP6ah9LUw+EBb5sSgnD0j6Ll9ptMcFjZW5W7h+D0f15WgBccQkGX5TDoyvl1oXRGqSkR/NIl61BDBWm7z0KFXCWk3FX+iIvc0o3kEm6VGyGaelwI08tvmoqGYzU6PGsAKB/0aP+Py6l9Daw5QYr7u9lN2Lrzu94BE+2waZAc2ylKCxO8a6xFzUv8JiI57WG44PGmG8/OJbdJ29emFZ223+Fnqr7mjRViXjF4NijmtXrn+qvZKes04Nb7bNE+wLs/oV+VKkLQit2lucA0bATGje9+fSG/yao5YWjvMe1fBIKoPj/+6O/PApwfsT+KsB1dYdg9d6EtoplrbQ9jfX12GqPUxkH/AQsoZgzeCjXOdX790xtRVn+9iVqzvrVDh0OGdBRlXW0z5iTwp4LEOwwc0GUJ9HKuS3+uzqLEzSwDHvCd04ljtS5cPlxYTcCNZGpTxN5qT+NcFGhAI=",
+      "sha256": "bb77a584b2c34d02a999fe97bada627529644da0c88c1ac3297b6a22619bee20",
+      "head": [
+        175,
+        151,
+        9,
+        14,
+        82
+      ],
+      "tail": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "nopp_u8_bs8_zero5",
+      "bitsPerSample": 8,
+      "blockSize": 8,
+      "rsi": 16,
+      "flags": 0,
+      "gen": "zerorun5",
+      "samples": 300,
+      "encoded": "/J6e+KNDh2AAD2BE4qFLHU2J83xeBZKJbVG+Wr8YijE+zLPRYjyqeMOrnHAoZBcKnu/UH91ATU3H9rSp4VItVyGO1054AG6OC/zZsAAgfxOTlCRwa0r34Q6xypxhdC75tPpsuzMb7zz2dj08737JS44zbUm0aTRLfZzRLnH1YftP+fBmJAOWEbvwK1/PpCrlwAA9da4UOkkDbX/nwSc+XRGxbXCHek5KuvhxDmMf04hPlGnTwUQrdngfM0fwDPz30hCEIA==",
+      "sha256": "7369e5fa22d3bb6b06fcf6cd561d4b64f0220f5cc66ae83365fd04e1f1a0e4b7",
+      "head": [
+        228,
+        244,
+        247,
+        197,
+        26
+      ],
+      "tail": [
+        31,
+        231,
+        23,
+        90,
+        8
+      ]
+    },
+    {
+      "name": "nopp_u8_bs8_ramp",
+      "bitsPerSample": 8,
+      "blockSize": 8,
+      "rsi": 16,
+      "flags": 0,
+      "gen": "ramp",
+      "samples": 300,
+      "encoded": "fVS2NkVVSU5dxVVVEjRWeKqqmavN7wpJJJIkaKzxlVVSpbGufDKqrGU6VtfGVVTnW+d98HQUJDREVGR0jpKUlpianJ6h1FSU1RVVldY6ytLa4ury+wdhYmNkZWZnaO0tTW2Nrc3uHcXJzdHV2d3jvL09vj6/P8B4GCg4SFhoeI8TFRcZGx0fIeRkpOUlZaXmPMzU3OTs9P0HoaKjpKWmp6j1NVV1lbXV9h7Gys7S1tre49zdXd5e31/gfBwsPExcbHyPk5WXmZudn6H0dLT1NXW19j7O1t7m7vb/B+Hi4+Tl5ufo/T1dfZ293f4fx8vP09fb3+P8/X3+fv9/gD6qWxsiqqSnLuKqqokaKzxVVUzV5veFJJJJEjRWeKSSSTNXmZmA",
+      "sha256": "14f949605fa4e2bbc0aeb7417930abd670d1cb9251c7c02708280d0a242aeb66",
+      "head": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "tail": [
+        40,
+        41,
+        42,
+        43,
+        44
+      ]
+    },
+    {
+      "name": "nopp_u12_bs16_random",
+      "bitsPerSample": 12,
+      "blockSize": 16,
+      "rsi": 8,
+      "flags": 0,
+      "gen": "random",
+      "samples": 700,
+      "encoded": "92nekQgy3em9ks4EIqSjhyIoSbUnJNWlHyOXD5uceIE0h8M1R7Zsk7qvpCVMfFZgnfE0OyTkivKe/xUW6WSDHZbvEtW3/aZUfhvMSPjOHJY9YZRKuWHj6P3/ATOypyFGPaHwWlZ+yfbega0CJsbcRooXDE6k6Z9KrS7+9grotcGv1HpTKVjVs0cp7s0WSx1s+m5r6RIwpe5D7iP0xiW8kPpVUT9lxtyoIIOCf9y6+IttfBcvBJ/YKjxC6bthkSxtXjycw/6d9LPQ7ER7X9kd5s0mEqooIWkdrVL3Nj8NaipJehVo4GuKwaGCVlE/U9U+WVJ0EEXrDGhxuG4gVmK1n+Gxu61PStYhbSTYjF//2hIG4iAT8FQSWYvH3zqqw2hXxZX/C+9r+OCBNK1RtaXKLRliY31G+W2bEqe5NUvDPio/lehIUWbaNM+T8f1wbU40idznxpEaB+1sXKZ1RPYSx7khhjXvmUorDH3aPeh9SF4x/+uuAp2zG3+o+CyWIloKkBGYjxAfBbX1M9rAltZbrp8er8GYL/c7c661e0UsdxP+R0bMhiZnowDxXjtAT4KO0U/vRw6T6+RJ8k7WOWXQVZXzg21wA9ft4QvysnhU6Fk+XtlPNSQdfca1qAiyjbqhm9CrvNRrpvSUTeza/eL6NNaLtRTuAq3uhjwU18tsvDPSKh6FtfAb2Llpgr5m/hFyX45UzOFMCKnJe23lT068Q9flp62iA8+5vyXglzANtAhM7Xv3VHZcbPOLArrK10OAyV2NxjAfB7RP+evHo6SwT/JvQ9q6l54INwBDs94K4oBofx7Hf9DATr2R+xH0Ya7xn9oKNQx7us1CzoW4t6AsZnbtLIh5dpZwnyoCKs4KP+pDbIFhaPmSBVBoAV0uYza8HwPgbBqVQaKtqRpMi9+6nFFjvFVT8ol8h4kN8lxX6dDAZk3ZC6v5YF8Fchk/El13IbknMMXDs7MuDS4SmvBf+moup66jQVLMKtTTaDFvzCmrFK936gjlfBJXfUx8WMGcbT2pBYqGeF1h05cCXo42/7CH7BOHvIGnCjiD0GkciZdEx+C4+J0SQXvQheFvomcldQTqCPAofZZE200pynU5kA/wgIurrZ7OrTOH81Znh99dmDV82VbmgaL78FDi4EMDdR9PDJxBuPaLfH4ZX1/oUo0PkpOI5DiL5UwVo7J55Fe9iYmoPErjFW7/fUcY1C3omyHlgaZvMtg9dZT2XZj6u2NKl7zevKUFd4g5i2OnzBYoDCFghJIJkWrIO/sJSh/zqvg6O6xmnrcKi1U/4rCGwqd7wi/1BsQVsvYKdzVaCxl8ulNlkW49R0r4c4n4H9d72hJqWT65usgiNFpWcSEdMEhjY0P/ue3ksbimYdWuCJGh/KJBNqRSfd7DyCxGfQGceBmiOAsb7F8hTpAiHP7DjDjDjDjDiA==",
+      "sha256": "98f67fbaa08485b31df7cec9332940a8f9a2aab3fb8605a5b0b88e1b89da9e8a",
+      "head": [
+        1897,
+        3561,
+        264,
+        813,
+        3561
+      ],
+      "tail": [
+        1065,
+        3360,
+        1091,
+        2557,
+        2161
+      ]
+    },
+    {
+      "name": "nopp_u16_bs64_lowent",
+      "bitsPerSample": 16,
+      "blockSize": 64,
+      "rsi": 4,
+      "flags": 0,
+      "gen": "lowent",
+      "samples": 900,
+      "encoded": "Gu5y8SXiRMiPJpijorFUSkvRiKkotdTcjOJRSiJ1SieLoiRpxlHXMxMXSMRTm+ioviIiixMYmOZSSRNxs6JZlMZIpNyxHEiYxjERjyIimRHRjEklHGoxji1TKfJkRKkSVjSIiZEnz0XPRSTFJRskxiRpFoiIjEcoijyRESNRxKOfExtFak29WrXXW3b3V6rVaq25L2hRmds5NREzst0VFJIjREkYx0i6Iokkok2XHUxlRTOqMiuiWRGM8RxGMZJIkcmrVerrVq+q6v97rVq54NyzgWOZVwyyJ2jzSp43JeRNzHESl0SkYxGzUYkicrSaOZojvbuMYpSYiKRKVM6JFEcyI5RNtikkjRJieUUSX//////////v/////////8A=",
+      "sha256": "7652ba2f9d4079c03adccee41ebd049fc1063c27bafa8e86dd44fc368dda31cd",
+      "head": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "tail": [
+        3,
+        3,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "pad_pp_u14_bs32_random",
+      "bitsPerSample": 14,
+      "blockSize": 32,
+      "rsi": 3,
+      "flags": 40,
+      "gen": "random",
+      "samples": 1000,
+      "encoded": "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",
+      "sha256": "cad88a200dfcb93ae07af74e227b15f0eebc14d473b14f89268f0bac2e613577",
+      "head": [
+        13772,
+        3878,
+        2715,
+        562,
+        9879
+      ],
+      "tail": [
+        15838,
+        3573,
+        4205,
+        4536,
+        6253
+      ]
+    },
+    {
+      "name": "pad_pp_u14_bs32_zero5",
+      "bitsPerSample": 14,
+      "blockSize": 32,
+      "rsi": 8,
+      "flags": 40,
+      "gen": "zerorun5",
+      "samples": 1000,
+      "encoded": "94m7d3YnTgEpC9o3s+C5ZzLrJpMhsqjrMD0wN0p8czUcVwltEKTTFowcy+8EKsgVRmMn2MtXLrlQA+Bvx7NvOF4hWeHuFFne0vLwR5xr1lPi5NrLKX2NtN9k9qttDamwm51Z6IS6LlvpAF721OTuYbJa3nmUN/Cf38iOzGmqw+oFBrGX+U9JbDbSndfbozuJgBCgAhAm4PpHkqF1ZUzOQinajGN75pwB9Yus/oFXpIg7ECks7L3va9rN/DQZVDRXCuCavXxwFFxSKtIUOnzrKC57ObeU+ppWEJ1AV3uBWitUF5ffXB61Wp8whuClc3Ka/GRqkRH5ixyZ2LRjp/DlKN2Cc2M/0itY2HYxZawXuzbbJ4Nx5RHcTHGlwk36kNidzU1ULAjHO5Gok32DXn4bKjFvMqIUbV1kXNrpVQCZHhWm98MCzSsDCk5mA4voe2HFK+V+AN86eYFXt/XiyJeKhTm7EsDab7xo+VIEZvwamzsNE9IAgunbZ26tqUzs1SsQkTGSMnUQ6QRMbtvMDPL55kt9SsTrU6OnumRhZDDITKA7pYODT0IGvyzlElbgJVPTVmGQ5lSiPWPBdsRbS/eA1X7m2RuWz3r3lQ2o4ulMNue6WrweDtJ3iXd7HPR1y7VlkRbHYe3vLf6KGEwkApu/viUrrhusyHq7hY4TYfdXAgAAB+LlJzaiE9eYhQRRZFH+FQWThOTYs2xRNFnX0Xt2NQwSu+DeznPCSqlVQSPhAr6TfZqTobrYRXS3/0uBoWohvH7Es984DB0Z+i2DSxmpwPiI4kMTm69ygUYBbB2TrxOSN9g1uWwK55SKNQFDqgIsZMrX4Zn49RRjEThMBDxfl4/jvHtAj/x8WaJXQjJ6548DvnuA7SFO+H5OG02XNltW8XepHALIgpfzXpD+mwUizTy7v5qlqxXYyLKAyHwV2GD7Wsv8OqoylUbe/TmihrQckEu98I0fH2jYwsc8/KYtQIvn23vS9t/LpA6PhAu+RZzL42Nmil7JL6kWChZPCQ0nwPMjvD3mPEu8in2avwOZ+Y90BBPyC3Wie6+/SwD21IM/21h5rvC0w/b1h10tXm1JoLaqDsmsuL07SUWdOR3sWfjMYQsCHOly2OD//mb8flsfhaE93r8R4Wy0h3lx6OWOaYJqj5meWbuwJEm+P6c0SMTTf7wxEW+9tItSpMixZAfZxrZce6ClApC6Zusv2/+KfxwLRt1T47Uf57PA1cmjjwq/zdWbK4w5YK9es9c8uhoXFx7gdo/ZT2cBsagKCBfO3Y53HVJEEAQ=",
+      "sha256": "2a42e8e03a37c37b60714fcec68f71f2d39be4688584519b17e8d95c50d8c129",
+      "head": [
+        7718,
+        106,
+        7561,
+        14329,
+        14923
+      ],
+      "tail": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "pad_nopp_u9_bs8_lowent",
+      "bitsPerSample": 9,
+      "blockSize": 8,
+      "rsi": 5,
+      "flags": 32,
+      "gen": "lowent",
+      "samples": 500,
+      "encoded": "LWrMkq/cCRJeSq71lX3zE8mRTdI8SYjGbjSpMBIyUok0Yoox6JZOjMimE0VoxF0Sbt7Sqvri22+AGMSOItxi8URGpIjGdREr674jkmIskpjlRolG2BSqcSRsxc0xqxMUqNQRE1klq2hGMziox0l1XOASPGRkaLJXvZEROcSRJMgUnTGMTiKojZVe+JbVWwASmPJVVTgOiJYxGNlJEBjjJE6TlarlRLZiMkRcHJYxYqLFSqo=",
+      "sha256": "9d62324f0a1103583c7471257e3ebc07bc695bf8b9adb87e31a391f94f13b062",
+      "head": [
+        1,
+        0,
+        2,
+        3,
+        1
+      ],
+      "tail": [
+        0,
+        1,
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "name": "restricted_pp_u2_bs16_lowent",
+      "bitsPerSample": 2,
+      "blockSize": 16,
+      "rsi": 32,
+      "flags": 24,
+      "gen": "lowent",
+      "samples": 1000,
+      "encoded": "lN5I/3zgS708k2Jftp2jEl++gP+EFVb98grRld0stXHRrmvJmtRsZnV07u9BmOPVvpiKqNKkBXib2oqg+EkHTwIG196ZR+BtI4Zu2yr+2Jv22Pi5j4OUm87sa8tId8lg3nyf5uag2dwE8Kn+q6fEkb1xwLgEVmZfRko7Q8coLivMMrG+8DpNglfZM/S3+aCc2/QQVegv8PK17Z9+GrxtCpk3b+3ts9uS4dhFf3FzGTz5sMWUps+BldjcGsKaAuXtBV3B8osVm/XPmVJQU4e9/kiJ8acBBSxNfPkGkn0QW5ipZcslf0wAgvqSgHUWgc3sqBcyOtM/LAh6XuXWFS8Pb3g0AAA=",
+      "sha256": "66aee46451f9d7549c82b6572f33475535f959cc43949ef023f37124715bf488",
+      "head": [
+        0,
+        2,
+        3,
+        2,
+        3
+      ],
+      "tail": [
+        3,
+        3,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "name": "restricted_pp_u4_bs8_random",
+      "bitsPerSample": 4,
+      "blockSize": 8,
+      "rsi": 16,
+      "flags": 24,
+      "gen": "random",
+      "samples": 700,
+      "encoded": "osBV9+uFL6Xnz2FX3buken61eVfxnar7XWFd4sgbWDzGHxteL1mWPLih8Vtx0N9icWk3E8n4w61PzIZ0fmUG2N/NU5aVNVRt0abuH3q6+U7dJZ3Hj5G8Fz2QR3mU9rdGcF3N/rMGdbucN5sTfWjzBA4dnd5k5WzjYIZmGYSjHtJemceaZLuNm/JgWfLbsR+416RSb6UNJCnOfW7m1yQgqf8M5l4bPAzCN3pnrjn9a3qXZ61Zsv32sACP9+Bra9NHwgDpoeNz25YdAu+dO8zB/VrCn2DFQNC8aHT9zz1fYPOzTkOzcxctfF8q84bfPBE5h4ZCxUDuIyhz/m5OEZ4yavrPzjmdh/KDvMfamM4nrv37WXnpubee/8IHeZhq9r+3XGdFMeVZz5v4RoaPXcMthS6fOIGz1lyO63/ooSc9ynHY70lL+6+9MlTKYLlfcPjC/xIuLv2EWd3zSFr+ubGaexQtUvdXsbGt6u4UncTifF7lNAAA",
+      "sha256": "5cfff6e2c5632d13d16c5304354a45e7d13d897a493683af71891ccca9270e6c",
+      "head": [
+        8,
+        7,
+        5,
+        4,
+        15
+      ],
+      "tail": [
+        4,
+        11,
+        6,
+        8,
+        1
+      ]
+    },
+    {
+      "name": "restricted_nopp_u3_bs32_lowent",
+      "bitsPerSample": 3,
+      "blockSize": 32,
+      "rsi": 4,
+      "flags": 16,
+      "gen": "lowent",
+      "samples": 500,
+      "encoded": "WUVaYkxzkZlPfuq1q66twec+O7SZGSLOSS2qROkcUjJikZjjizGzlnxs3KNNlnd+1W3rVaotg/pScUf6I40ZJJqNykdLvxEc8UYooxEkymi94jLm0qSScmUZis0WMjYxIsRyMWyOratddrbddnYJQuvdVqu1Xa6nwEbS3Wr3V3us37Cuylq3ttauquaJJv7Sqv13qqqqvDY7/+A=",
+      "sha256": "fec398e6c303e8a62ca01d7d4e35158202ac817e199b321a6b7b6b3b4f988ac8",
+      "head": [
+        1,
+        0,
+        2,
+        1,
+        3
+      ],
+      "tail": [
+        3,
+        1,
+        1,
+        0,
+        3
+      ]
+    },
+    {
+      "name": "pp_u1_bs8_random",
+      "bitsPerSample": 1,
+      "blockSize": 8,
+      "rsi": 32,
+      "flags": 8,
+      "gen": "random",
+      "samples": 600,
+      "encoded": "+R1r9/cONd85t6jlfl+6/E5Txzjgt/w/D6/h3aOh+D/1/fvnE/e+JHfN/5/6693jmP1eldh8pxjnXM/kdp/V/njnYfFdB+153+X2xr+F/L9vZu2dT9V4bnvC/Veo7t0T/XjO6fZHMA==",
+      "sha256": "e791a3f97639bed33751e96cc363b0e4031ecae50aea3741b000a730cde34040",
+      "head": [
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "tail": [
+        0,
+        0,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "pp_u7_bs16_random",
+      "bitsPerSample": 7,
+      "blockSize": 16,
+      "rsi": 8,
+      "flags": 8,
+      "gen": "random",
+      "samples": 500,
+      "encoded": "62rDKnuM/Avk+z7lLT3+xkN4IaspmN1UTKY7a4vsLYwn8b4JufqFTKTDJ/kjqn68o2n3a3WzLQgdzKm8lo0MQ2agnN7S3KIn96ZPXoa/A1O/4pvJTqJ4p2qWloMURDMcHdudCP7MIqXZlOhjvLywnBeOy9qeWaYMtEucLb0t+xoFeYYMnx6hd5FcmVzkCT8PSOFrL/8Hochx6x4azprsmOy3MiK3ymQVsQ8njF6pojd/nKYI0RzwKIsMy6Oet4rgs2uBoVFng1XWcepXRSIsIdl9D8pmSowPOMFJgGLXFmJQPByzvZnpl0rKqx7cxMY/2njvAHYlL5N43IbGOxVF66IgXVjBM5t7TcVgvHwFFhR7pn3Ps8FVi/dbNGIqKoBwdrHJ3wVqrxqeI8RQu9/c+yY4n/ItFl0vdKhra8Ia+LExP7khEzE/tNB5+supJPJ/O2lcKwjdlnOHmiuzL6Q7ovh3Ax07L9j2N1PJXZCjwYzX70aaWR5YdgKlJ4g0E18NTDyKd+0WTy8r3RldDnbO6Q9WfYf3ZCx/qsSOzsLEJRBv1exiH8q9oJ70OT+p/pX6Ib2xY/aUMn2ZGhSa8uAQABT//cIAAAAAAA==",
+      "sha256": "9ac86d463ca0005cf4db8e9eaf0fb52ec233cee169a6e6d79af2fa033d41dd71",
+      "head": [
+        45,
+        2,
+        67,
+        56,
+        71
+      ],
+      "tail": [
+        75,
+        48,
+        126,
+        119,
+        107
+      ]
+    },
+    {
+      "name": "pp_u9_bs16_walk",
+      "bitsPerSample": 9,
+      "blockSize": 16,
+      "rsi": 8,
+      "flags": 8,
+      "gen": "walk",
+      "samples": 500,
+      "encoded": "N+BmEiJpHDwqh/RXau2vAaD/Nomimaq1vYwaR3SXRixGZsxKhMc3CjqlWnTJJgaLQ8UV1alrB9GXsxFSld5yq+raBgQJGjTbqVZOJuFkg1Un3Ne7x4g/y5uqXU3VKXjOLDWgGipd+03gmasL8Y5RdSIY3OILA4P4kISEasbEAHOlVTNVsfsIoAZGZimGTiRTLTUYbDFVVCTH4kEOlqVluatrZ0gNslNEVVZXWZStEA6vGikustWcDv0scXlFv5SuY8qGUcW1NXVqzr+vE7eFQitNLmuktFQxA7hykoRMJ6GALEgGiSKFrneGNofjwsMZRLJIhNAUuplevrQNcetJmQbTolsieOQddBOvVqnLd612UPg+SSiZaOiJDdmje1rWyBRHzgGZHa3dzLZieCZXEFBH/+wAAA==",
+      "sha256": "a7bb576e67aeaab76774b8a54c7739ef80f9a3367237c7d76164f039f7827614",
+      "head": [
+        252,
+        260,
+        260,
+        254,
+        252
+      ],
+      "tail": [
+        409,
+        404,
+        405,
+        399,
+        395
+      ]
+    },
+    {
+      "name": "pp_u17_bs32_walk",
+      "bitsPerSample": 17,
+      "blockSize": 32,
+      "rsi": 4,
+      "flags": 8,
+      "gen": "walk",
+      "samples": 500,
+      "encoded": "M/+daq917Vqua4TWyTFXglScYiRMRSjtOmV4Pgz16ratVtdeQKZXaIAvu8CGlgXE92WoiluK0A1e1Xe6urqJI8xMAdERouw/zX9Xy2quOzj9JGV61te6ur9dJViZS6cMXPv/JvhveGWCOe73oWAGAp6MSpHEniUhGkHL7wTmOEP67SPO8isAdiard2ruurrT2o34Uz3+DXJYbR6Jd+Y1ANrJpRR4lJHJWWQicxCmtlDFKsdhXO8kY8ATbDlAONbXbVXX1qyxDTJb3aDANVXQPjjVc2IhAP+akaAUKm9U16/rVTgT8eN630C2kB4MQU/vO+9fLhpk7Xabmu1WxBIPvHPJRECAx0KAIIMoNVNWPBAar3ru2q6v/44lvlGycMD3zekq/g2QQz29L8TW1u286rLUTlYclbc0PT2J2Fl4NUPzlXA146DQJfdbVur19ft/UxiJ88uH7GHgZsIKJQlLnDnZRTVRU4jSYwjjdBr7NicCrvfj4jyhBzlsaiKmqObGqTyIkxEZqQZjuGbFXgAiynRs5M8AArIkIiaKSMl//ZHewpAEx9ULzAQAAAAAAAA=",
+      "sha256": "f0ced8bb92263101d7de410930e1e0dfc426d32318fff03027bb87c24084e619",
+      "head": [
+        65511,
+        65530,
+        65502,
+        65501,
+        65520
+      ],
+      "tail": [
+        66539,
+        66531,
+        66513,
+        66529,
+        66520
+      ]
+    },
+    {
+      "name": "pp_u25_bs16_random",
+      "bitsPerSample": 25,
+      "blockSize": 16,
+      "rsi": 8,
+      "flags": 8,
+      "gen": "random",
+      "samples": 400,
+      "encoded": "+FKgC02QRikfWOBTwenO5oSb38/S5AmK4a2vPLq0T4BPy0j/MYLXHf6VsTcsDRY/y8f32U+Yex+1ho6MAdM+ZCzHBSewZ2AI5fg2TanpHZw86j9XY824Cpy8X+INH5wTOAQAYMl+dMqhliII3lZGVrR5ltodXZQ6PK5Nj7MXdloa7zBIbLWNHcAHeeYFJdgJz+2BGXshS/X+EBQWUPG+mmKM7QC/rvyi1ISP8mCel8SuQoYOuEpz/CLRzpKpZvn/flllU6TKtkFMwB+EmUc3a6Af9N8r4sNIGuSy+Nh0WVQJMFilrD/zOLEXkRuJgb2B20De5ZMt3YZ41ndzd3ws/KqpzwoYs8r7felx7po411GpwIT4xQTQGEfYHG84y8mU5WQDzQ4UpDsxI0RY2dRML+6/KwfDwPwdiEYRpSkggGca2SCF8El8OSkR1ulK8kvoszM1uynTSJc8mnVoZU603aVx/5x84xNApEesIa2FUa/GbdrrndJsyBsYOwYcSO2qDmY7FruEYLTqu3lJVKhtpyQknT50/9tnRboaHrMroTjYhyvi2gyV3egcW0PstOrvYLSE9j7NkjyvAAHCyHyypey9X9d1EdkXzqvu86SL89JGZ71GCUWRZdRBxHVo1+1pAYQB0SRiI/Fyj3WrADnvdSjtKcccPU2m5rF+SzTTw+X5exr8qO7sYatZ7zlRhhVJotZ82zU8OGH4XtdBB5ftIxOyQLyK/wYJD3sAhn35N+TP8n3BW4MyOFxEsqlXBlNUJ4YLWvF5Ux4l7rmlMcqsx5oqYpoxCkW+BL2F27y+Tq+DitVptzIee+8TC2D9RVdjLSdmcl3p0Qn5yud/mnbjxicR7RIEOi41rMHvpHcBdtO25X7k9os+JP2VGHDhXubfXa0H5JXCFhFFaEaW+SuALr9WWCX0uYziI+XrwkOT+2f8UNSbe/wPUHXEy97Y8PwkF/ob5d9NqdJgu1yZhYYBI7uaSiJAysiZ9GE+wSOVo22HXiwQQpMXvysDxCs/lGHfiylLfiyyFJxck5jfrGc0wBKZpHdPAIzAEEa/VA90jurVdcr7VvzDqCbI+9FY4b1o/NBKYl6mXSuofK8xUWYfanNcgqWspNBpKy8PlWy93/iwncYbwJx9Rd6A1DUf2Lfnp5AIY+MUvcS9wlQnWF2R1ohnAX2KXFaDIQHt0JGI/vXxT+xZShkdXi5L5uKZuWA/U5/CBldBKH/L9IwUPNQK5Z/Sm/WCUZ3cfuP30EUjLR+EZW9CC7ki3XsxAKf+aa30WpX1SFoWRrvPouq4FYArcQ5pWUhCdrwcTy7zY9Rs/XssfWm+n9rkw8STxot7qwDiKoUTMj/4JFSrFedPEdTDxHdT7TJxxfFWJ8WpkMUq1w0m8gwxrbiki6RknqQQYCacRsWXMdEVMf071MXoEJDmpVejrJtRuLzD85DemgSOqYHUd7ziDY/2I8VymwTqchH5sHIyqnVmKAQUs/05moLnpsS9tthTeBqTVxB0l2SLvjeCLC7UJIoPFci97hXL0Hm+Ci9ufYvyYKNqL3qoXyuc8fht+J+Tq/nCEpzq6DdfCu9ERiESYDWxv26ddCCJ5z+xwJMEZrwpOjvxSIIpDGCs+gMeUCFSGe3pg68s+1qPbLHU+yH19nNUOJ+Ps74iU2Cx+h/72HUeV/YA2tEq7r8Yvj3o",
+      "sha256": "5ad1be81e1df54210f1d789b1f6cb7c6cc96fa2ebb73831c6e439da81d759117",
+      "head": [
+        1353730,
+        27707427,
+        29054927,
+        4151420,
+        27736986
+      ],
+      "tail": [
+        33009898,
+        25600039,
+        25375970,
+        19644137,
+        10476298
+      ]
+    },
+    {
+      "name": "pp_u31_bs64_walk",
+      "bitsPerSample": 31,
+      "blockSize": 64,
+      "rsi": 2,
+      "flags": 8,
+      "gen": "walk",
+      "samples": 400,
+      "encoded": "W///+z1auvq7fXaqr9XVt1WpUhjdJ6Pg3qsYCyCS0kK2MgHVH6MikluodtZNNb2Oili59MFgnQwzKa98ZcuJKKDtKK5XSNIT/d474hC1iCsogjeaim5ZGG3aGwAkqYsXtbvq+1W3Vv7tqrW2Y7uRmqVh0iX7EbQfuX5Eek5H8fqSlLZEDbVHR7wBAt4QXh454MLHK6qcNaobN0GPblL1TSJ2TJ6nc3M+p8ipairOdz8wsS6XuNxr/52JgDVwAAjQHv1e61XXVXa9Wv9rAdop5ksnfBBAS4PKb9jZ5VOp2eniwSFpuwJIgWDwfrW3A2pEyP+i5IwsXmVnRC1Sjs1OfLa6acEnPLRcJx6sYSuDWGbZ5rU0GxUoO21mott/W9aqrerd+vta24i7LbqCP+ppnt4AFMdY/SRq5CrIAmdJxj+10+wgYY9PmjHtm4MTpdbLrowq8LaC7crVvoXYVLezOBAkLGxNAYmlMYFstqb41d6JqtyX+GBBVAAEzNJjGIiIrUmsTFjSpWdESKKJ7iRwsyC5F/7ZzOL/j5kiEqjdJo31Y+yE2Lce9HprdJJ3lz2Fwa0qTkouDlUIJVBlzw4WgTjoUd9Hdd3FSi5wIr5w5bWt+CD8NsoqLIjY01TKUlkY8+RZFSM4kiJmxGZFpXU5A2M/O935xirblstof0tSTW7iy4UjpZ3gOmlrUBRlRYjW8M/q1mxqM6ekY3a45ZjcGAaDzISM0ac41VqcQeYJ5+PVMAARtQBICIgIggICAwIgP///////+f+51SBkF3ZfAL5LzeKVwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "sha256": "bd9713a30c04a94ab88ea5032605ade1c905b246e2f4117604a438ee3b0969c6",
+      "head": [
+        1073741747,
+        1073741928,
+        1073742097,
+        1073741535,
+        1073742280
+      ],
+      "tail": [
+        1073761018,
+        1073761065,
+        1073760241,
+        1073760635,
+        1073761618
+      ]
+    },
+    {
+      "name": "pp_u32_bs16_extremes",
+      "bitsPerSample": 32,
+      "blockSize": 16,
+      "rsi": 4,
+      "flags": 8,
+      "gen": "extremes",
+      "samples": 300,
+      "encoded": "+AAAAAf////4AAAAD8cltdBxtJRP////+AAAAAo/SaWn//////////gAAAAJ2oUO9//////////4AAAAD8BgsnfD+fTYf////8AAAAB6h0u5yvFoi//////AAAAASbktAL//////////wAAAAEW3UI7//////////8AAAAB98On2fiDxYJf////+AAAAAv22ykH//////////gAAAAMKm7Dt6sieI/////4AAAAD4vbfWjoSQUf////+AAAAA+7PtCXxEwS9n/////AAAAAWrmDj7//////////wAAAAEEPgt1//////////8AAAABDyNvhf//////////AAAAAe6cWRf4AAAAB/////gAAAAPEyR5Udm3DU/////4AAAADRMRYCXZ3T+v////+AAAAA7iwHQSOn8Xz/////gAAAAMbNMxV/kyzOp/////wAAAAFUWKVi//////////8AAAABiD+e0O+Awl3/////AAAAASioaoH//////////wAAAAHWkwGB+pbP59/////4AAAADKcjTRaxuWXP////+AAAAA8fQK2pwX6kn/////gAAAANvT1NNIWFZY/////4AAAADWihcEfpdej7f////8AAAABxhisjnPOpuH/////AAAAATRGaIr//////////wAAAAEcoy/w//////////8AAAAByZl5T/gAAAAH////+AAAAA6AfX8K/wUB3/////gAAAALphBeP//////////4AAAADXuRh/0I3O//////+AAAAA0wCksn7P9bTX/////AAAAATz3XWT//////////wAAAAGV2CKu1E+6of////8AAAAB1WBVlFU/VNX/////AAAAAXLrldL///////////gAAAAO1l7GGlNCc7/////4AAAADg5HSCPjcW+v////+AAAAA4Uo1Zz1rlTD/////gAAAALyQZvf///////////wAAAAEyi8Bk//////////8AAAABclm2pf//////////AAAAAfhtiDAPJO+d/////wAAAAFOJzzv+AAAAAf////4AAAACh0o6h//////////+AAAAA3sJqGkJ7K8r/////gAAAAM52LE3jE6dj/////4AAAACjI2Cnf//////////8AAAABIEN4T///////////AAAAAS7zTm7//////////wAAAAGDzEXB+Gd0e/////8AAAABeNl5mv//////////+AAAAAioyfV3//////////gAAAAK6IFil//////////4AAAACFFbosf/////////+AAAAA/IF8bHw36Dk3/////AAAAAWuAmyn//////////wAAAAG0pI2clrbkxf////8AAAABgKgN6P6v5C3/////AAAAAYaZ0hP4AAAAB/////gAAAAMHvzfz8IGQF/////4AAAAC5vY0lf/////////+AAAAA80ShTRl2vWT/////gAAAAKdChK3///////////wAAAAHoaWZmLy0zMf////8AAAABGsiTXf//////////AAAAAXzPNij//////////wAAAAEVvjl8///////////4AAAACm39/Zf/////////+AAAAAwTfX5/2QUC//////gAAAAOT1sy4AAAAAAAAAAAAAAAAAAAAAA==",
+      "sha256": "e541df1c59944f83e92fc897c6cc6bcb345dea5b683ce7179077a8f7a7763bbb",
+      "head": [
+        0,
+        4294967295,
+        4294967294,
+        119228741,
+        0
+      ],
+      "tail": [
+        2106609712,
+        0,
+        4294967295,
+        4294967294,
+        907319715
+      ]
+    },
+    {
+      "name": "nopp_u32_bs8_random",
+      "bitsPerSample": 32,
+      "blockSize": 8,
+      "rsi": 8,
+      "flags": 0,
+      "gen": "random",
+      "samples": 200,
+      "encoded": "+efBp7KouF89GceNByN4P+udcQPBBG8Z+3vhTCGO53X/0G8+Q5Jf9TEVqF39biqLvWJJzGduP94IE+1875TPH51/jzGiUgbEMjV7k5C87PAXusW1QQ1MyF6UaS6YDcL78I3/kIu3SpYbbO3vEUZBaROBCDN5pf5rI8NuTP4EaQN8WA/BOaSFJvdjoXWBr5RP3x7owKvmJUEG9J3mGwjf1REmv35a/nk7xQ5+RuFpRMIhAAS6HY5GvRV3B1S0wRJe3tD5+/ImUQBEQ9G2huaq9e3x8ATZ472nsbnghBJ63gtTC36sHwDLThTrBBMLCL1dpNUDaae3lCCtGD2OyFBhn6xlFMmB+BoVqnqCyoDjCs958GHdgpnEDBzeSXE9y+Uxn4QdQ9nv3zHsWMBvfCT+4iiS0BZywglEc4LyVTHW/Wo76nn0eTD/cZ9B8BqsU4RLymF78dmVM3kWzsorzxZGRTwBlxnGrHvzYcjbahbUk6+lnMfLKXyVdVcW7+gE8RvQyTglCRXbd9/g9elCte5yHicuawcjfj8UVK2PvkLlpRYE1xliccFRXXySjul5HcPQTfaxJ0RYf6myktOKwC60ujYL8a5J/cC0E/WgBE9a5mHTOucdOm53Jdyk0/z11hfvTMEhZ2ncrr9OXzB96r6r23V5zCRkfq6nkVtwEFE4Z+8rq8Bp40rqZY1H+NRgPMS310/HIXvU896NDfCpCPaa6ywnLUhK+Rb8w8QfwToWM/UwQ5DIzBxjcExOvEseMcRpt1WKADxCxy42z+X/zW4BvKhbQTxrf+Ds2WehIVeWK8+a8xNpUn/pEVUgbIfzSl2OUWPAfwzfPB/9VhGEj4ZUYcHNBQfxMs3XGhB6TH/IneKotAa+PCLKaunDCFFUWWC8lbZ06QAXi0GpNtdm9v+LeH7dvu5LDA7lH0b+eZG/c/6UgPufx8jFDRqJJazWi/C5xFFsrgJCf8SknVzNcNoJ8pmJVXtyvmyKfO2JXfYDP9c2Q7DVXMrbaYYf3hMREiPUZtbTN3/UJlBxqTx5alKx/jIlmD30nKhAhwNTfskRX8Q3JZQlIszaVa5uuOeEUsig",
+      "sha256": "16947ecea407ff58bea10c7ce4ba9f9a7bd5223727694a12223572def595c5f4",
+      "head": [
+        1022899446,
+        1427573735,
+        2738418080,
+        3832481789,
+        1940791416
+      ],
+      "tail": [
+        3642895352,
+        2263134852,
+        2757335882,
+        3050166044,
+        4035598612
+      ]
+    },
+    {
+      "name": "pp_u16_bs16_longfs",
+      "bitsPerSample": 16,
+      "blockSize": 16,
+      "rsi": 1,
+      "flags": 8,
+      "gen": "longfs",
+      "samples": 64,
+      "encoded": "AAAEAAAQfvRB+9E=",
+      "sha256": "21d8b58c8fa6024291bd24a8024abda2debded1993efb35c11fde2dafaec4ef4",
+      "head": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tail": [
+        65000,
+        65000,
+        65000,
+        65000,
+        65000
+      ]
+    },
+    {
+      "name": "pp_u16_bs64_longfs",
+      "bitsPerSample": 16,
+      "blockSize": 64,
+      "rsi": 1,
+      "flags": 8,
+      "gen": "longfs",
+      "samples": 64,
+      "encoded": "oAAP////4AAAAAAAAAAAAAAAAAAAAH////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "sha256": "21d8b58c8fa6024291bd24a8024abda2debded1993efb35c11fde2dafaec4ef4",
+      "head": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tail": [
+        65000,
+        65000,
+        65000,
+        65000,
+        65000
+      ]
+    }
+  ],
+  "checkedAt": "2026-11-02",
+  "note": "Actual encoded golden streams from libaec reference encoder in upstream testdata. Expected unsigned sample hashes reproduce upstream documented deterministic input generators; no live network in tests."
+}

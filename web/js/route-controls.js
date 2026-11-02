@@ -25,7 +25,7 @@ export function mountRouteWorkspace({ getContext, getChoices, getClouds, onInspe
   function renderOutput() {
     section.sync();
     const source = getClouds();
-    displaySignature = JSON.stringify([getContext().timezone, source.clouds?.retrievedAt, source.clouds?.runTime, source.cloudError, $('route-data').clientWidth]);
+    displaySignature = JSON.stringify([getContext().timezone, source.clouds?.retrievedAt, source.clouds?.runTime, source.cloudRevision || 0, source.cloudError, $('route-data').clientWidth]);
     const availableWidth = $('route-data').clientWidth || 720;
     $('route-data').innerHTML = invalidDeparture ? '<p class="route-attention">Oprav plánovaný odlet. Počasí trasy ani její zachycení nejsou pro neplatný čas dostupné.</p>' : renderRouteBriefing(bundle(), { zone: getContext().timezone, interactive: true, width: Math.max(300, Math.min(1000, availableWidth > 900 ? (availableWidth - 20) / 2 : availableWidth)) });
     $('route-storage').textContent = storageMessage;
@@ -129,5 +129,5 @@ export function mountRouteWorkspace({ getContext, getChoices, getClouds, onInspe
     const point = routeSchedule(plan)[Number(button.dataset.routeInspect)]; if (point) onInspect(point);
   });
   renderEditor(); updateChoices(); renderOutput();
-  return { refresh, points: () => plan.points, snapshot() { if (invalidDeparture && plan.points.length) throw new Error('Oprav plánovaný odlet trasy před zachycením briefingu.'); return plan.points.length ? bundle() : null; }, stop() { sequence++; controller?.abort(); clearTimeout(legTimer); section.stop(); loading = false; }, sync() { updateChoices(); if (key() !== signature) void refresh(); else { const source = getClouds(); if (JSON.stringify([getContext().timezone, source.clouds?.retrievedAt, source.clouds?.runTime, source.cloudError, $('route-data').clientWidth]) !== displaySignature) renderOutput(); } } };
+  return { refresh, points: () => plan.points, snapshot() { if (invalidDeparture && plan.points.length) throw new Error('Oprav plánovaný odlet trasy před zachycením briefingu.'); return plan.points.length ? bundle() : null; }, stop() { sequence++; controller?.abort(); clearTimeout(legTimer); section.stop(); loading = false; }, sync() { updateChoices(); if (key() !== signature) void refresh(); else { const source = getClouds(); if (JSON.stringify([getContext().timezone, source.clouds?.retrievedAt, source.clouds?.runTime, source.cloudRevision || 0, source.cloudError, $('route-data').clientWidth]) !== displaySignature) renderOutput(); } } };
 }

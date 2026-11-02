@@ -82,3 +82,14 @@ test('archive route validation rejects changed models, passage time, coordinates
     const route = bundle(); modify(route); assert.throws(() => validateRouteBundle(route, ['aladin']));
   }
 });
+
+test('native EU route values retain their model/frame time and omit the repeated regional crop', () => {
+  const clouds={schemaVersion:1,status:'ok',model:'ICON-EU',product:'CEILING',units:'m MSL',runTime:'2026-11-01T18:00:00Z',retrievedAt:'2026-11-01T23:30:00Z',region:{south:48,north:50,west:13,east:16},grid:{type:'native-unstructured',uuid:'832c1507fbc73eb384139890094d2c60',maxDistanceKm:8},points:[{lat:a.lat,lon:a.lon,elevationMsl:444,index:700}],frames:[{validAt:'2026-11-01T23:00:00Z',values:[0],retrievedAt:'2026-11-01T23:05:00Z',status:'ok'},{validAt:'2026-11-02T00:00:00Z',values:[1200],retrievedAt:'2026-11-01T23:06:00Z',status:'ok'}]};
+  const result=captureRoute(plan([a]),['aladin'],{}, {clouds,now:Date.parse('2026-11-01T23:50:00Z')});
+  assert.equal(result.rows[0].ceiling.model,'ICON-EU');
+  assert.equal(result.rows[0].ceiling.valueMsl,1200);
+  assert.equal(result.rows[0].ceiling.retrievedAt,'2026-11-01T23:06:00Z');
+  assert.equal(result.rows[0].ceiling.regional,undefined);
+  assert.match(renderRouteBriefing(result),/Samostatný ICON-EU CEILING/);
+  assert.ok(routeText(result,'UTC').some(line=>line.includes('Samostatný ICON-EU CEILING')));
+});

@@ -31,6 +31,8 @@ The owner's subsequent ordinary-browser runtime constraint and tested source pro
 
 The next [source-gap recovery](0014-browser-source-gap-recovery.md) restores SWL and supplemental reports/history, adds camera-viewer links and records a separate browser ceiling decoding proof.
 
+The next [native browser recovery](0015-native-browser-recovery.md) implements automatic camera display, native ICON-EU decoding without WASM, point/region ceiling and accurate frozen output.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |

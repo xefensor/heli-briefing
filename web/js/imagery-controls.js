@@ -1,4 +1,4 @@
-import { createBrowserCameras, renderCameras, MUNICIPAL_CAMERA } from './cameras.js';
+import { createBrowserCameras, fetchBrowserCameras, captureCameras, renderCameras, MUNICIPAL_CAMERA } from './cameras.js';
 import { createBrowserCharts, fetchBrowserCharts, renderAviationCharts, selectedLowCloud, captureCharts } from './aviation-charts.js';
 import { formatTime } from './briefing.js';
 
@@ -14,7 +14,7 @@ export function mountImagery({ getContext, onLowCloud }) {
   municipal.className = 'municipal-camera';
   municipal.setAttribute('aria-labelledby', 'municipal-camera-title');
   municipal.innerHTML = `<h3 id="municipal-camera-title">České Budějovice · Radnice · městská kamera</h3><p>Samostatný pohled města České Budějovice, nikoli kamera ČHMÚ. Přehrávač nepředává tomuto přehledu samostatný čas snímku; aktuálnost ověř přímo u zdroje. Samotné načtení přehrávače ji nepotvrzuje.</p><p>Oficiální přehrávač se připojí přímo ke zdroji až po otevření. Video se neukládá do zachyceného briefingu.</p><p><a href="${MUNICIPAL_CAMERA.pageUrl}" target="_blank" rel="noopener noreferrer">Zdroj: město České Budějovice ↗</a> · <a href="${MUNICIPAL_CAMERA.viewerUrl}" target="_blank" rel="noopener noreferrer">Otevřít samostatný přehrávač ↗</a></p><div class="municipal-camera-actions"><button id="municipal-camera-load" class="button button-primary" type="button">Otevřít městskou kameru</button><button id="municipal-camera-close" class="button button-quiet" type="button" hidden>Zavřít video</button></div><div id="municipal-camera-frame"></div>`;
-  $('cameras').before(municipal);
+  $('cameras').after(municipal);
   $('municipal-camera-load').addEventListener('click', () => {
     const frame = document.createElement('iframe');
     frame.id = 'municipal-camera-viewer';
@@ -95,7 +95,9 @@ export function mountImagery({ getContext, onLowCloud }) {
   $('cameras').addEventListener('click', event => {
     const id = event.target.closest('[data-camera-enlarge]')?.dataset.cameraEnlarge;
     const item = cameras?.items.find(item => item.id === id);
-    if (item) showImage(item, `${item.name} · ${item.direction}`, `ČHMÚ · rámec ${formatTime(item.observedAt, getContext().timezone, true)} ${getContext().timezone === 'UTC' ? 'UTC' : 'CZ'} · obraz nezávisí na modelu a budoucím čase.`, event.target.closest('[data-camera-enlarge]'));
+    if (item) showImage(item, `${item.name} · ${item.direction}`, item.displayOnly
+      ? 'Autor ČHMÚ · distribuce In-počasí / Ventusky. Čas pořízení ověř přímo v obraze; hodinový soubor ani čas načtení jej nepotvrzují.'
+      : `ČHMÚ · rámec ${formatTime(item.observedAt, getContext().timezone, true)} ${getContext().timezone === 'UTC' ? 'UTC' : 'CZ'} · obraz nezávisí na modelu a budoucím čase.`, event.target.closest('[data-camera-enlarge]'));
   });
   $('aviation-chart-content').addEventListener('click', event => {
     const kind = event.target.closest('[data-chart-enlarge]')?.dataset.chartEnlarge;
@@ -113,16 +115,20 @@ export function mountImagery({ getContext, onLowCloud }) {
   $('cameras').addEventListener('error', event => { const id = event.target.dataset?.cameraImage; if (id && cameras) { cameras = { ...cameras, items: cameras.items.map(item => item.id === id ? { ...item, status:'unavailable', imageDataUrl:null, error:'Snímek nelze zobrazit.' } : item) }; render(true); } }, true);
   $('aviation-chart-content').addEventListener('error', event => { const path = event.target.dataset?.chartPath; if (path) { imageErrors.add(path); render(true); } }, true);
   render(true);
-  return { sync: render, hideLowCloud() { mapActive = false; onLowCloud(null); render(); }, snapshotCameras: () => structuredClone(cameras),
+  return { sync: render, hideLowCloud() { mapActive = false; onLowCloud(null); render(); }, snapshotCameras: () => captureCameras(cameras),
     async capture(time) { return { cameras: this.snapshotCameras(), charts: await captureCharts(charts, time) }; },
     async refresh(_force = false, signal) {
       if (chartRequest) return chartRequest;
       const work = (async () => {
         try {
-          charts = await fetchBrowserCharts({ previous: charts, signal });
+          const [newCameras, newCharts] = await Promise.all([
+            fetchBrowserCameras({ previous: cameras, signal }),
+            fetchBrowserCharts({ previous: charts, signal }),
+          ]);
+          cameras = newCameras; charts = newCharts;
           if (charts.swl.status === 'ok') imageErrors.clear();
           render(true);
-          return { ok: charts.swl.status === 'ok', error: charts.swl.error };
+          return { ok: charts.swl.status === 'ok' && cameras.status === 'ok', error: charts.swl.error || cameras.error };
         } catch (error) {
           return { ok: false, error: error.message };
         }

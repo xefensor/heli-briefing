@@ -69,3 +69,35 @@ test('initial outage and invalid selected coordinates remain unavailable', () =>
   assert.equal(queryClouds(empty,options).status,'unavailable');
   assert.equal(queryClouds(sample(),{...options,lat:NaN}).status,'unavailable');
 });
+
+test('native EU keeps its model, wider real grid spacing and the selected frame retrieval time', () => {
+  const data=sample();data.model='ICON-EU';data.grid.maxDistanceKm=8;data.grid.uuid='832c1507fbc73eb384139890094d2c60';
+  data.points.forEach((point,index)=>{point.index=100+index;});
+  data.retrievedAt='2026-11-01T15:30:00Z';data.frames[0].retrievedAt='2026-11-01T13:12:00Z';
+  const result=queryClouds(validateClouds(data),{...options,lat:48.99,lon:14.46});
+  assert.equal(result.status,'available');assert.equal(result.model,'ICON-EU');
+  assert.equal(result.retrievedAt,data.frames[0].retrievedAt);
+  assert.equal(result.cell.gridUuid,data.grid.uuid);
+  assert.equal(result.regional.runTime,result.runTime);assert.equal(result.regional.validAt,result.validAt);
+  assert.equal(result.regional.nodes.length,data.points.length);assert.equal(result.valueAgl,undefined);
+  assert.equal(queryClouds({...data,model:'ICON-D2'}, {...options,lat:48.99,lon:14.46}).status,'outside-grid');
+});
+
+test('an advertised missing EU hour cannot borrow another frame value, retrieval time or region map', () => {
+  const data=sample();data.model='ICON-EU';
+  Object.assign(data.frames[1],{status:'unavailable',values:[null,null],retrievedAt:null,error:'fetch failed'});
+  const result=queryClouds(data,{...options,time:'2026-11-01T15:00:00Z'});
+  assert.equal(result.status,'unavailable');assert.equal(result.valueMsl,null);assert.equal(result.validAt,null);
+  assert.equal(result.retrievedAt,null);assert.equal(result.regional,undefined);
+  assert.deepEqual(result.series.values,[0,null,1600]);assert.equal(result.error,'fetch failed');
+});
+
+test('a queried EU frame passes regional renderer validation without inventing a sparse subset or missing selected value', async () => {
+  const { renderNativeCeilingMap } = await import('../web/js/native-ceiling-map.js');
+  const data=sample();data.model='ICON-EU';data.grid.uuid='832c1507fbc73eb384139890094d2c60';
+  data.grid.totalCellsInBounds=data.points.length;data.points.forEach((point,index)=>{point.index=index;});
+  const result=queryClouds(data,options);
+  assert.equal(result.regional.subset,false);
+  assert.equal(result.regional.selectedCell.valueMsl,result.valueMsl);
+  assert.match(renderNativeCeilingMap(result.regional,{lat:options.lat,lon:options.lon}),/<svg/);
+});

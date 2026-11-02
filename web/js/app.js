@@ -14,7 +14,9 @@ import { renderMetarSummary, renderTafPeriods, renderReportGuide } from './repor
 import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
 import { createMonitor } from './monitor.js';
-import { queryClouds, CLOUD_STATUS_LABELS } from './clouds.js';
+import { validateClouds, queryClouds, CLOUD_STATUS_LABELS } from './clouds.js';
+import { createNativeCeilingClient } from './native-ceiling-client.js';
+import { renderNativeCeilingMap } from './native-ceiling-map.js';
 import { fetchBrowserAviation } from './aviation-source.js';
 import { readAviationCache, writeAviationCache } from './aviation-cache.js';
 import { fetchSatellite } from './satellite-source.js';
@@ -77,6 +79,10 @@ let radarUrl = null;
 const radarFailures = new Map();
 let clouds = null;
 let cloudError = null;
+let cloudRevision = 0;
+let cloudLoading = false, cloudProgress = '', cloudFrameLimit = 6;
+let cloudSelectionKey = '', cloudRequest = null, cloudController = null, cloudTimer = null, cloudSequence = 0;
+const ceilingClient = createNativeCeilingClient();
 
 let liveMode = !shared.time;
 let monitor = null;
@@ -112,7 +118,7 @@ reportView = ['both', 'summary', 'raw'].includes(restore('report-view')) ? resto
 const placeControls = mountPlaceControls({ getCurrent: () => state, onChoose: choosePlace });
 const routeWorkspace = mountRouteWorkspace({ getContext: () => state,
   getChoices: () => [...Object.values(PLACES), ...(readPlaces({ getItem: key => localStorage.getItem(key) }).places || [])],
-  getClouds: () => ({ clouds, cloudError }), onGeometry: drawRoute,
+  getClouds: () => ({ clouds, cloudError, cloudRevision }), onGeometry: drawRoute,
   onInspect: point => { choosePlace(point.lat, point.lon, point.name); if (point.passageAt) selectTime(point.passageAt); $('forecast-panel').scrollIntoView({ behavior: 'smooth' }); },
   onMap: points => { if (map && points.length) map.fitBounds(points.map(point => [point.lat, point.lon]), { padding: [25, 25], maxZoom: 11 }); $('region-panel').scrollIntoView({ behavior: 'smooth' }); },
 });
@@ -140,6 +146,7 @@ function updateControls() {
   placeControls.update();
   routeWorkspace.sync();
   imagery.sync();
+  scheduleNativeClouds();
   updateOutputAvailability();
   document.querySelectorAll('[data-model]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.model === state.model)));
   document.querySelectorAll('[data-hours]').forEach((button) => button.setAttribute('aria-pressed', String(Number(button.dataset.hours) === state.hours)));
@@ -469,7 +476,7 @@ function renderRadar() {
 }
 
 function updateOutputAvailability() {
-  const busy = preparing || loading || aviationLoading;
+  const busy = preparing || loading || aviationLoading || cloudLoading;
   for (const id of ['prepare-output','save-briefing']) {
     $(id).disabled = busy;
     $(id).title = aviationLoading ? 'Čekám na přímé načtení leteckých zpráv.' : loading ? 'Čekám na předpověď.' : 'Otevřít zachycený briefing';
@@ -564,8 +571,49 @@ async function loadForecast(force = false, outerSignal = null) {
   return { ok: Boolean(forecast && !loadError && !forecast.transport.stale), error: failure?.message || loadError, retryAt: failure?.retryAt ? Date.parse(failure.retryAt) : undefined };
 }
 
-const CLOUD_BROWSER_LIMIT = 'Přímý zdroj DWD neposkytuje tomuto webu přístup k nativním datům. CEILING zde není načítán; hodnotu nenahrazujeme pokrytím oblačnosti ani odhadem.';
-clouds = {schemaVersion:1,status:'unavailable',model:'ICON-D2',product:'CEILING',units:'m MSL',points:[],frames:[],runTime:null,retrievedAt:null,sourceUrl:'https://opendata.dwd.de/weather/nwp/v1/m/icon-d2/p/CEILING/',error:CLOUD_BROWSER_LIMIT};
+const NATIVE_CEILING_SOURCE = 'https://source.coop/dynamical/dwd-icon-grib/icon-eu/icosahedral';
+clouds = {schemaVersion:1,status:'unavailable',model:'ICON-EU',product:'CEILING',units:'m MSL',points:[],frames:[],runTime:null,retrievedAt:null,sourceUrl:NATIVE_CEILING_SOURCE,error:null};
+
+function cloudContextKey() {
+  return JSON.stringify([state.lat, state.lon, Math.floor(Date.parse(state.time) / 3600000), cloudFrameLimit]);
+}
+function scheduleNativeClouds() {
+  if (document.visibilityState !== 'visible' || navigator.onLine === false || cloudContextKey() === cloudSelectionKey) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(() => { void loadNativeClouds(); }, 180);
+}
+async function loadNativeClouds(refresh = false, outerSignal = null, forceSource = false) {
+  const key = cloudContextKey();
+  if (key === cloudSelectionKey && cloudRequest) return cloudRequest;
+  if (!refresh && key === cloudSelectionKey) return { ok: !cloudError, error: cloudError };
+  const sequence = ++cloudSequence;
+  cloudController?.abort(); cloudController = new AbortController();
+  const signal = outerSignal ? AbortSignal.any([cloudController.signal, outerSignal]) : cloudController.signal;
+  cloudSelectionKey = key; cloudLoading = true; cloudProgress = 'Načítám nativní síť a skutečné hodinové výstupy…';
+  updateOutputAvailability(); renderClouds();
+  const work = (async () => {
+    try {
+      const result = await ceilingClient.request({ lat: state.lat, lon: state.lon, time: state.time, frameLimit: cloudFrameLimit, force: forceSource }, {
+        signal, onProgress: message => { if (sequence === cloudSequence) { cloudProgress = message; $('cloud-progress').textContent = message; } },
+      });
+      if (sequence !== cloudSequence) return { ok: true };
+      if (!result?.snapshot) throw new Error('Zdroj ceilingu neposkytl ověřitelný regionální výřez.');
+      clouds = validateClouds(result.snapshot); cloudRevision += 1;
+      cloudError = result.error || null;
+      renderClouds();
+      return { ok: !clouds.frames.some(frame => frame.status === 'unavailable'), error: cloudError };
+    } catch (error) {
+      if (sequence !== cloudSequence || signal.aborted) return { ok: false, error: 'Požadavek na ceiling byl zrušen.' };
+      cloudError = error.message || 'Nativní ceiling není dostupný.';
+      if (clouds?.frames?.length) clouds = { ...clouds, status: 'stale', error: cloudError };
+      renderClouds(); return { ok: false, error: cloudError };
+    } finally {
+      if (sequence === cloudSequence) { cloudLoading = false; cloudProgress = ''; updateOutputAvailability(); renderClouds(); }
+    }
+  })();
+  cloudRequest = work;
+  try { return await work; } finally { if (cloudRequest === work) cloudRequest = null; }
+}
 
 function renderVerticalProfile() {
   const result=profileAt(forecast,state.time);
@@ -601,12 +649,16 @@ function renderClouds() {
   renderSatellitePanel();
   const result = selectedClouds();
   $('cloud-reading').innerHTML = `${esc(num(result.valueMsl))} <span>m MSL</span>`;
-  $('cloud-status').textContent = `${CLOUD_STATUS_LABELS[result.status] || 'Nedostupný výstup.'}${result.stale ? ' Běh je starší nebo jeho obnova selhala.' : ''}${cloudError ? ` Obnova: ${cloudError}` : result.error ? ` ${result.error}` : ''}`;
+  $('cloud-status').textContent = `${cloudLoading && !result.runTime ? 'Načítání nativního výstupu.' : CLOUD_STATUS_LABELS[result.status] || 'Nedostupný výstup.'}${result.stale ? ' Běh je starší nebo jeho obnova selhala.' : ''}${cloudError ? ` Obnova: ${cloudError}` : result.error ? ` ${result.error}` : ''}`;
   $('cloud-status').dataset.state = result.stale || cloudError || result.status !== 'available' ? 'attention' : 'ready';
-  $('cloud-meta').textContent = result.runTime ? `DWD · ICON-D2 · nativní síť · běh ${fullTime(result.runTime)} · vzorek ${result.validAt ? fullTime(result.validAt) : '—'} · staženo ${fullTime(result.retrievedAt)}${result.cell ? ` · buňka ${result.cell.lat.toFixed(4)}, ${result.cell.lon.toFixed(4)} (${num(result.distanceKm, 2)} km od bodu), terén modelu ${v(result.cell.elevationMsl, 'm MSL')}` : ''}.` : 'V této čistě prohlížečové verzi je produkt nedostupný. Letištní pozorovaný ceiling je ve zprávách; nemá stejný význam jako modelový CEILING.';
-  const start = Date.parse(chartTimes()[0] || new Date(Math.floor(Date.now() / 3600000) * 3600000).toISOString());
-  const indices = result.series.times.map((time, index) => ({ time, index })).filter(item => Date.parse(item.time) >= start && Date.parse(item.time) < start + state.hours * 3600000);
-  $('cloud-chart').innerHTML = result.status === 'unavailable' ? '<p class="source-unavailable">Nativní modelový graf není dostupný. <a href="https://opendata.dwd.de/weather/nwp/v1/m/icon-d2/p/CEILING/" target="_blank" rel="noopener noreferrer">Původní data DWD ↗</a></p>' : renderChart({ times: indices.map(item => item.time), series: [{ label: 'ICON-D2 · CEILING', color: 'var(--chart-amber)', unit: 'm MSL', values: indices.map(item => result.series.values[item.index]) }], selectedTime: state.time, timezone: state.timezone, width: plotWidth('cloud-chart'), height: 210, yLabel: 'm MSL', min: 0 });
+  $('cloud-meta').textContent = result.runTime ? `DWD · ${result.model} · nativní síť · běh ${fullTime(result.runTime)} · vzorek ${result.validAt ? fullTime(result.validAt) : '—'} · tento rámec načten ${result.retrievedAt ? fullTime(result.retrievedAt) : 'nepotvrzeno'}${result.cell ? ` · buňka ${result.cell.lat.toFixed(4)}, ${result.cell.lon.toFixed(4)} (${num(result.distanceKm, 2)} km od bodu), terén modelu ${v(result.cell.elevationMsl, 'm MSL')}` : ''}.` : 'Přímé načítání DWD ICON-EU přes Source Cooperative. Pozorovaný letištní ceiling je uveden zvlášť ve zprávách.';
+  $('cloud-progress').textContent = cloudProgress;
+  const series = result.series;
+  $('cloud-chart').innerHTML = !series.times.length ? '<p class="source-unavailable">Hodinové hodnoty zatím nejsou načteny. Chybějící ceiling není potvrzení jasné oblohy.</p>' : renderChart({ times: series.times, series: [{ label: `${result.model} · CEILING`, color: 'var(--chart-purple)', unit: 'm MSL', values: series.values }], selectedTime: state.time, timezone: state.timezone, width: plotWidth('cloud-chart'), height: 210, yLabel: 'm MSL', min: 0 });
+  $('cloud-coverage').textContent = series.times.length ? `${series.values.filter(value => Number.isFinite(value)).length} / ${series.times.length} definovaných hodinových hodnot · ${fullTime(series.times[0])}–${fullTime(series.times.at(-1))}. Vzorky jsou z jedné skutečné nativní buňky; mezery se nedopočítávají.` : '';
+  $('cloud-more').disabled = cloudLoading || cloudFrameLimit >= 24;
+  $('cloud-more').textContent = cloudFrameLimit >= 24 ? 'Požadovaný rozsah 24 hodin' : `Rozšířit na ${Math.min(24, cloudFrameLimit + 6)} hodin · další modelová data`;
+  $('cloud-region').innerHTML = result.regional ? renderNativeCeilingMap(result.regional, { lat: state.lat, lon: state.lon, timezone: state.timezone, width: plotWidth('cloud-region') }) : '<p class="section-note">Regionální výřez pro tento čas není načten. Nejde o potvrzení bez oblačnosti.</p>';
 }
 
 function updatePreview() {
@@ -858,6 +910,7 @@ $('preview-copy').addEventListener('click',async()=>{
 });
 $('preview-print').addEventListener('click', () => $('saved-preview-frame').contentWindow?.print());
 $('cloud-chart').addEventListener('click', event => { const time = event.target.closest('[data-time]')?.dataset.time; if (time) selectTime(time); });
+$('cloud-more').addEventListener('click', () => { cloudFrameLimit = Math.min(24, cloudFrameLimit + 6); void loadNativeClouds(); });
 window.addEventListener('beforeprint', () => { stopRadar(); $('print-notes').textContent = $('notes').value; updateControls(); });
 window.addEventListener('popstate', () => { if (location.search !== navigationSearch) location.reload(); });
 
@@ -877,19 +930,19 @@ monitor = createMonitor({
     if (reason === 'manual') radarFailures.clear();
     const tasks = [];
     if (refreshForecast) { tasks.push(loadForecast(true, signal).then(result => ['forecast', result])); void routeWorkspace.refresh(reason === 'manual'); }
-    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadSatellite(true, signal), imagery.refresh(true, signal), $('radar-toggle').checked?loadRadar(radarHistoryLoaded,signal):Promise.resolve({ok:true})]).then(([reports,image,extra,radar])=>['aviation',reports.ok&&image.ok&&extra.ok&&radar.ok?{ok:true}:{ok:false,error:reports.error||image.error||extra.error||radar.error}]));
+    if (refreshAviation) tasks.push(Promise.all([loadAviation(true, signal), loadSatellite(true, signal), imagery.refresh(true, signal), $('radar-toggle').checked?loadRadar(radarHistoryLoaded,signal):Promise.resolve({ok:true}), loadNativeClouds(true, signal, reason === 'manual')]).then(([reports,image,extra,radar,native])=>['aviation',reports.ok&&image.ok&&extra.ok&&radar.ok&&native.ok?{ok:true}:{ok:false,error:reports.error||image.error||extra.error||radar.error||native.error}]));
     return Object.fromEntries(await Promise.all(tasks));
   },
 });
 monitor.setLive(liveMode);
 monitor.start();
 void monitor.refresh('initial');
-document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') stopRadar(); void monitor.wake('visibility'); });
-window.addEventListener('focus', () => { void monitor.wake('focus'); });
-window.addEventListener('online', () => { void monitor.wake('online'); });
-window.addEventListener('offline', () => { void monitor.wake('offline'); });
-window.addEventListener('pagehide', () => { stopRadar(); monitor.stop(); routeWorkspace.stop(); });
-window.addEventListener('pageshow', () => { if (!monitor.getState().active) { monitor.start(); void monitor.wake('pageshow'); void routeWorkspace.refresh(); } });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') { stopRadar(); clearTimeout(cloudTimer); cloudController?.abort(); cloudSelectionKey = ''; } else scheduleNativeClouds(); void monitor.wake('visibility'); });
+window.addEventListener('focus', () => { scheduleNativeClouds(); void monitor.wake('focus'); });
+window.addEventListener('online', () => { scheduleNativeClouds(); void monitor.wake('online'); });
+window.addEventListener('offline', () => { clearTimeout(cloudTimer); cloudController?.abort(); cloudSelectionKey = ''; void monitor.wake('offline'); });
+window.addEventListener('pagehide', () => { stopRadar(); clearTimeout(cloudTimer); cloudController?.abort(); cloudSelectionKey = ''; ceilingClient.stop(); monitor.stop(); routeWorkspace.stop(); });
+window.addEventListener('pageshow', () => { if (!monitor.getState().active) { monitor.start(); void monitor.wake('pageshow'); void routeWorkspace.refresh(); } scheduleNativeClouds(); });
 
 let resizeTimer;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { renderCharts(); renderClouds(); renderAstronomy(); if (aviation) renderHistory(); map?.invalidateSize(); }, 180); });
