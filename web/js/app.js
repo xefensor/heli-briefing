@@ -95,6 +95,7 @@ let radarPlaying = false;
 let radarTimer = null;
 let reportView = 'both';
 let previewSnapshot = null;
+let previewReturnFocus = null;
 let previewMode = 'full';
 let previewDownloadUrl = null;
 let satellite = null;
@@ -702,10 +703,16 @@ function updatePreview() {
   if (previousDownloadUrl) setTimeout(() => URL.revokeObjectURL(previousDownloadUrl), 60000);
   document.querySelectorAll('[data-output-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.outputMode===previewMode)));
 }
-function openPreview(snapshot) {
+function openPreview(snapshot, { returnFocus = document.activeElement } = {}) {
+  previewReturnFocus = returnFocus;
   previewSnapshot=snapshot;previewMode='full';updatePreview();
   $('saved-preview').showModal();
 }
+$('saved-preview').addEventListener('close',()=>{
+  const target = previewReturnFocus;
+  previewReturnFocus = null;
+  (target?.isConnected && !target.disabled && target.getClientRects().length ? target : $('prepare-output')).focus({preventScroll:true});
+});
 $('saved-preview-frame').addEventListener('load',()=>{
   const body=$('saved-preview-frame').contentDocument?.body;
   $('preview-print').disabled=!body||body.classList.contains('reports-only')!==(previewMode==='reports');
@@ -742,6 +749,7 @@ async function renderArchive() {
 
 async function saveCurrentBriefing() {
   if (preparing) return;
+  const returnFocus = document.activeElement;
   stopRadar();
   if (loading || aviationLoading || cloudLoading || processedCeiling.busy() || imagery.busy()) { $('archive-status').textContent = 'Předpověď nebo letecké zdroje se právě obnovují. Počkej na dokončení a potom připrav briefing.'; return; }
   const radar = radarProduct || aviation?.radar;
@@ -764,7 +772,7 @@ async function saveCurrentBriefing() {
     const snapshot = createBriefingSnapshot({...baseSnapshot, ...capturedImages, createdAt:new Date().toISOString()});
     let storageError = null;
     try { await saveBriefing(snapshot); } catch (error) { storageError = error.message; }
-    openPreview(snapshot);
+    openPreview(snapshot, { returnFocus });
     $('archive-status').textContent = `Briefing zachycen ${fullTime(snapshot.createdAt)} a otevřen k prohlédnutí. HTML stáhneš nebo vytiskneš z náhledu. ${storageError ? `Místní archiv: ${storageError}` : 'Kopie je uložena také v tomto prohlížeči.'}${radar && !imageMatches ? ' Vybraný radarový obraz není vložen; zachovány jsou jeho čas a zdroj.' : ''}`;
     renderArchive();
   } catch (error) { $('archive-status').textContent = `Briefing se nepodařilo uložit: ${error.message}`; } finally { preparing = false; updateOutputAvailability(); }
