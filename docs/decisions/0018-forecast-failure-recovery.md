@@ -2,7 +2,7 @@
 
 Date: 2026-11-02
 
-Status: implemented for v0.8.1. Actual deterministic, browser and publication evidence is recorded in [deployment](../deployment.md); provider availability and whole-project acceptance remain separate.
+Status: implemented and published for v0.8.1. Actual deterministic, browser and publication evidence is recorded in [deployment](../deployment.md); provider availability and whole-project acceptance remain separate.
 
 ## Problem and current-source check
 
