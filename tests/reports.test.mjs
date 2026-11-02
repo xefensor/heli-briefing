@@ -32,6 +32,30 @@ test('vertical visibility and unknown cloud heights remain distinct from no ceil
   assert.equal(mixed.warnings.length, 1);
 });
 
+test('automatic METAR cloud-type slashes retain known layer height and explicitly unknown types', () => {
+  const item = metar('AUTO 34003KT 320V020 9999 FEW012/// OVC037/// 05/03 Q1029');
+  const summary = summarizeMetar(item);
+  assert.equal(summary.ceiling.status, 'reported');
+  assert.equal(summary.ceiling.valueFtAgl, 3700);
+  assert.equal(summary.clouds[0].baseFtAgl, 1200);
+  assert.equal(summary.clouds[1].type, null);
+  assert.equal(summary.clouds[1].typeUnknown, true);
+  assert.equal(summary.clouds[1].code, 'OVC037///');
+  assert.match(summary.warnings.join(' '), /Druh.*není určen/);
+  assert.match(renderMetarSummary(item), /3.?700 ft AGL/);
+  const missingHeight = summarizeMetar(metar('00000KT 0300 FG BKN////// OVC037/// 00/00 Q1030'));
+  assert.equal(missingHeight.clouds[0].baseFtAgl, null);
+  assert.equal(missingHeight.clouds[0].typeUnknown, true);
+  assert.equal(missingHeight.clouds[0].code, 'BKN//////');
+  assert.equal(missingHeight.ceiling.status, 'unknown');
+  assert.equal(missingHeight.ceiling.valueFtAgl, null);
+  const forecast = summarizeTaf(taf('34003KT 9999 OVC037/// TEMPO 0118/0206 BKN//////'));
+  assert.equal(forecast.periods[0].ceiling.valueFtAgl, 3700);
+  assert.equal(forecast.periods[1].ceiling.status, 'unknown');
+  assert.equal(forecast.periods[0].clouds[0].typeUnknown, true);
+  assert.match(forecast.warnings.join(' '), /Druh.*není určen/);
+});
+
 test('CAVOK and 9999 preserve 10 km lower bound despite AWC statute-mile rounding', () => {
   for (const token of ['CAVOK', '9999']) {
     const summary = summarizeMetar(metar(`VRB02KT ${token} 04/02 Q1027`, { visib: '6+' }));

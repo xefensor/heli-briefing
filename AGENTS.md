@@ -10,6 +10,8 @@ Use the three research tracks—[pilot needs](docs/research/pilot-needs.md), [av
 
 ## Product requirements
 
+Owner constraint, 2026-11-02: runtime data must work in an ordinary browser, without an extension, native app, project-operated backend/proxy or build-time weather collector. GitHub Pages may host code/assets. This supersedes the earlier collector/backend target below. The existing v0.4 application still uses snapshots; the direct-source prototype is not a completed migration. Read [browser feasibility](docs/browser-only-feasibility-2026-11-02.md) before changing data paths. Preserve information depth; do not silently remove blocked products, relabel alternative cameras or pretend old snapshots are live.
+
 - The primary user is a South Bohemian professional helicopter pilot preparing reports for others. A shift weather overview is a working assumption, not a confirmed schedule. Do not infer HEMS, aircraft capability or specific operating minima.
 - Consult the original and existing research before asking the owner to speculate. Treat original features as clues to information needs, not automatic requirements or proof of the pilot's actual workflow. Evaluate what to retain, rework, replace or defer against the preparation task, research and reliable data availability.
 - Preserve substantial data, graphs and original reports while reducing navigation and repeated setup.

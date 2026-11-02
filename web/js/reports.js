@@ -77,9 +77,9 @@ function visibilityFrom(raw, fallback = null) {
 }
 
 function cloudsFrom(raw, fallback = null) {
-  const matches = [...raw.matchAll(/(?:^|\s)(FEW|SCT|BKN|OVC|VV)(\d{3}|\/\/\/)(CB|TCU)?(?=\s|$)/g)];
+  const matches = [...raw.matchAll(/(?:^|\s)(FEW|SCT|BKN|OVC|VV)(\d{3}|\/\/\/)(CB|TCU|\/\/\/)?(?=\s|$)/g)];
   if (matches.length) return matches.map((match) => ({ cover: match[1], baseFtAgl: match[2] === '///' ? null : Number(match[2]) * 100,
-    type: match[3] || null, verticalVisibility: match[1] === 'VV', code: match[0].trim() }));
+    type: match[3] === '///' ? null : match[3] || null, typeUnknown: match[3] === '///', verticalVisibility: match[1] === 'VV', code: match[0].trim() }));
   if (/\b(?:CAVOK|SKC|CLR|NSC|NCD)\b/.test(raw)) return [];
   if (Array.isArray(fallback)) return fallback.map((cloud) => ({ cover: String(cloud.cover || ''), baseFtAgl: nonnegative(cloud.base),
     type: typeof cloud.type === 'string' ? cloud.type : null, verticalVisibility: ['VV', 'OVX'].includes(cloud.cover), code: null }));
@@ -136,6 +136,7 @@ export function summarizeMetar(item) {
   summary.pressureHpa = pressure ? Number(pressure[1]) : inches ? Number(inches[1]) / 100 * 33.8638866667 : number(source.altim);
   if (summary.pressureHpa !== null && (summary.pressureHpa < 600 || summary.pressureHpa > 1200)) { summary.pressureHpa = null; summary.warnings.push('Neobvyklé nebo neplatné tlakové pole; ověř originál.'); }
   if (summary.ceiling.status === 'unknown' && summary.clouds.some((cloud) => ['BKN', 'OVC', 'VV', 'OVX'].includes(cloud.cover))) summary.warnings.push('Výška nejnižšího ceilingu není určitelná; některá relevantní vrstva má neznámou výšku.');
+  if (summary.clouds.some(cloud => cloud.typeUnknown)) summary.warnings.push('Druh některé oblačnosti není určen (///); uvedená výška vrstvy zůstává zachována.');
   if (status !== 'available') summary.warnings.push(status === 'nil' ? 'NIL: zpráva není dostupná.' : status === 'cancelled' ? 'CNL: zpráva byla zrušena.' : 'Zpráva není dostupná.');
   return summary;
 }
@@ -169,7 +170,7 @@ function unknownTokens(raw) {
     /^(?:VRB|\d{3})\d{2,3}(?:G\d{2,3})?(?:KT|MPS|KMH)$/.test(token) ||
     /^\d{3}V\d{3}$/.test(token) || /^\d{4}(?:NDV)?$/.test(token) ||
     /^[PM]?\d+(?:\/\d+)?(?:\.\d+)?SM$/.test(token) || /^\d+$/.test(token) ||
-    /^(?:FEW|SCT|BKN|OVC|VV)(?:\d{3}|\/\/\/)(?:CB|TCU)?$/.test(token) ||
+    /^(?:FEW|SCT|BKN|OVC|VV)(?:\d{3}|\/\/\/)(?:CB|TCU|\/\/\/)?$/.test(token) ||
     /^(?:CAVOK|SKC|CLR|NSC|NCD|NSW)$/.test(token) ||
     weatherFrom(token).length > 0
   ));
@@ -220,6 +221,7 @@ export function summarizeTaf(item, { selectedTime = null } = {}) {
       unknownTokens: unknown, interpretation: 'explicit-only', transition: type === 'BECMG' };
   });
   if (result.periods.some((period) => !period.start || !period.end)) result.warnings.push('Některé intervaly nemají ověřitelnou platnost; zkontroluj originál.');
+  if (result.periods.some(period => period.clouds.some(cloud => cloud.typeUnknown))) result.warnings.push('Druh některé oblačnosti není určen (///); uvedené výšky vrstev zůstávají zachovány.');
   if (result.periods.some((period) => period.type !== 'BASE' && period.type !== 'FM')) result.warnings.push('Změnové skupiny zobrazují pouze výslovně uvedené položky. Neuvedené podmínky zde nejsou doplňovány; pro jejich návaznost čti celý TAF.');
   if (result.periods.some((period) => period.transition)) result.warnings.push('BECMG označuje okno postupné změny, nikoli okamžik přepnutí; toto zobrazení nepočítá výsledný stav po skončení přechodu.');
   if (result.periods.some((period) => period.unknownTokens.length)) result.warnings.push('Některé doplňkové skupiny zůstávají pouze v originálním textu.');

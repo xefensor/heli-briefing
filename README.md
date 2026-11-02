@@ -14,6 +14,8 @@ The [three studies](docs/README.md) guide the product; the original pilot-author
 
 The [professional UI/UX review](docs/design-review-2026-11-01.md) guides the current redesign: consolidated model/comparison/time controls, direct task navigation, nearby observation evidence, readable report columns and coherent responsive/day/night presentation. Publication and actual checks are recorded in the deployment guide.
 
+**New runtime requirement, 2 November 2026:** ordinary-browser data access without an extension or project backend/collector. A [verified browser-only prototype and source matrix](docs/browser-only-feasibility-2026-11-02.md) now demonstrate direct reports, satellite, radar and an alternative municipal camera. The main briefing still uses the previous snapshot path; it has not yet been converted. Blocked products and reduced source coverage remain explicit migration dependencies.
+
 ## Start here
 
 - [Documentation index](docs/README.md)

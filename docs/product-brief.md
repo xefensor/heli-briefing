@@ -14,6 +14,8 @@ The original provides a location/date-based briefing worksheet with solar and mo
 
 ## Xef-confirmed requirements
 
+Added 2026-11-02: the runtime must work in an ordinary browser, without extensions, a native app or a project-operated backend/proxy/build collector. Static code hosting on GitHub Pages remains selected. Source restrictions must be resolved through compatible sources or explicit product decisions, not an unannounced backend. [Current feasibility and implementation boundary](browser-only-feasibility-2026-11-02.md).
+
 | Requirement | Consequence for the product |
 | --- | --- |
 | The primary user is a South Bohemian professional helicopter pilot preparing reports for others. | Support preparation and readable briefing output; do not assume a particular HEMS/IFR workflow. |

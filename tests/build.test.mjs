@@ -14,8 +14,10 @@ test('versioned build keeps HTML assets and the full module graph resolvable', a
     const version = await versionAssets(temporary);
     const html = await readFile(join(temporary, 'index.html'), 'utf8');
     const assets = [...html.matchAll(/(?:src|href)=["'](\.\/assets\/[^"']+)["']/g)].map(match => match[1]);
-    assert.equal(assets.length, 6);
+    assert.equal(assets.length, 7);
     for (const asset of assets) { assert.ok(asset.startsWith(`./assets/${version}/`)); await readFile(join(temporary, asset)); }
+    const probe = await readFile(join(temporary, 'assets', version, 'browser-sources.html'), 'utf8');
+    for (const match of probe.matchAll(/\bfrom\s*['"](\.\/js\/[^'"]+)['"]/g)) await readFile(resolve(temporary, 'assets', version, match[1]));
     const scripts = join(temporary, 'assets', version, 'js');
     for (const name of await readdir(scripts)) {
       const text = await readFile(join(scripts, name), 'utf8');

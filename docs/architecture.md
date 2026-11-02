@@ -1,8 +1,10 @@
-# Proposed architecture
+# Architecture and runtime constraint
 
 **Status: broader architecture proposed; static implementation exists.** [Decision 0004](decisions/0004-github-pages-first-build.md) records the current browser-module application and GitHub Pages host. [Decision 0005](decisions/0005-complete-briefing-data.md) records the next data and briefing capabilities. The responsibilities below also cover future private-provider access, route processing and storage; their presence does not mean those services have been implemented.
 
-## Responsibilities
+**Owner requirement · 2 November 2026:** use an ordinary browser with no extension, native app, project-operated data service/proxy or build-time weather collection. The backend responsibilities below are historical proposals and do not authorize that architecture. Existing v0.4 still uses snapshots. [Browser-only feasibility](browser-only-feasibility-2026-11-02.md) records the tested direct-source prototype and unresolved products; it is not completed production conversion.
+
+## Historical proposed responsibilities
 
 | Component | Responsibility |
 | --- | --- |

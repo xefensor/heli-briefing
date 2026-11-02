@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Browser source verification · Heli Briefing</title>
+<style>
+body{font:16px/1.55 system-ui;margin:0;background:#edf2f5;color:#152d3b}main{max-width:1100px;margin:auto;padding:28px}h1{margin:0}p{max-width:85ch}button,a{font:inherit}button{padding:10px 16px;background:#126878;color:white;border:0;border-radius:5px;cursor:pointer}button:disabled{opacity:.55}section{background:white;border:1px solid #c9d6dd;border-radius:7px;padding:20px;margin:20px 0;overflow-wrap:anywhere}pre{white-space:pre-wrap;font-size:13px}img{display:block;width:100%;max-width:1000px;max-height:340px;object-fit:contain;height:auto}nav{margin:16px 0}section{scroll-margin:20px}iframe{width:100%;height:580px;border:1px solid #c9d6dd}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:8px;border-bottom:1px solid #d8e2e8}small{display:block;color:#4b6472}code{font-size:.9em}.warning{background:#fff0d8;padding:10px}.result{font-weight:650}a{color:#126878}
+</style>
+<main>
+<h1>Direct browser sources</h1>
+<p>This verification prototype tests requests made by this browser directly to providers. It has no data proxy, extension, build-time weather or server collector. Results below are actual responses or explicit errors. It does not replace the main briefing. Some existing source integrations remain unresolved.</p>
+<nav><a href="#reports-section">Reports</a> · <a href="#satellite-section">Satellite</a> · <a href="#radar-section">Radar</a> · <a href="#camera-section">Camera</a> · <a href="../../">Main briefing</a></nav><button id="test-all">Test browser sources</button>
+<p id="overall" role="status">Ready.</p>
+<section id="reports-section"><h2>ČHMÚ SWIM · METAR / TAF / SIGMET</h2><p id="reports-status" class="result">Not tested.</p><pre id="reports-meta"></pre><details><summary>Inspect original reports and their actual dates</summary><div id="reports"></div></details><p class="warning">Availability and expiry are distinct. Missing foreign stations and expired SIGMET must remain explicit. Local history starts with actual reports seen in this browser.</p></section>
+<section id="satellite-section"><h2>EUMETSAT GeoColour</h2><p id="satellite-status" class="result">Not tested.</p><pre id="satellite-meta"></pre><div id="satellite"></div></section>
+<section id="radar-section"><h2>ČHMÚ observed radar</h2><p id="radar-status" class="result">Not tested.</p><pre id="radar-meta"></pre><div id="radar"></div></section>
+<section id="camera-section"><h2>Alternative camera · municipal Radnice viewer</h2><p>This is the official České Budějovice municipal camera, a different viewpoint from the three ČHMÚ cameras. Acquisition time is not exposed to our page. The provider controls playback. The stream is not captured into a frozen briefing.</p><p><a href="https://www.c-budejovice.cz/webove-kamery" target="_blank" rel="noopener">Official city camera page</a> · <a href="https://stream.c-budejovice.cz/webkamera-4-radnice.html" target="_blank" rel="noopener">Open official viewer</a></p><button id="camera-load">Load official camera viewer</button><div id="camera"></div></section>
+</main>
+<script type="module">
+import {fetchAviation} from './js/aviation-source.js';
+import {fetchSatellite} from './js/satellite-source.js';
+import {fetchRadar} from './js/radar-source.js';
+import {escapeHtml as esc} from './js/charts.js';
+import {summarizeMetar} from './js/reports.js';
+const $=id=>document.getElementById(id),json=value=>JSON.stringify(value,null,2);
+const image=(root,url,alt)=>{const img=document.createElement('img');img.src=url;img.alt=alt;$(root).replaceChildren(img);};
+async function reports(){
+ $('reports-status').textContent='Requesting directly from swim.chmi.cz…';
+ try{
+  const value=await fetchAviation({signal:AbortSignal.timeout(45000)});
+  $('reports-status').textContent=`Downloaded ${value.metar.items.length} METAR, ${value.taf.items.length} TAF and ${value.sigmet.items.length} SIGMET reports, including any historical/cancelled messages. Check their dates below.`;
+  $('reports-meta').textContent=json({source:value.sourceName,generatedAt:value.generatedAt,metarStatus:value.metar.status,tafStatus:value.taf.status,sigmetStatus:value.sigmet.status,sigmetCoverageComplete:value.sigmet.coverageComplete,historyStatus:value.metar.historyStatus,metarErrors:value.metar.error,tafErrors:value.taf.error,sigmetError:value.sigmet.error});
+  $('reports').innerHTML='<table><thead><tr><th>Report</th><th>Actual time / validity</th><th>Source text</th></tr></thead><tbody>'+[...value.metar.items,...value.taf.items,...value.sigmet.items].map(item=>`<tr><th>${esc(item.station||item.fir||item.kind||'SIGMET')}<small>${esc(item.kind||'')} ${item.cancelled?'CANCELLED':''}</small></th><td>${esc(item.observedAt||item.issuedAt||'Unknown')}<small>${esc(item.validFrom||'')} – ${esc(item.validTo||'')}</small></td><td><pre>${esc(item.raw)}</pre>${item.kind==='metar'?`<small>Decoded ceiling: ${esc(summarizeMetar(item).ceiling.valueFtAgl??'unknown')} ft AGL</small>`:''}</td></tr>`).join('')+'</tbody></table>';
+ }catch(error){$('reports-status').textContent=`Failed: ${error.message}`;}
+}
+async function satellite(){
+ $('satellite-status').textContent='Requesting directly from view.eumetsat.int…';
+ try{const value=await fetchSatellite({signal:AbortSignal.timeout(25000)});$('satellite-status').textContent='Received and validated actual 1000 × 500 PNG.';$('satellite-meta').textContent=json({status:value.status,observedAt:value.observedAt,retrievedAt:value.retrievedAt,imageUrl:value.imageUrl,fallbackNote:value.fallbackNote});image('satellite',value.imageDataUrl,'Current EUMETSAT GeoColour frame');}
+ catch(error){$('satellite-status').textContent=`Failed: ${error.message}`;}
+}
+async function radar(){
+ $('radar-status').textContent='Testing four current five-minute PNG candidates directly at opendata.chmi.cz…';
+ try{const value=await fetchRadar({frameLimit:4,signal:AbortSignal.timeout(25000)});$('radar-status').textContent=`${value.status}: ${value.frames.length} actual image loads confirmed.`;$('radar-meta').textContent=json({observedAt:value.observedAt,retrievedAt:value.retrievedAt,frames:value.frames,exportNote:value.exportNote,error:value.error});if(value.url)image('radar',value.url,'Actual observed ČHMÚ radar frame');}
+ catch(error){$('radar-status').textContent=`Failed: ${error.message}`;}
+}
+$('test-all').addEventListener('click',async()=>{$('test-all').disabled=true;$('overall').textContent='Running direct browser requests…';await Promise.allSettled([reports(),satellite(),radar()]);$('overall').textContent='Checks finished. Inspect each source result; successful transport does not establish report validity.';$('test-all').disabled=false;});
+$('camera-load').addEventListener('click',()=>{const frame=document.createElement('iframe');frame.id='city-camera';frame.title='Official municipal Radnice camera viewer';frame.src='https://stream.c-budejovice.cz/webkamera-4-radnice.html';frame.allow='autoplay; fullscreen';frame.referrerPolicy='no-referrer';$('camera').replaceChildren(frame);$('camera-load').disabled=true;});
+</script>
+</html>

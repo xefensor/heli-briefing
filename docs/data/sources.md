@@ -154,3 +154,10 @@ See [decision 0006](../decisions/0006-point-profile-and-satellite.md) for the ch
 ## Route/visual-evidence completion · 2026-11-01
 
 [Decision 0010](../decisions/0010-route-section-and-visual-evidence.md) supersedes the earlier camera/full-route implementation gaps above. It records the current primary-source checks, exact endpoints, sampled camera ownership, ČHMÚ website CC BY 4.0 grant, image-time binding and native ČÚZK Bpv terrain contract. The implementation includes three cameras and website SWL/low-cloud imagery; it does not extend that grant to third-party cameras or the separate SWIM API. Pressure-level wind/temperature/RH sections use the existing explicit forecast model; separately referenced terrain does not supply a clearance or obstacle assessment. Professional forecast access and aeronautical redistribution remain external dependencies.
+
+
+## Ordinary-browser source recheck · 2026-11-02
+
+The owner now requires runtime data in an ordinary browser without an extension, app or project-operated backend/collector. The [source feasibility record](../browser-only-feasibility-2026-11-02.md) documents actual Origin-header and browser tests, exact routes, partial coverage and export restrictions. A separate direct-source prototype is implemented; the main briefing is not yet converted.
+
+SWIM TAC list/get currently permits CORS from Pages and supplied fresh Czech METAR/TAF alongside genuinely old cancellation/SIGMET files; do not infer current validity from a new download or combine stale XML with newer TAC. EUMETSAT capabilities/GetMap permit direct browser reading and local embedded-image output. Radar PNGs can display through Image loads, but CORS still prevents reading their pixels for offline capture. The official municipal Radnice camera actually played in a browser iframe; it is a different source/view from the three original ČHMÚ cameras and exposes no acquisition time. Original camera, SWL, low-cloud and native-ceiling parity remain unresolved. Public access/CORS is separate from redistribution rights; earlier licence/professional gates remain applicable.

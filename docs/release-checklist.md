@@ -1,6 +1,8 @@
 # Release checklist and support
 
-Updated 2026-11-01. Applies to the South Bohemian **evaluation** on [GitHub Pages](https://xefensor.github.io/heli-briefing/). A completed engineering checklist is not intended-pilot acceptance or professional production access. Publication evidence is in [deployment](deployment.md).
+Updated 2026-11-02. Applies to the South Bohemian **evaluation** on [GitHub Pages](https://xefensor.github.io/heli-briefing/). A completed engineering checklist is not intended-pilot acceptance or professional production access. Publication evidence is in [deployment](deployment.md).
+
+**New required work:** the owner now requires ordinary-browser runtime data without an extension, app or project collector/backend. The v0.4 scope below remains historical delivery evidence; its snapshot path does not meet this requirement. [Browser-only source feasibility](browser-only-feasibility-2026-11-02.md) records a tested prototype, missing source parity and the still-unfinished production migration.
 
 ## Completion boundary
 
@@ -16,7 +18,7 @@ Updated 2026-11-01. Applies to the South Bohemian **evaluation** on [GitHub Page
 | Access/legal | Source attribution, explicit stale/missing states, no static credentials, scoped generated artifacts and guarded GitHub publication. | Owner selects code/docs licence. No blanket licence for third-party data is implied. |
 | Aeronautical data | Direct official AIM link. The application does not claim live NOTAM, obstacles or airspace activation. | Written redistribution permission / authorized operational interface before an integrated feed. |
 
-All buildable features in this evaluation scope are implemented. The **whole professional project remains incomplete** until the relevant external access, licence and pilot/output acceptance gates are resolved. Accounts, automated distribution, alerts, aircraft minima and additional commercial services are not silently added to scope.
+The earlier v0.4 evaluation feature scope is implemented. The newly required browser-only runtime is not yet integrated into the production briefing. The **whole professional project remains incomplete** until the relevant external access, licence and pilot/output acceptance gates are resolved. Accounts, automated distribution, alerts, aircraft minima and additional commercial services are not silently added to scope.
 
 ## Intended-pilot acceptance script
 

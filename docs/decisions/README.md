@@ -27,6 +27,8 @@ The route section, ČÚZK terrain, timestamped cameras and integrated SWL/low-cl
 
 The subsequent [professional workspace redesign](0011-professional-briefing-workspace.md) records the owner-requested UI/UX review and implemented structure, with all core data retained.
 
+The owner's subsequent ordinary-browser runtime constraint and tested source prototype are recorded in [decision 0012](0012-browser-only-runtime.md). This supersedes the earlier backend/collector target; production migration is unfinished.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |
