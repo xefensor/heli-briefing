@@ -2,6 +2,8 @@
 
 Checked **2 November 2026**. [Decision 0012](decisions/0012-browser-only-runtime.md) · [Data sources](data/sources.md) · [Release checklist](release-checklist.md).
 
+**Integration update:** the owner subsequently authorized replacement in the main GitHub site. [Decision 0013](decisions/0013-direct-browser-integration.md) implements direct adapters, local history, the municipal viewer and a code-only build. The prototype results and parity limitations below remain evidence of the investigation checkpoint, not the current main runtime.
+
 ## Requirement and completion boundary
 
 The owner requires an ordinary website: no browser extension, native app, project-operated data backend/proxy or deployment-time weather collection. Static application hosting remains GitHub Pages.

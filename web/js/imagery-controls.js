@@ -1,12 +1,40 @@
-import { validateCameras, renderCameras } from './cameras.js';
-import { validateCharts, renderAviationCharts, selectedLowCloud, captureCharts } from './aviation-charts.js';
+import { createBrowserCameras, renderCameras, MUNICIPAL_CAMERA } from './cameras.js';
+import { createBrowserCharts, renderAviationCharts, selectedLowCloud, captureCharts } from './aviation-charts.js';
 import { formatTime } from './briefing.js';
 
 export function mountImagery({ getContext, onLowCloud }) {
   const $ = id => document.getElementById(id);
-  let cameras = null, charts = null, cameraError = null, chartError = null, mapActive = false;
-  let cameraSequence = 0, chartSequence = 0, busy = null, renderedKey = '', dialogReturnFocus = null;
+  let cameras = createBrowserCameras(), charts = createBrowserCharts(), mapActive = false;
+  let renderedKey = '', dialogReturnFocus = null;
   const imageErrors = new Set();
+  // This is an ordinary cross-origin provider page. Load it only on request,
+  // and keep its DOM outside the repeatedly rendered camera/source summaries.
+  const municipal = document.createElement('section');
+  municipal.id = 'municipal-camera';
+  municipal.className = 'municipal-camera';
+  municipal.setAttribute('aria-labelledby', 'municipal-camera-title');
+  municipal.innerHTML = `<h3 id="municipal-camera-title">České Budějovice · Radnice · městská kamera</h3><p>Samostatný pohled města České Budějovice, nikoli kamera ČHMÚ. Přehrávač nepředává tomuto přehledu samostatný čas snímku; aktuálnost ověř přímo u zdroje. Samotné načtení přehrávače ji nepotvrzuje.</p><p>Oficiální přehrávač se připojí přímo ke zdroji až po otevření. Video se neukládá do zachyceného briefingu.</p><p><a href="${MUNICIPAL_CAMERA.pageUrl}" target="_blank" rel="noopener noreferrer">Zdroj: město České Budějovice ↗</a> · <a href="${MUNICIPAL_CAMERA.viewerUrl}" target="_blank" rel="noopener noreferrer">Otevřít samostatný přehrávač ↗</a></p><div class="municipal-camera-actions"><button id="municipal-camera-load" class="button button-primary" type="button">Otevřít městskou kameru</button><button id="municipal-camera-close" class="button button-quiet" type="button" hidden>Zavřít video</button></div><div id="municipal-camera-frame"></div>`;
+  $('cameras').before(municipal);
+  $('municipal-camera-load').addEventListener('click', () => {
+    const frame = document.createElement('iframe');
+    frame.id = 'municipal-camera-viewer';
+    frame.title = 'Městská kamera České Budějovice · Radnice';
+    frame.src = MUNICIPAL_CAMERA.viewerUrl;
+    frame.allow = 'autoplay; fullscreen';
+    frame.referrerPolicy = 'no-referrer';
+    $('municipal-camera-frame').replaceChildren(frame);
+    $('municipal-camera-load').disabled = true;
+    $('municipal-camera-load').textContent = 'Přehrávač otevřen';
+    $('municipal-camera-close').hidden = false;
+    $('municipal-camera-close').focus({ preventScroll: true });
+  });
+  $('municipal-camera-close').addEventListener('click', () => {
+    $('municipal-camera-frame').replaceChildren();
+    $('municipal-camera-load').disabled = false;
+    $('municipal-camera-load').textContent = 'Otevřít městskou kameru';
+    $('municipal-camera-close').hidden = true;
+    $('municipal-camera-load').focus({ preventScroll: true });
+  });
   // Controls are recreated when frame ages or snapshots change. Retain their
   // semantic identity so refresh and modal close do not send keyboard users to body.
   function focusToken(element) {
@@ -45,8 +73,8 @@ export function mountImagery({ getContext, onLowCloud }) {
     if (!force && renderedKey === key) return;
     const focusedControl = focusToken(document.activeElement);
     renderedKey = key;
-    $('cameras').innerHTML = !cameras && !cameraError ? '<p class="section-note">Načítám kamery ČHMÚ…</p>' : renderCameras(cameras, { ...state, error: cameraError, interactive: true });
-    $('aviation-chart-content').innerHTML = !charts && !chartError ? '<p class="section-note">Načítám letecké mapy ČHMÚ…</p>' : renderAviationCharts(charts, { ...state, error: chartError, interactive: true, imageErrors });
+    $('cameras').innerHTML = renderCameras(cameras, { ...state, interactive: true });
+    $('aviation-chart-content').innerHTML = renderAviationCharts(charts, { ...state, interactive: true, imageErrors });
     const button = $('lowcloud-map'), low = selectedLowCloud(charts, state.time);
     if (button) { button.setAttribute('aria-pressed', String(mapActive)); button.disabled = !mapActive && (!low?.imagePath || imageErrors.has(low.imagePath)); }
     if (mapActive) onLowCloud(low?.imagePath && !imageErrors.has(low.imagePath) ? low : null);
@@ -76,19 +104,11 @@ export function mountImagery({ getContext, onLowCloud }) {
   });
   $('cameras').addEventListener('error', event => { const id = event.target.dataset?.cameraImage; if (id && cameras) { cameras = { ...cameras, items: cameras.items.map(item => item.id === id ? { ...item, status:'unavailable', imageDataUrl:null, error:'Snímek nelze zobrazit.' } : item) }; render(true); } }, true);
   $('aviation-chart-content').addEventListener('error', event => { const path = event.target.dataset?.chartPath; if (path) { imageErrors.add(path); render(true); } }, true);
-  async function load(kind, force, signal) {
-    const sequence = kind === 'cameras' ? ++cameraSequence : ++chartSequence;
-    try {
-      const response = await fetch(`./data/${kind}.json`, { cache: force ? 'no-cache' : 'default', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(25000)]) : AbortSignal.timeout(25000) });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const value = kind === 'cameras' ? validateCameras(await response.json()) : validateCharts(await response.json());
-      if (sequence !== (kind === 'cameras' ? cameraSequence : chartSequence)) return { ok: false };
-      if (kind === 'cameras') { cameras = value; cameraError = null; } else { charts = value; chartError = null; if (force) imageErrors.clear(); }
-      render(true); return { ok: true };
-    } catch (error) { if (sequence !== (kind === 'cameras' ? cameraSequence : chartSequence)) return { ok: false }; if (kind === 'cameras') cameraError = error.message; else chartError = error.message; render(true); return { ok: false, error: error.message }; }
-  }
-  return { sync: render, hideLowCloud() { mapActive = false; onLowCloud(null); render(); }, snapshotCameras: () => cameras ? { ...cameras, transportError: cameraError } : null,
-    async capture(time) { if (busy) await busy; if (!charts || !cameras) await this.refresh(false); return { cameras: this.snapshotCameras(), charts: charts ? { ...await captureCharts(charts, time), transportError: chartError } : null }; },
-    async refresh(force = false, signal) { if (busy && !force) return busy; const pending = Promise.all([load('cameras', force, signal), load('charts', force, signal)]).then(results => ({ ok: results.every(item => item.ok), error: results.find(item => !item.ok)?.error })); busy = pending; try { return await pending; } finally { if (busy === pending) busy = null; } },
+  render(true);
+  return { sync: render, hideLowCloud() { mapActive = false; onLowCloud(null); render(); }, snapshotCameras: () => structuredClone(cameras),
+    async capture(time) { return { cameras: this.snapshotCameras(), charts: await captureCharts(charts, time) }; },
+    // Known browser capability limits are metadata, not transport failures to
+    // retry every minute. No deployment-generated weather file is requested.
+    async refresh() { render(true); return { ok: true, supported: false, reason: 'browser-cors' }; },
   };
 }

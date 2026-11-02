@@ -3,6 +3,18 @@ import { formatTime } from './briefing.js';
 const pathPattern = /^\.\/data\/charts\/(?:swl|lowcloud)-\d{12}-[a-f0-9]{12}\.png$/;
 const validTime = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
 const stamp = (value, zone) => validTime(value) ? `${formatTime(value, zone, true)} ${zone === 'UTC' ? 'UTC' : 'CZ'}` : 'čas neposkytnut';
+const SWL_PAGE = 'https://www.chmi.cz/letectvi/predpovedi-pro-letani/swl-mapa';
+const LOW_CLOUD_PAGE = 'https://www.chmi.cz/letectvi/predpovedi-pro-letani/predpoved-nizke-oblacnosti';
+
+/** The direct browser cannot read these products; this is not a dated forecast. */
+export function createBrowserCharts() {
+  return {
+    schemaVersion: 1, delivery: 'browser-direct', status: 'unsupported', retrievedAt: null,
+    swl: { status: 'unsupported', reason: 'cors', pageUrl: SWL_PAGE, issuedAt: null, validFrom: null, validTo: null, retrievedAt: null, imagePath: null, error: 'Zdroj nepovoluje přímé čtení SWL z této stránky (CORS).' },
+    lowCloud: { status: 'unsupported', reason: 'cors', pageUrl: LOW_CLOUD_PAGE, frames: [], error: 'Zdroj nepovoluje přímé čtení map nízké oblačnosti z této stránky (CORS).' },
+  };
+}
+
 export function validateCharts(data, { captured = false } = {}) {
   if (!data || data.schemaVersion !== 1 || !data.swl || !data.lowCloud || !Array.isArray(data.lowCloud.frames || []) || (data.lowCloud.frames || []).length > 32) throw new Error('Neplatný balíček leteckých map.');
   for (const item of [data.swl, ...(data.lowCloud.frames || []), data.selectedLow].filter(Boolean)) {
@@ -33,6 +45,9 @@ function geography(lat, lon) {
   return places.map(([name,latitude,longitude])=>{const p=imagePosition(latitude,longitude);return `<span class="map-place-label" style="left:${p.left.toFixed(3)}%;top:${p.top.toFixed(3)}%">${name}</span>`;}).join('')+(point?`<span class="lowcloud-point" style="left:${point.left.toFixed(3)}%;top:${point.top.toFixed(3)}%" title="Vybraný bod">+</span>`:'');
 }
 export function renderAviationCharts(data, { time, timezone = 'Europe/Prague', lat, lon, error = null, interactive = false, imageErrors = new Set() } = {}) {
+  if (data?.delivery === 'browser-direct') {
+    return `<article class="aviation-chart source-unavailable"><h3>SWL · významné počasí mezi zemí a FL100</h3><p class="route-attention">Mapa není přímo v přehledu dostupná.</p><p>${esc(data.swl.error)}</p><p class="section-note">Platnost, vydání ani obraz nebyly načteny. Otevři původní SWL a zkontroluj její vlastní platnost, legendu a aktuální SIGMET; časy v mapě jsou UTC.</p><a href="${SWL_PAGE}" target="_blank" rel="noopener noreferrer">Otevřít původní SWL a legendu ↗</a></article><article class="aviation-chart source-unavailable"><h3>Nízká oblačnost · ČHMÚ</h3><p class="route-attention" id="lowcloud-browser-note">Mapa není přímo v přehledu dostupná.</p><p>${esc(data.lowCloud.error)}</p><p class="section-note">Obraz ani jeho platnost nebyly načteny. Původní produkt ČHMÚ zachovává vlastní výškové reference a legendu; nejde o ceiling z vybraného modelu.</p>${interactive ? '<button class="button button-quiet" type="button" id="lowcloud-map" aria-pressed="false" aria-describedby="lowcloud-browser-note" disabled>Nízká oblačnost v regionální mapě · nedostupná</button>' : ''}<a href="${LOW_CLOUD_PAGE}" target="_blank" rel="noopener noreferrer">Otevřít původní mapu a vysvětlení ↗</a></article><p class="section-note">Zdroj: Český hydrometeorologický ústav. Tyto odkazy otevírají online zdroj; žádný starý obraz z nasazení se nevydává za aktuální mapu.</p>`;
+  }
   const swl = data?.swl, low = data?.selectedLow || selectedLowCloud(data, time), current = Date.parse(time), swlValid = swl && current >= Date.parse(swl.validFrom) && current < Date.parse(swl.validTo);
   const image = (item, alt, key) => item && (item.imageDataUrl || item.imagePath) && !imageErrors.has(item.imagePath) ? `<div class="aviation-chart-image"><img src="${esc(item.imageDataUrl || item.imagePath)}" data-chart-path="${esc(item.imagePath || '')}" width="${item.width}" height="${item.height}" loading="${interactive ? 'lazy' : 'eager'}" alt="${alt}">${key === 'lowCloud' ? geography(lat,lon) : ''}</div>${interactive ? `<button type="button" class="button button-quiet" data-chart-enlarge="${key}">Zvětšit původní mapu</button>` : ''}` : '<p class="route-attention">Snímek není dostupný. Platný čas sám nepotvrzuje načtení obrazu.</p>';
   const point = imagePosition(lat, lon);
@@ -41,6 +56,7 @@ export function renderAviationCharts(data, { time, timezone = 'Europe/Prague', l
 
 export async function captureCharts(data, time, { fetcher = (...args) => fetch(...args) } = {}) {
   if (!data) return null;
+  if (data.delivery === 'browser-direct') return { ...structuredClone(data), selectedLow: null };
   const snapshot = structuredClone(data), low = selectedLowCloud(data, time);
   snapshot.lowCloud = { ...snapshot.lowCloud, frames: [] }; snapshot.selectedLow = low ? structuredClone(low) : null;
   for (const item of [snapshot.swl, snapshot.selectedLow].filter(Boolean)) {

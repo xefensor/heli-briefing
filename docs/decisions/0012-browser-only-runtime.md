@@ -1,6 +1,6 @@
 # 0012 · Ordinary-browser runtime
 
-Date: 2026-11-02. Status: owner constraint confirmed; source prototype implemented and browser-tested; production migration unfinished.
+Date: 2026-11-02. Status: owner constraint confirmed; prototype checkpoint completed. Main integration subsequently implemented by [decision 0013](0013-direct-browser-integration.md). The checkpoint description below is historical.
 
 ## Context
 

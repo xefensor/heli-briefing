@@ -103,3 +103,8 @@ See [decision 0010](decisions/0010-route-section-and-visual-evidence.md) and the
 ## Professional workspace redesign · 1 November 2026
 
 The owner requested a substantial review and a more professional interface after the complete evaluation build. The [audit](design-review-2026-11-01.md) records confirmed structural issues, the three-study reasoning, final layout, accessibility/refresh changes and validation boundaries. [Decision 0011](decisions/0011-professional-briefing-workspace.md) implements the six-chapter workspace and consolidated context controls while preserving all data and core graphs. This supersedes the previous two-column panel ordering, not the data/source contracts or need for intended-pilot validation.
+
+
+## Direct browser source integration · 2 November 2026
+
+[Decision 0013](decisions/0013-direct-browser-integration.md) integrates the owner-authorized compatible sources without removing the eight core plots or station rows. Partial source coverage stays close to reports, with links for unsupported stations. The SIGMET overview remains explicitly uncertain when the catalogue is incomplete. Prospective local history is labelled as partial rather than a complete imported archive. Original camera/chart identities remain compact source cards, and the municipal viewer is separate and opt-in. Its iframe survives age ticks, source changes and data refresh, then closes explicitly. Frozen output identifies embedded satellite data versus online-only radar/video and unsupported products. These are usability choices under the three studies, not pilot acceptance.

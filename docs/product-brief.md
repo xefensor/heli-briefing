@@ -1,6 +1,6 @@
 # Product brief
 
-Status: first evaluation implementation started; product recommendations remain unvalidated · Updated: 2026-11-01
+Status: v0.5 direct-browser evaluation implemented; pilot acceptance remains unvalidated · Updated: 2026-11-02
 
 [Repository overview](../README.md) · [Design brief](design.md)
 
@@ -14,7 +14,7 @@ The original provides a location/date-based briefing worksheet with solar and mo
 
 ## Xef-confirmed requirements
 
-Added 2026-11-02: the runtime must work in an ordinary browser, without extensions, a native app or a project-operated backend/proxy/build collector. Static code hosting on GitHub Pages remains selected. Source restrictions must be resolved through compatible sources or explicit product decisions, not an unannounced backend. [Current feasibility and implementation boundary](browser-only-feasibility-2026-11-02.md).
+Added 2026-11-02: the runtime must work in an ordinary browser, without extensions, a native app or a project-operated backend/proxy/build collector. Static code hosting on GitHub Pages remains selected. Source restrictions must be resolved through compatible sources or explicit product decisions, not an unannounced backend. [Current integration](decisions/0013-direct-browser-integration.md) and [source feasibility boundary](browser-only-feasibility-2026-11-02.md).
 
 | Requirement | Consequence for the product |
 | --- | --- |
@@ -66,7 +66,7 @@ The first route implementation is recorded in [decision 0009](decisions/0009-rou
 - Which controls belong in the global header, and whether inspection time, departure time, arrival time and graph horizon need separate representations.
 - Which products are available with sufficient coverage, metadata and reuse rights; what remains an official-source link until an agreement exists.
 - Appropriate route/terrain/alternate depth, offline or saved briefings, print/PDF output, accounts, alerts and any operational integration. The original provides evidence of print intent, not a final delivery decision.
-- Future backend/ingestion stack, persistence, authentication and professional delivery scope. The first evaluation build uses static JavaScript modules and GitHub Pages under [decision 0004](decisions/0004-github-pages-first-build.md).
+- Any future service requiring private credentials or a different runtime architecture needs separate owner authorization. The current target remains ordinary-browser modules and code-only GitHub Pages deployment.
 
 Do not resolve these by assuming that every helicopter operation resembles an airline, HEMS base, US low-altitude service or recreational VFR flight.
 

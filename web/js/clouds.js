@@ -1,5 +1,4 @@
 /** Native ICON-D2 diagnostic, independent of the selected surface forecast. */
-const URL_PATH = './data/clouds.json';
 const VALID_STATUSES = new Set(['ok', 'partial', 'stale', 'unavailable']);
 const finite = (value) => typeof value === 'number' && Number.isFinite(value);
 
@@ -37,14 +36,6 @@ export function validateClouds(data) {
   return data;
 }
 
-export async function fetchClouds({ signal, force = false } = {}) {
-  const timeout = AbortSignal.timeout(25000);
-  const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
-  // Revalidate one stable URL so unchanged regional snapshots can use HTTP validators.
-  const response = await fetch(URL_PATH, { signal: combined, cache: force ? 'no-cache' : 'default' });
-  if (!response.ok) throw new Error(`Nativní cloudový produkt: HTTP ${response.status}`);
-  return validateClouds(await response.json());
-}
 
 function distanceKm(lat1, lon1, lat2, lon2) {
   const rad = Math.PI / 180;

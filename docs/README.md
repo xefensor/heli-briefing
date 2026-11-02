@@ -4,6 +4,7 @@ Start with the product brief, then follow the evidence and implementation constr
 
 | Document | Purpose |
 | --- | --- |
+| [Direct browser integration](decisions/0013-direct-browser-integration.md) | Current runtime, code-only build, source coverage and output limits. |
 | [Browser-only feasibility](browser-only-feasibility-2026-11-02.md) | Owner constraint, actual browser source tests, runnable prototype and unresolved products. |
 | [Product brief](product-brief.md) | Confirmed requirements, audience assumptions and unresolved product scope. |
 | [Original site](research/original-site.md) | Contextual inventory of actual controls, candidate information needs, print intent and implementation defects; evaluated against the three research tracks. |

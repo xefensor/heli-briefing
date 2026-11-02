@@ -1,10 +1,26 @@
 # Architecture and runtime constraint
 
-**Status: broader architecture proposed; static implementation exists.** [Decision 0004](decisions/0004-github-pages-first-build.md) records the current browser-module application and GitHub Pages host. [Decision 0005](decisions/0005-complete-briefing-data.md) records the next data and briefing capabilities. The responsibilities below also cover future private-provider access, route processing and storage; their presence does not mean those services have been implemented.
+**Current implementation: ordinary-browser runtime, v0.5.** [Decision 0013](decisions/0013-direct-browser-integration.md) implements the owner-confirmed target: GitHub Pages hosts code/assets, and the browser requests compatible data directly. No extension, native app, project data backend/proxy or build-time weather collector is required.
 
-**Owner requirement · 2 November 2026:** use an ordinary browser with no extension, native app, project-operated data service/proxy or build-time weather collection. The backend responsibilities below are historical proposals and do not authorize that architecture. Existing v0.4 still uses snapshots. [Browser-only feasibility](browser-only-feasibility-2026-11-02.md) records the tested direct-source prototype and unresolved products; it is not completed production conversion.
+## Current data path
+
+| Component | Current responsibility |
+| --- | --- |
+| Forecast/terrain adapters | Direct bounded Open-Meteo and ČÚZK requests with explicit model, time, datum and missing values. |
+| Aviation adapter | Direct allowlisted ČHMÚ SWIM TAC catalogue/files, maximum two requests at once; partial station/FIR coverage and original report dates. |
+| Local report cache | At most 750 kB / 400 genuine observations over twelve hours. Restored reports remain unconfirmed until refreshed; no invented historical archive. |
+| Satellite adapter | Direct EUMETSAT capabilities and actual advertised GeoColour frame, bounded validated PNG bytes and retained original image time. |
+| Radar adapter | Normal image loads confirm candidate UTC frames. Four-image current check; up to 24 observed frames on playback. No CORS pixel read or false offline image capture. |
+| Camera/maps/ceiling | Municipal provider-controlled viewer on request; original blocked products retain explicit unavailable states and source links. No source or meteorological quantity is silently substituted. |
+| Browser workspace/output | Existing graphs, controls, route, astronomy, local notes/archive and frozen HTML/text; all source and export limitations remain visible. |
+| Static build/deploy | Copy/version code/assets only. Exclude all weather snapshots, publish on code changes or manual dispatch; no data schedule or ingestion dependencies. |
+
+The [source feasibility record](browser-only-feasibility-2026-11-02.md) retains actual endpoint and CORS/browser evidence. Full foreign-station history, complete current SIGMET coverage and original camera/chart/native-ceiling parity remain external source dependencies. Native download/PDF and intended-pilot acceptance remain separately unverified.
 
 ## Historical proposed responsibilities
+
+The following describes the earlier broader proposal, not authorization to restore a backend under the current requirement.
+
 
 | Component | Responsibility |
 | --- | --- |

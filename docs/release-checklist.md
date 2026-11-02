@@ -2,23 +2,23 @@
 
 Updated 2026-11-02. Applies to the South Bohemian **evaluation** on [GitHub Pages](https://xefensor.github.io/heli-briefing/). A completed engineering checklist is not intended-pilot acceptance or professional production access. Publication evidence is in [deployment](deployment.md).
 
-**New required work:** the owner now requires ordinary-browser runtime data without an extension, app or project collector/backend. The v0.4 scope below remains historical delivery evidence; its snapshot path does not meet this requirement. [Browser-only source feasibility](browser-only-feasibility-2026-11-02.md) records a tested prototype, missing source parity and the still-unfinished production migration.
+**Current runtime:** [decision 0013](decisions/0013-direct-browser-integration.md) replaces the main site's snapshot path with compatible direct browser sources and retires deployment collection. GitHub Pages now publishes code/assets only. The source-parity limits below remain unresolved.
 
 ## Completion boundary
 
-| Area | Delivered scope / evidence | Remaining dependency |
+| Area | Current delivered scope | Remaining dependency |
 | --- | --- | --- |
-| Core forecast | Eight aligned graphs, explicit three-model selection/comparison, common place/time/horizon, exact values and six-level point profile. Unsupported fields stay empty. | Professional hosted-service access appropriate to the actual organization/use. No local forecast-skill ranking is claimed. |
-| Observation context | Original METAR/TAF/SIGMET, conservative summaries, requested/missing stations, twelve-hour METAR history, observed radar loop and GeoColour satellite. | Provider uptime/coverage; the collector cannot create a report a station has not supplied. |
-| Local imagery | Three verified ČHMÚ-owned cameras, frame age/orientation/location, enlargement, SWL and low-cloud charts with their own validity/legend, low-cloud map overlay. | Public website APIs have no contracted uptime or version guarantee. Other camera owners require separate rights. |
-| Route | Up to six points, explicit departure and leg minutes, point-model comparison, discrete route graphs, up to 17 vertical forecast columns and 257 independently referenced Bpv terrain samples. | No aircraft performance, obstacle/wire database, safe-altitude calculation or authorized navigation planning is included. |
-| Astronomy | Calculated selected-instant sun/moon positions, genuine absent events, daylight/twilight and two-day altitude graph. | Terrain horizon and measured ground illumination are not available. No operator/night minima are inferred. |
-| Preparation/output | Notes, captured-source review, full standalone HTML with images/data, compact original-report pack, plain text/manual-copy fallback and bounded local archive. | Target-browser native save/print acceptance, with the actual intended pilot. Cloud-browser file delivery is recorded separately. |
-| UX | Stable global context, readable aligned data, direct section links, responsive editing, keyboard chart inspection, image dialogs and refresh that preserves inspection context. | Real pilot observation is needed to validate usability; browser layout checks cannot supply it. |
-| Access/legal | Source attribution, explicit stale/missing states, no static credentials, scoped generated artifacts and guarded GitHub publication. | Owner selects code/docs licence. No blanket licence for third-party data is implied. |
-| Aeronautical data | Direct official AIM link. The application does not claim live NOTAM, obstacles or airspace activation. | Written redistribution permission / authorized operational interface before an integrated feed. |
+| Core forecast | Eight directly visible plots, explicit model/comparison/place/time, exact values and qualified point profile. | Appropriate professional provider access and intended-pilot acceptance. |
+| Reports | Direct Czech SWIM METAR/TAF, RAW/decoded evidence, nine retained station rows and conservative SIGMET/validity states. | LKHS/foreign station gaps; complete current FIR warning coverage is not established. |
+| History | Genuine observations retained prospectively in this browser, twelve-hour/400-report and 750 kB bounds. | No complete initial twelve-hour archive was verified; gaps remain visible. |
+| Radar/satellite | Direct observed radar display/playback and directly fetched/embedded GeoColour image. | Radar pixels cannot be embedded offline without CORS permission; provider coverage/outages remain possible. |
+| Cameras/charts/ceiling | Municipal camera viewer, separately identified; original three cameras, SWL, low-cloud and native CEILING retained as explicit source links/unsupported states. | Compatible original-source access or separately accepted alternatives. No proxy or substitute ceiling is used. |
+| Route/light | Existing point/vertical weather, separately referenced Bpv terrain and local astronomy. | Native ceiling along the route remains unavailable; no obstacles, aircraft performance, operator minima or clearance assessment. |
+| Output | Full frozen HTML/text, compact report pack, local archive and accurate source/export limitations. Older saved imagery remains readable. | Intended-device native save/print/PDF acceptance; video/radar links require network and cannot be mistaken for captured imagery. |
+| UX | Existing rich workspace, direct navigation, responsive reports, persistent context/viewer and explicit partial coverage. | Pilot observation is still required to validate preparation usability. |
+| Access/legal | No static secrets or project data service; source attribution and dated access evidence. | Owner licence decision, professional forecast access and source-specific redistribution agreements. |
 
-The earlier v0.4 evaluation feature scope is implemented. The newly required browser-only runtime is not yet integrated into the production briefing. The **whole professional project remains incomplete** until the relevant external access, licence and pilot/output acceptance gates are resolved. Accounts, automated distribution, alerts, aircraft minima and additional commercial services are not silently added to scope.
+The compatible-source browser migration is implemented. The **whole professional project remains incomplete** at the source, provider/licence and intended-pilot/native-output gates. No current-source statement implies a flight approval or uptime guarantee.
 
 ## Intended-pilot acceptance script
 
@@ -27,16 +27,16 @@ Use the pilot's actual desktop/tablet/phone. Record device/browser, time, task o
 1. Select the base, another saved coordinate and a terrain-sensitive off-airport point. Identify location, main model, comparison, valid hour, timezone and source retrieval time without opening settings.
 2. Compare wind/gusts, visibility, cloud information, precipitation and temperature across the same time axis. Inspect one source disagreement and one unsupported/missing field. Confirm the original station report remains recognizable.
 3. Pin a future hour, refresh, wait for a normal monitoring tick and return to Teď. Confirm the future selection is retained during refresh and the planned route departure never moves with the live clock.
-4. Inspect a camera's location/direction/time, an SWL map outside its validity, a missing low-cloud slot and one radar acquisition time. Identify forecast versus observation without changing the main model.
+4. Open the municipal viewer and distinguish it from the original ČHMÚ sources. Identify its unverified normalized acquisition time, unsupported chart/ceiling states and an actual radar frame time. Open official source links where needed; do not treat an unavailable product as clear weather.
 5. Plan a simple route with explicit leg minutes. Inspect a route column, a below-terrain masked pressure level, the Bpv terrain datum and an outside-domain gap. Change model and verify the section changes without relabelling independent products.
-6. Add a note and prepare a full briefing. Check exact context, source warnings, graphics, original bulletins, route and embedded imagery. Download, reopen with network disabled, then save PDF through the normal browser print dialog and inspect every page for clipping/missing content. Verify compact METAR/TAF output and copy/manual-copy behavior separately.
+6. Add a note and prepare a full briefing. Check exact context, coverage/source warnings, graphics, original bulletins, route and embedded satellite imagery. Radar/video remain labelled source links. Download, reopen with network disabled, then save PDF through the normal browser print dialog and inspect every page for clipping/missing content. Verify compact METAR/TAF output and copy/manual-copy behavior separately.
 7. Reopen a saved briefing after changing the live workspace. Confirm the captured values/notes/time do not change. Check archive quota feedback, delete a disposable briefing copy, and verify saved-point/route undo separately.
 
 These are prepared tasks, not completed pilot validation. Record results against this checklist before claiming acceptance.
 
 ## Source outages and incident handling
 
-The **source timestamp** and status decide freshness. Browser checks every five minutes do not mean a deployment collector runs every five minutes. Scheduled Pages collection is nominally every twenty minutes and may be delayed by GitHub. Forecast monitoring is ten minutes. The UI surfaces original frame/report ages and explicit stale/unavailable states. Cameras older than thirty minutes are marked old; this is a display-age rule, not an aviation limit.
+The **source timestamp** and status decide freshness. Compatible observation/satellite/radar checks run approximately every five minutes while visible/online; forecasts every ten minutes. A browser poll does not guarantee a newer product. There is no scheduled weather deployment. A restored local report remains unconfirmed until the provider refresh succeeds; its old observation/issue/retrieval dates remain unchanged. Known unsupported products are not retried as network failures.
 
 During a failure, retain only real previous evidence with its original timestamps. A lost low-cloud slot does not select a different available image. A rate-limit response must not trigger automatic request bursts. The route section uses bounded requests and user-triggered initial loading. Never add fabricated weather, report text or a reassuring zero to make a view complete.
 
@@ -48,8 +48,8 @@ For a critical mismatch, prefer a corrected deployment or a clear unavailable pa
 
 Saved points, route, preferences, notes and up to ten briefings / 20 MB live in the browser profile; they are not synced to an account. Briefings use IndexedDB with an atomic 20 MB serialized-data budget; existing localStorage snapshots are copied once without deleting the originals during migration. Explicit deletion removes the matching legacy copy as well as the database record. Browsers without IndexedDB keep the legacy 5 MB storage path. A quota-denied or too-large snapshot remains available in the open preview for HTML download. Downloaded files are managed by the person holding them. URLs share the selected point/model/time, not notes, route or captured weather; copied links pin the viewing time and load fresh data on opening.
 
-The static site makes public provider requests and loads map tiles. It has no login, private backend or secret-bearing API requests. Forecast requests disclose the selected coordinates to the provider, including custom or device coordinates if the user chooses them. Do not put private provider keys into static files. A professional adapter must keep credentials server-side and preserve the existing explicit source/model/time contracts.
+The static site makes public provider requests and loads map tiles. It has no login, private backend or secret-bearing API requests. Forecast requests disclose the selected coordinates to the provider, including custom or device coordinates if the user chooses them. Do not put private provider keys into static files. A future private-credential service cannot be hidden in this static client. It requires a separately authorized access/architecture decision and must preserve the source/model/time contracts.
 
-Deployment-generated report/imagery snapshots are not committed. Cached camera/chart fallback retains genuine images and original times; mutable collector cache retention is controlled by GitHub Actions. Local data exports do not receive later updates. The generated artifact excludes repository configuration, tests and credentials.
+The deployment artifact excludes the entire weather data directory and generates no fallback weather. Historical collector source is retained for record/tests but is not executed by Pages. Current report retention is browser-local; downloaded exports do not receive later updates. The artifact also excludes repository configuration, tests and credentials.
 
 Recheck source contracts/terms when introducing access changes, replacing a feed or entering professional use, and after an observed schema/source outage. Revalidate current DWD endpoint/migration handling before changing native ingestion. Review the three research tracks before substantial product changes; research does not replace target-pilot feedback.

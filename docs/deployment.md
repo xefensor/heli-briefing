@@ -1,5 +1,27 @@
 # Build and publish
 
+## Current deployment · v0.5 ordinary-browser runtime
+
+The main workspace uses direct browser data sources under [decision 0013](decisions/0013-direct-browser-integration.md). GitHub Pages hosts **code/assets only**. The workflow has no weather schedule, collectors, decoder installation or weather caches. It runs application/document checks, builds and deploys on application changes to `main` or explicit workflow dispatch.
+
+```sh
+npm test
+python3 scripts/check_docs.py
+npm run build
+npm run dev
+```
+
+The build excludes **all `web/data`**, including locally retained/generated snapshots and nested imagery, and generates no fallback weather JSON. An artifact regression test checks actual built output with weather marker fixtures. Historical Python collector code/tests remain in the repository but are not part of deployment. The older collector commands and publication records below are historical; they do not describe the current runtime.
+
+SWIM reports refresh directly about every five minutes, with bounded genuine browser-local history and explicit partial coverage. EUMETSAT satellite frames refresh directly with original observation/download times. Radar loads confirmed provider PNGs (four current candidates; up to 24 on playback). The municipal viewer opens directly on request and remains mounted across refresh. Native ceiling, original cameras and original aviation charts remain explicit unavailable states/source links; no old build snapshot is used as fallback. Full output identifies online-only radar/video and the available embedded satellite.
+
+Local validation passed **217 tests (175 JavaScript, 42 Python)**, a **42-file static build**, documentation and whitespace checks. Actual desktop checks loaded all eight plots, nine report entries and real LKCS observations, preserved pinned inspection/source comparison and kept the 2592×1944 municipal viewer mounted during refresh/model changes. Reload visibly restored unconfirmed cached reports before live refresh. A 390 px responsive frame had equal 375 px content/scroll width; a new frozen preview retained SWIM/partial-coverage/source-limit text and a decoded satellite image without iframe/video requests. Final public evidence is recorded after deployment.
+
+The browser runtime migration for compatible sources is implemented. Whole-project professional readiness remains incomplete at the source-parity, access/licence, intended-pilot and native save/print gates in the [release checklist](release-checklist.md).
+
+## Historical deployment and validation records
+
+
 [Documentation index](README.md) · [Hosting decision](decisions/0004-github-pages-first-build.md) · [v0.2 data scope](decisions/0005-complete-briefing-data.md)
 
 The evaluation is [published on GitHub Pages](https://xefensor.github.io/heli-briefing/). Static source lives in `web/`; generated deployment output lives in ignored `dist/`. The browser application/build has no npm installation step or application framework dependency. Native GRIB ingestion uses separately installed, pinned Python decoder packages.

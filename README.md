@@ -4,17 +4,17 @@ A helicopter weather and briefing workspace for a South Bohemian professional pi
 
 The goal is to bring a regional weather picture, detailed graphs, local observations and source comparison into a coherent interface with few repeated actions. Information depth and simple interaction are both requirements.
 
-**Status:** v0.4 evaluation workspace. [Open Heli Briefing](https://xefensor.github.io/heli-briefing/). Browser-native JavaScript, HTML, CSS and SVG charts; GitHub Pages hosting and scheduled collectors. See [deployment evidence](docs/deployment.md) and the [release checklist](docs/release-checklist.md) for what is verified and what still requires access or pilot review.
+**Status:** v0.5 ordinary-browser evaluation workspace. [Open Heli Briefing](https://xefensor.github.io/heli-briefing/). GitHub Pages hosts code and assets; weather is loaded directly by the browser. There are no scheduled weather builds, project data proxy or extension. See [deployment evidence](docs/deployment.md), [decision 0013](docs/decisions/0013-direct-browser-integration.md) and the [release checklist](docs/release-checklist.md).
 
-The workspace combines eight aligned forecast graphs, explicit ALADIN / ICON-D2 / ECMWF comparison, a six-level point profile, native ICON-D2 CEILING, original METAR/TAF/SIGMET, station history, observed radar playback, GeoColour satellite imagery, three timestamped ČHMÚ cameras, SWL and low-cloud charts. Saved points and a single viewing time reduce repeated setup. An optional six-point route has its own departure and leg times, coordinated point comparison, weather sections and separately referenced ČÚZK terrain.
+The workspace combines eight aligned forecast graphs, explicit ALADIN / ICON-D2 / ECMWF comparison, six-level point profiles, original Czech METAR/TAF and conservatively scoped SIGMET, partial local observation history, observed radar playback and GeoColour satellite imagery. The official municipal Radnice camera opens inline on request. Original ČHMÚ camera identities, SWL/low-cloud products and native DWD ceiling remain visible as unavailable source links because no compatible direct data path was verified. Their different meanings are preserved; no proxy, old weather bundle or substitute ceiling is hidden behind them.
 
-Prepare a briefing to capture the available data, notes and images in a standalone HTML file, or use the compact METAR/TAF pack and text copy. Missing feeds, unsupported fields and stale data remain visible. Professional provider access and intended-pilot validation remain external release gates; this public evaluation is not a claim of operational readiness.
+Saved places, one viewing time and an optional six-point route retain the existing detailed forecast/vertical/Bpv-terrain workflow. Prepare a full frozen briefing or compact report pack with original source times, partial coverage and source limits. Available satellite bytes can be embedded; radar and municipal video remain online-only source links. Historical saved briefings remain readable. This evaluation is not a claim of professional access or operational readiness.
 
-The [three studies](docs/README.md) guide the product; the original pilot-authored page supplies context rather than a fixed specification. The latest [implementation decision](docs/decisions/0010-route-section-and-visual-evidence.md) records source rights, section sampling and image provenance.
+The [three studies](docs/README.md) guide the product; the original pilot-authored page supplies context rather than a fixed specification. The current [implementation decision](docs/decisions/0013-direct-browser-integration.md) records direct runtime delivery and source/output limits; earlier decisions retain their dated rights and sampling evidence.
 
 The [professional UI/UX review](docs/design-review-2026-11-01.md) guides the current redesign: consolidated model/comparison/time controls, direct task navigation, nearby observation evidence, readable report columns and coherent responsive/day/night presentation. Publication and actual checks are recorded in the deployment guide.
 
-**New runtime requirement, 2 November 2026:** ordinary-browser data access without an extension or project backend/collector. A [verified browser-only prototype and source matrix](docs/browser-only-feasibility-2026-11-02.md) now demonstrate direct reports, satellite, radar and an alternative municipal camera. The main briefing still uses the previous snapshot path; it has not yet been converted. Blocked products and reduced source coverage remain explicit migration dependencies.
+**Runtime migration, 2 November 2026:** the verified [browser-only source prototype and matrix](docs/browser-only-feasibility-2026-11-02.md) now underpin the main workspace. Source parity is incomplete: SWIM lacks some stations and initial twelve-hour history, its SIGMET inventory is not complete, and several original products cannot be read directly. These are visible dependencies, not completed capabilities.
 
 ## Start here
 
@@ -37,7 +37,7 @@ Research was checked on **1 November 2026**. Feed capabilities, access condition
 
 Read [AGENTS.md](AGENTS.md) before changing the repository and [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 
-Use Node.js 24 and Python 3. The browser application and build need no npm dependency installation. Native cloud ingestion has separate pinned Python decoder requirements, covered in the deployment guide. Run from the repository root:
+Use Node.js 24 and Python 3. The browser application and build need no npm dependency installation. No provider downloads or native decoder installation are needed to build the site. Run from the repository root:
 
 ```sh
 npm test
@@ -47,12 +47,12 @@ npm run dev
 git diff --check
 ```
 
-`npm run dev` serves the browser application locally. `npm run build` copies public assets from `web/` to ignored `dist/`; it does not publish them. The Python documentation checker validates local links without contacting weather providers. The [deployment guide](docs/deployment.md) covers report refresh, Pages setup and verification.
+`npm run dev` serves the browser application locally. `npm run build` copies public assets from `web/` to ignored `dist/`; it does not publish them. The Python documentation checker validates local links without contacting weather providers. The [deployment guide](docs/deployment.md) covers direct refresh, code-only Pages deployment and verification.
 
 ## Data and licensing
 
-The build uses an Open-Meteo forecast adapter for ČHMÚ ALADIN, DWD ICON and ECMWF, collected AviationWeather.gov reports, ČHMÚ observed radar and a native DWD ICON-D2 ceiling crop. Sources retain their own identities, validity periods and reuse conditions. Model forecasts, measurements and calculated astronomy are different products. The v0.2 release passed 105 local tests and published successfully; local browser checks covered desktop/390 px layouts, retained inspection time, radar history and frozen report preview. Pilot usability and forecast skill remain unvalidated; file-download completion has not been captured by the browser check. No provider uptime guarantee is implied.
+The browser uses explicit Open-Meteo forecast models, direct ČHMÚ SWIM TAC reports, EUMETSAT WMS imagery, provider-hosted radar PNGs and ČÚZK terrain. Astronomy is calculated locally. Reports retain raw text, observation/issue/validity dates and original issuing authority. The browser retains bounded genuine report history with original times and explicit unconfirmed cache state on reopening. Provider identity, transport success, geographic coverage and product validity remain separate.
 
-Open-Meteo's free hosted API is used for this evaluation version under its applicable terms. Professional/commercial production use needs appropriate provider access. Any private API key requires a server-side adapter or ingestion service; it cannot be kept secret on GitHub Pages.
+Open-Meteo's free hosted API is used for this evaluation version under its applicable terms. Professional/commercial production use needs appropriate provider access. A private API key cannot be kept secret on GitHub Pages. Selecting a service that requires one needs a separately authorized access/architecture decision.
 
 The [source catalogue](docs/data/sources.md) records access and licensing constraints. Collected reports preserve source attribution and timestamps; external imagery retains its source and rights. A project code and documentation licence has not been selected; public repository access does not itself grant a reuse licence.
