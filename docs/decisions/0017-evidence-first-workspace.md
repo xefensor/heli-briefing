@@ -2,7 +2,7 @@
 
 Date: 2026-11-02
 
-Status: implemented for the v0.8 evaluation. Actual checks and publication are recorded in [deployment](../deployment.md); intended-pilot acceptance remains open.
+Status: published as the v0.8 evaluation in final application commit `6fe655ac640f3814c6727affc56af43b64ad14af`. Actual checks and publication are recorded in [deployment](../deployment.md); intended-pilot acceptance remains open.
 
 ## Context
 

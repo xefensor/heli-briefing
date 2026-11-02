@@ -1,6 +1,6 @@
 # Weather workspace UI/UX review · 2 November 2026
 
-Status: implemented as the v0.8 evaluation with the local deterministic/browser evidence below. Publication is tracked in [deployment](deployment.md); intended-pilot acceptance remains unverified.
+Status: published as the v0.8 evaluation, with the deterministic/local/public browser evidence below. Final application commit `6fe655ac640f3814c6727affc56af43b64ad14af` and publication are recorded in [deployment](deployment.md); intended-pilot acceptance remains unverified.
 
 [Design brief](design.md) · [Product brief](product-brief.md) · [Previous review](design-review-2026-11-01.md) · [Deployment evidence](deployment.md)
 
@@ -95,6 +95,8 @@ Actual local checks on 2 November:
 - Full frozen output retained **16 SVGs**, both independent ceiling regional maps and visible model comparison readings. Desktop content/scroll width matched at **1287 px**; phone output matched at **330 px**. It loaded **no remote images or iframes**. Compact output retained original reports and matched 1287 px. These are rendered preview checks, not completed native file delivery or PDF printing.
 
 No repeated local-file selection was attempted after the earlier declined browser approval. This iteration preserves the existing local-map parser and manual/unverified distinctions; it does not turn the prior local import check into public-site acceptance. No actual pilot, screen-reader, physical touch or OS reduced-motion acceptance is claimed. Public commit/build evidence belongs in [deployment](deployment.md).
+
+Final public HTTPS verification matched asset `d65c8915772ac2d3e9fe` and the final application commit, with eight plots, nine report rows, exact comparison readings, decoded warning imagery and both ceiling references. Public frozen output retained 16 SVGs and no remote image/iframe requests; final preview closure returned focus to its invoking header action. The deployment guide records the workflow and cache-aware build identity checks.
 
 ## Whole-project completion boundary
 
