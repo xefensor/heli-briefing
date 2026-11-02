@@ -4,6 +4,7 @@ Start with the product brief, then follow the evidence and implementation constr
 
 | Document | Purpose |
 | --- | --- |
+| [Forecast failure recovery](decisions/0018-forecast-failure-recovery.md) | Same-model transient recovery, provider cooldowns, independent main/comparison rendering and actual source-check limits. |
 | [Evidence-first workspace review](design-review-2026-11-02.md) | Substantial three-study UI/UX audit, information hierarchy, readable source/comparison/report design and verification boundaries. |
 | [Workspace decision](decisions/0017-evidence-first-workspace.md) | Current continuous reading order, interaction rules and preserved data/source scope. |
 | [Further browser recovery](decisions/0016-further-browser-source-recovery.md) | Direct SIGMET/AIREP map, local original low-cloud files and separately processed AGL point/region evidence. |

@@ -125,6 +125,85 @@ test('per-product errors retain success time and use bounded backoff including R
   assert.equal(h.monitor.getState().products.forecast.error, null);
 });
 
+test('a cancelled forecast never becomes a success while aviation succeeds and a bounded retry is scheduled', async () => {
+  let cancelled = true;
+  const requests = [];
+  const h = harness({ onRefresh: async request => {
+    requests.push(request);
+    return { forecast: cancelled ? { cancelled: true } : { ok: true }, aviation: { ok: true } };
+  } });
+  h.monitor.start();
+  await h.monitor.refresh();
+  let state = h.monitor.getState();
+  assert.equal(state.products.forecast.succeededAt, null);
+  assert.equal(state.products.forecast.failures, 0);
+  assert.equal(state.products.forecast.error, null);
+  assert.equal(state.products.forecast.nextAt, 60000);
+  assert.equal(state.products.aviation.succeededAt, 0);
+  assert.equal(state.products.aviation.nextAt, 5 * 60000);
+  await h.advance(59000);
+  assert.equal(requests.length, 1);
+  await h.advance(1000);
+  state = h.monitor.getState();
+  assert.equal(requests.length, 2);
+  assert.equal(requests[1].forecast, true);
+  assert.equal(requests[1].aviation, false);
+  assert.equal(state.products.forecast.succeededAt, null);
+  assert.equal(state.products.forecast.nextAt, 120000);
+  assert.equal(state.products.aviation.succeededAt, 0);
+  cancelled = false;
+  await h.advance(60000);
+  state = h.monitor.getState();
+  assert.equal(state.products.forecast.succeededAt, 120000);
+  assert.equal(state.products.forecast.nextAt, 12 * 60000);
+  assert.equal(h.timers.size, 1);
+});
+
+test('cancellation preserves a prior forecast success, error and later Retry-After deadline', async () => {
+  let phase = 'success';
+  const h = harness({ onRefresh: async () => ({
+    forecast: phase === 'success' ? { ok: true } : phase === 'failure'
+      ? { ok: false, error: 'HTTP 429', retryAt: 30 * 60000 } : { cancelled: true },
+    aviation: { ok: true },
+  }) });
+  h.monitor.start();
+  await h.monitor.refresh();
+  phase = 'failure';
+  await h.advance(60000);
+  await h.monitor.refresh();
+  const failed = h.monitor.getState().products.forecast;
+  phase = 'cancelled';
+  await h.advance(60000);
+  await h.monitor.refresh();
+  const state = h.monitor.getState();
+  assert.equal(state.products.forecast.succeededAt, 0);
+  assert.equal(state.products.forecast.attemptedAt, 120000);
+  assert.equal(state.products.forecast.failures, failed.failures);
+  assert.equal(state.products.forecast.error, 'HTTP 429');
+  assert.equal(state.products.forecast.nextAt, 30 * 60000);
+  assert.equal(state.products.aviation.succeededAt, 120000);
+  assert.equal(state.products.aviation.error, null);
+});
+
+test('cancellation cannot shorten a later accumulated failure-backoff deadline', async () => {
+  let cancelled = false;
+  const h = harness({ onRefresh: async () => ({ forecast: cancelled ? { cancelled: true } : { ok: false, error: 'Source offline' }, aviation: true }) });
+  h.monitor.start();
+  await h.monitor.refresh();
+  await h.advance(1000); await h.monitor.refresh();
+  await h.advance(1000); await h.monitor.refresh();
+  const failed = h.monitor.getState().products.forecast;
+  assert.equal(failed.failures, 3);
+  assert.equal(failed.nextAt, 242000);
+  cancelled = true;
+  await h.advance(1000); await h.monitor.refresh();
+  const forecast = h.monitor.getState().products.forecast;
+  assert.equal(forecast.failures, 3);
+  assert.equal(forecast.error, 'Source offline');
+  assert.equal(forecast.succeededAt, null);
+  assert.equal(forecast.nextAt, failed.nextAt);
+});
+
 test('repeated failures back off without a tight loop and cap at product interval', async () => {
   const requests = [];
   const h = harness({ onRefresh: async (request) => { requests.push(request); throw new Error('offline source'); } });

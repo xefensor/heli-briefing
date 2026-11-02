@@ -13,6 +13,8 @@
  * onRefresh({forecast, aviation, nowMs, reason, signal}) returns a Promise.
  * A fulfilled callback is successful unless it returns false, or a per-product
  * false / {ok:false,error,retryAt}. An omitted product result is successful.
+ * A {cancelled:true} product retains prior success/error state and gets a short
+ * retry without shortening an existing failure or provider-cooldown deadline.
  * retryAt is an absolute millisecond instant, e.g. a provider Retry-After. It
  * can delay a retry beyond the normal backoff; it is never shortened here.
  *
@@ -143,7 +145,10 @@ export function createMonitor({
         const outcome = result === false ? false : result?.[name];
         const ok = !failure && outcome !== false && outcome?.ok !== false;
         const product = products[name];
-        if (ok) {
+        if (outcome?.cancelled === true) {
+          product.nextAt = Math.max(finishedAt + intervals.retry,
+            product.failures > 0 && Number.isFinite(product.nextAt) ? product.nextAt : -Infinity);
+        } else if (ok) {
           product.succeededAt = finishedAt;
           product.failures = 0;
           product.error = null;

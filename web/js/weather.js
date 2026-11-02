@@ -194,15 +194,54 @@ function withTransport(value, now, status, error = null) {
   return result;
 }
 
+const TRANSIENT_HTTP = new Set([502, 503, 504]);
+const FAILURE_PAUSE_MS = 60000;
+function retryTime(header, at) {
+  if (typeof header !== 'string' || !header.trim()) return null;
+  const value = /^\d+$/.test(header) ? at + Number(header) * 1000 : Date.parse(header);
+  return Number.isFinite(value) && Math.abs(value) <= 8640000000000000 ? new Date(value).toISOString() : null;
+}
+function waitForForecastRetry(milliseconds, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) { reject(abortError(signal.reason)); return; }
+    const abort = () => { clearTimeout(timer); reject(abortError(signal.reason)); };
+    const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, milliseconds);
+    signal.addEventListener('abort', abort, { once:true });
+  });
+}
+
 /** Each caller owns its request/abort. Only the latest same-key request may cache. */
 export function createForecastClient({
   fetchImpl = (...args) => globalThis.fetch(...args),
   storage = undefined,
   now = () => Date.now(),
   timeoutMs = 18000,
+  retryDelayMs = 1000,
+  waitForRetry = waitForForecastRetry,
 } = {}) {
+  if (!Number.isFinite(retryDelayMs) || retryDelayMs < 0 || retryDelayMs > 10000) throw new RangeError('Invalid forecast retry delay');
   const memory = new Map();
   const sequence = new Map();
+  const modelPauses = new Map();
+  let providerPause = null;
+  function pauseFor(model) {
+    const pauses = [providerPause, modelPauses.get(model)].filter(value => value && value.until > now());
+    return pauses.sort((a,b) => b.until - a.until)[0]?.error || null;
+  }
+  function recordFailure(model, error) {
+    if (error.status !== 429 && !TRANSIENT_HTTP.has(error.status) && !['network','timeout'].includes(error.code)) return;
+    const advertised = Date.parse(error.retryAt);
+    const until = Number.isFinite(advertised) && advertised > now() ? advertised : now() + FAILURE_PAUSE_MS;
+    const deadline = error.status === 429 ? Math.max(now() + FAILURE_PAUSE_MS, until) : until;
+    error.retryAt = new Date(deadline).toISOString();
+    const pause = {until:deadline,error};
+    if (error.status === 429) {
+      if (!providerPause || providerPause.until < deadline) providerPause = pause;
+    } else {
+      const previous = modelPauses.get(model);
+      if (!previous || previous.until < deadline) modelPauses.set(model,pause);
+    }
+  }
   function session() {
     if (storage !== undefined) return storage;
     try { return globalThis.sessionStorage; } catch { return null; }
@@ -216,7 +255,7 @@ export function createForecastClient({
     }
     if (item?.version !== CACHE_VERSION || item?.data?.model !== options.model ||
         item?.data?.requestedLocation?.lat !== options.lat || item?.data?.requestedLocation?.lon !== options.lon ||
-        !Array.isArray(item.data.times) || !item.data.times.length ||
+        !Array.isArray(item.data.times) || !item.data.times.length || !Number.isFinite(Date.parse(item.data.validFrom)) ||
         !Number.isFinite(Date.parse(item.data.retrievedAt))) return null;
     const age = now() - Date.parse(item.data.retrievedAt);
     // A future-dated cache is not fresh; it can indicate a changed device clock.
@@ -243,12 +282,17 @@ export function createForecastClient({
       }
     } catch { /* Storage denial/quota must not fail a valid provider response. */ }
   }
-  async function fetchForecast({ lat, lon, model, signal, force = false }) {
+  async function fetchForecast({ lat, lon, model, signal, force = false, onRetry = null }) {
     coordinates(lat, lon);
     modelDefinition(model);
     if (signal?.aborted) throw abortError(signal.reason);
     const key = cacheKey(lat, lon, model);
     const cached = read(key, { lat, lon, model });
+    const paused = pauseFor(model);
+    if (paused) {
+      if (cached) return withTransport(cached.data, now(), 'stale', paused);
+      throw paused;
+    }
     if (!force && cached && now() - Date.parse(cached.data.retrievedAt) < FRESH_MS) {
       return withTransport(cached.data, now(), 'cached');
     }
@@ -262,28 +306,48 @@ export function createForecastClient({
       timedOut = true;
       controller.abort();
     }, timeoutMs);
+    const deadline = now() + timeoutMs;
     try {
-      const response = await fetchImpl(forecastUrl({ lat, lon, model }), {
-        signal: controller.signal, headers: { Accept: 'application/json' }, cache: 'no-store',
-      });
-      if (!response.ok) {
-        const retry = response.headers?.get('Retry-After');
-        const retryAt = retry && /^\d+$/.test(retry) ? new Date(now() + Number(retry) * 1000).toISOString()
-          : retry && Number.isFinite(Date.parse(retry)) ? new Date(retry).toISOString() : null;
-        throw new ForecastError(response.status === 429 ? 'Zdroj omezuje počet požadavků. Zkuste aktualizaci později.' : `Předpověď není dostupná (HTTP ${response.status}).`, {
-          code: response.status === 429 ? 'rate-limit' : 'http', status: response.status, retryAt,
-        });
+      for (let attempt=1; attempt<=2; attempt++) {
+        try {
+          if (controller.signal.aborted) throw abortError(controller.signal.reason);
+          const pausedAttempt = pauseFor(model);
+          if (pausedAttempt) throw pausedAttempt;
+          const response = await fetchImpl(forecastUrl({ lat, lon, model }), {
+            signal: controller.signal, headers: { Accept: 'application/json' }, cache: 'no-store',
+          });
+          if (!response.ok) {
+            const retryAt = retryTime(response.headers?.get('Retry-After'),now());
+            throw new ForecastError(response.status === 429 ? 'Zdroj omezuje počet požadavků. Další obnova počká podle jeho pokynu.' : TRANSIENT_HTTP.has(response.status) ? `Zdroj předpovědi je dočasně nedostupný (HTTP ${response.status}).` : `Předpověď není dostupná (HTTP ${response.status}).`, {
+              code: response.status === 429 ? 'rate-limit' : 'http', status: response.status, retryAt,
+            });
+          }
+          const payload = await response.json();
+          if (signal?.aborted) throw abortError(signal.reason);
+          if (timedOut) throw new ForecastError('Zdroj neodpověděl včas.', { code:'timeout' });
+          const result = normalizeForecast(payload, { lat, lon, model, retrievedAt:new Date(now()).toISOString() });
+          if (!result.validFrom) throw new ForecastError('Zdroj neposkytl žádné použitelné hodinové hodnoty.', {code:'no-data'});
+          if (sequence.get(key) === request) save(key,result);
+          // An already-running success must not erase a newer pause reported
+          // by another point using this model. Expired pauses are ignored.
+          return result;
+        } catch (error) {
+          if (signal?.aborted) throw abortError(signal.reason);
+          if (timedOut || controller.signal.aborted) throw error;
+          const failure = error instanceof ForecastError ? error : new ForecastError(error instanceof SyntaxError ? 'Zdroj vrátil neplatná data předpovědi.' : 'Předpověď se nepodařilo načíst. Ověř připojení a dostupnost zdroje.', {code:error instanceof SyntaxError ? 'format' : 'network'});
+          const transient = TRANSIENT_HTTP.has(failure.status) || failure.code === 'network';
+          // Never retry quota responses, invalid data, or an advertised later deadline.
+          if (attempt === 2 || !transient || Date.parse(failure.retryAt) > now() || now()+retryDelayMs >= deadline) throw failure;
+          try { onRetry?.({attempt:2,maxAttempts:2,delayMs:retryDelayMs,error:failure}); } catch { /* UI progress cannot invalidate a provider request. */ }
+          await waitForRetry(retryDelayMs,controller.signal);
+        }
       }
-      const payload = await response.json();
-      if (signal?.aborted) throw abortError(signal.reason);
-      if (timedOut) throw new ForecastError('Zdroj neodpověděl včas.', { code: 'timeout' });
-      const result = normalizeForecast(payload, { lat, lon, model, retrievedAt: new Date(now()).toISOString() });
-      if (sequence.get(key) === request) save(key, result);
-      return result;
+      throw new ForecastError('Předpověď není dostupná.',{code:'network'});
     } catch (error) {
       if (signal?.aborted) throw abortError(signal.reason);
       const failure = timedOut ? new ForecastError('Zdroj neodpověděl včas.', { code: 'timeout' })
         : error instanceof ForecastError ? error : new ForecastError('Předpověď se nepodařilo načíst. Zkontrolujte připojení nebo dostupnost zdroje.', { code: 'network' });
+      if (failure.status === 429 || sequence.get(key) === request) recordFailure(model,failure);
       if (cached) return withTransport(cached.data, now(), 'stale', failure);
       throw failure;
     } finally {

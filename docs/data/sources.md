@@ -189,3 +189,8 @@ Native ICON-EU CEILING, CLAT, CLON and HSURF are fetched directly from the publi
 ClearToFly’s public catalogue advertises browser-readable Float32/Deflate GeoTIFFs. Its actual dated viewer labels distinguish RUC, D2 and EU runs from the separate validity-axis reference and catalogue publication. These processed raster values remain ft AGL, with the provider’s undocumented terrain/conversion and additional COG reuse terms explicitly unknown. Real raster decoding matched all 918,750 pixels against Pillow; local browser sampling separately showed RUC and D2. It does not restore direct native D2 MSL access.
 
 The Hosín operator’s pilot page links a local Weathercloud station. The website preserves that external link as corroboration, not a METAR/TAF. Weathercloud’s FAQ provides no read API and its terms restrict third-party extraction/integration without permission; no such adapter or frame is introduced. Exact URLs and dates are in the decision.
+
+
+## Forecast availability recheck · 2 November 2026
+
+[Decision 0018](../decisions/0018-forecast-failure-recovery.md) records the reported ALADIN 503, exact-query HTTP 200 samples for all three models, the eleven null ICON-D2 trailing hours and the later actual browser 429 limitation. The three main models share Open-Meteo transport; selecting a different model does not establish independent provider failover. Query fields, model IDs, source identities and access terms were not changed. No provider-wide green status was established from its dynamic status-page shell.

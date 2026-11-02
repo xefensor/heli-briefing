@@ -5,6 +5,7 @@ import { renderAstronomyChart } from './astronomy-view.js';
 import {renderProfile, profileAt} from './profile.js';
 import {renderSatellite, satelliteState} from './satellite.js';
 import { MODELS, fetchForecast, nearestTimeIndex } from './weather.js';
+import { settleForecastPair, forecastPairOutcome } from './forecast-loading.js';
 import { renderChart, escapeHtml as esc } from './charts.js';
 import { getAstronomy } from './astro.js';
 import { formatNumber as num, formatTime as clock, ageLabel, reportState, toDateTimeInput, fromDateTimeInput, parseSharedState, sharedSearch, formatCoordinates, haversineKm } from './briefing.js';
@@ -68,6 +69,9 @@ let lowCloudPath = null;
 let preparing = false;
 let loadError = null;
 let loading = false;
+let comparisonLoading = false;
+let forecastProgress = '', compareProgress = '';
+let forecastRetryAt = 0, compareRetryAt = 0;
 let compareError = null;
 let aviationRequestId = 0;
 let aviationLoadError = null;
@@ -212,10 +216,10 @@ function renderStatus() {
   let text;
   if (loading) {
     banner.dataset.state = 'loading';
-    text = `Načítám ${definition().label} pro ${state.name}…`;
+    text = forecastProgress || `Načítám ${definition().label} pro ${state.name}…`;
   } else if (loadError) {
     banner.dataset.state = 'error';
-    text = `${definition().label}: ${loadError}. Zkus Obnovit nebo zvol jiný model.`;
+    text = `${definition().label}: ${loadError.replace(/[.\s]+$/,'')}. ${forecast?.transport?.stale ? `Zachovány dříve načtené hodnoty z ${fullTime(forecast.retrievedAt)}.` : Date.now() < forecastRetryAt ? 'Další pokus je dočasně pozastaven podle omezení zdroje.' : 'Zkus načíst předpověď znovu.'}`;
   } else if (!forecast?.validFrom) {
     banner.dataset.state = 'error';
     text = 'Zdroj odpověděl, ale pro toto místo a období neposkytl hodnoty. Zvol jiné místo nebo model.';
@@ -231,6 +235,10 @@ function renderStatus() {
     text = `${definition().label} · ${forecast.resolution} · hodinový vzorek ${fullTime(sampleTime)}`;
   }
   banner.textContent = text;
+  const retry = $('forecast-retry');
+  retry.hidden = loading || !(loadError || forecast?.transport?.stale || !forecast?.validFrom);
+  retry.disabled = loading || Date.now() < forecastRetryAt;
+  $('forecast-retry-note').textContent = !retry.hidden && Date.now() < forecastRetryAt ? `Další pokus možný po ${fullTime(new Date(forecastRetryAt).toISOString())}.` : '';
   if (!forecast) {
     $('forecast-meta').textContent = loading ? 'Čekám na odpověď zdroje…' : 'Předpověď není k dispozici. Regionální zprávy a astronomické výpočty zůstávají dostupné.';
     return;
@@ -264,7 +272,7 @@ function renderCharts() {
   const times = chartTimes();
   if (!forecast) {
     $('charts').innerHTML = CHARTS.map((chart) => `<article class="chart-card"><h3 class="chart-title">${chart.title}</h3><div class="empty-state">${loading ? 'Načítání…' : 'Zdroj není dostupný'}</div></article>`).join('');
-    $('comparison').hidden = true;
+    renderComparison();
     return;
   }
   $('charts').innerHTML = CHARTS.map((chart) => {
@@ -279,10 +287,17 @@ function renderCharts() {
     return `<article class="chart-card" data-chart-card="${chart.id}"><div class="chart-reading"><div class="chart-header"><h3 class="chart-title">${chart.title}</h3></div><div class="chart-value">${comparison ? `<span class="chart-model-label">${esc(forecast.label)} · plná čára</span>` : ''}${esc(selectedValues)}</div>${comparison ? `<div class="chart-value-comparison"><span class="chart-model-label">${esc(comparison.label)} · přerušovaná</span>${esc(comparedValues)}</div>` : ''}${sampleIndex < 0 ? `<p class="chart-sample">${esc(sampleLabel)}</p>` : ''}<p class="chart-hover-value" hidden></p><p class="chart-note">${chart.note}</p>${related}</div><div class="chart-surface" tabindex="0" role="group" aria-label="${esc(chart.title)}. ${esc(sampleLabel)}. Šipkami změň hodinu.">${renderChart({ times, series, selectedTime: state.time, timezone: state.timezone, width: plotWidth('charts', innerWidth >= 1250 ? 202 : 32), height: 180, yLabel: chart.unit, min: chart.min, max: chart.max })}</div><div class="chart-legend">${series.map((s) => `<span><i class="${s.dash ? 'dashed' : ''}" style="background:${s.color};color:${s.color}"></i>${esc(s.label)}${s.dash ? ' · přerušovaně' : ''}</span>`).join('')}</div></article>`;
   }).join('');
   if(focusedChart) $('charts').querySelector(`[data-chart-card="${focusedChart}"] .chart-surface`)?.focus({preventScroll:true});
+  renderComparison();
+}
+
+function renderComparison() {
   $('comparison').hidden = !state.compare;
-  if (state.compare) $('comparison').innerHTML = comparison
-    ? `<div class="comparison-item"><i aria-hidden="true"></i><strong>${esc(forecast.label)}</strong> plná čára · načteno ${esc(fullTime(forecast.retrievedAt))}</div><div class="comparison-item"><i class="dashed" aria-hidden="true"></i><strong>${esc(comparison.label)}</strong> přerušovaná čára · načteno ${esc(fullTime(comparison.retrievedAt))}${comparison.transport.stale ? ' · STARŠÍ CACHE' : ''}</div>`
-    : `<p>${esc(compareError ? `Porovnání není dostupné: ${compareError}` : 'Načítání druhého modelu…')}</p>`;
+  if (!state.compare) return;
+  const label = MODELS.find(model => model.id === state.compare)?.label || state.compare;
+  const failure = compareError || comparison?.transport?.error?.message;
+  const waiting = Date.now() < compareRetryAt;
+  const retry = failure ? `<button type="button" class="button" data-comparison-retry${waiting || comparisonLoading ? ' disabled' : ''}>Znovu načíst porovnání</button>${waiting ? `<span>Další pokus po ${esc(fullTime(new Date(compareRetryAt).toISOString()))}.</span>` : ''}` : '';
+  $('comparison').innerHTML = `<div class="comparison-item"><i aria-hidden="true"></i><strong>${esc(forecast?.label || definition().label)}</strong> ${forecast ? `plná čára · načteno ${esc(fullTime(forecast.retrievedAt))}` : loading ? 'načítání…' : 'předpověď nedostupná'}</div><div class="comparison-item"><i class="dashed" aria-hidden="true"></i><strong>${esc(label)}</strong> ${comparison ? `přerušovaná čára · načteno ${esc(fullTime(comparison.retrievedAt))}${comparison.transport.stale ? ' · STARŠÍ DATA' : ''}` : comparisonLoading ? 'načítání…' : 'předpověď nedostupná'}</div>${comparisonLoading ? `<p class="comparison-progress">${esc(compareProgress || 'Obnovuji porovnávací model…')}</p>` : ''}${failure ? `<div class="comparison-failure"><p>${esc(failure)}</p>${retry}</div>` : ''}`;
 }
 
 function renderAstronomy() {
@@ -502,10 +517,10 @@ function renderRadar() {
 }
 
 function updateOutputAvailability() {
-  const busy = preparing || loading || aviationLoading || cloudLoading || processedCeiling.busy() || imagery.busy();
+  const busy = preparing || loading || comparisonLoading || aviationLoading || cloudLoading || processedCeiling.busy() || imagery.busy();
   for (const id of ['prepare-output','save-briefing']) {
     $(id).disabled = busy;
-    $(id).title = aviationLoading ? 'Čekám na přímé načtení leteckých zpráv.' : loading ? 'Čekám na předpověď.' : 'Otevřít zachycený briefing';
+    $(id).title = aviationLoading ? 'Čekám na přímé načtení leteckých zpráv.' : loading ? 'Čekám na předpověď.' : comparisonLoading ? 'Čekám na porovnávací model.' : 'Otevřít zachycený briefing';
   }
 }
 
@@ -565,36 +580,47 @@ async function loadAviation(force = false, outerSignal = null) {
   } finally {if(id===aviationRequestId){aviationLoading=false;updateOutputAvailability();renderReportFreshness();}}
 }
 
-async function loadForecast(force = false, outerSignal = null) {
+async function loadForecast(force = false, outerSignal = null, comparisonOnly = false) {
   const id = ++requestId;
   if (controller) controller.abort();
   controller = new AbortController();
   const signal = outerSignal ? AbortSignal.any([controller.signal, outerSignal]) : controller.signal;
-  const keep = forecast?.model === state.model && forecast?.requestedLocation?.lat === state.lat && forecast?.requestedLocation?.lon === state.lon && Date.now() - Date.parse(forecast.retrievedAt) < 6 * 3600000;
-  if (!keep) forecast = null;
-  if (!keep || comparison?.model !== state.compare) comparison = null;
-  loadError = null;
-  compareError = null;
-  loading = true;
-  updateControls();
-  renderSummary();
-  renderStatus();
-  if (!keep) renderCharts();
-  renderVerticalProfile();
-  const params = { lat: state.lat, lon: state.lon, signal, force };
-  const [main, other] = await Promise.allSettled([
-    fetchForecast({ ...params, model: state.model }),
-    state.compare ? fetchForecast({ ...params, model: state.compare }) : Promise.resolve(null),
-  ]);
-  if (id !== requestId) return { ok: true };
-  loading = false;
-  if (main.status === 'fulfilled') forecast = main.value;
-  else if (main.reason?.name !== 'AbortError') loadError = main.reason?.message || 'Zdroj není dostupný';
-  if (other.status === 'fulfilled') comparison = other.value;
-  else if (other.reason?.name !== 'AbortError') compareError = other.reason?.message || 'Zdroj není dostupný';
-  renderContext();
-  const failure = main.status === 'rejected' ? main.reason : forecast?.transport?.error;
-  return { ok: Boolean(forecast && !loadError && !forecast.transport.stale), error: failure?.message || loadError, retryAt: failure?.retryAt ? Date.parse(failure.retryAt) : undefined };
+  const selection = {...state};
+  const matches = (data,model) => { const age=Date.now()-Date.parse(data?.retrievedAt); return data?.model === model && data?.requestedLocation?.lat === selection.lat && data?.requestedLocation?.lon === selection.lon && age >= 0 && age < 6 * 3600000; };
+  if (!matches(forecast,selection.model)) forecast = null;
+  if (!matches(comparison,selection.compare)) comparison = null;
+  loadError = null; compareError = null;
+  forecastProgress = ''; compareProgress = '';
+  loading = true; comparisonLoading = Boolean(selection.compare);
+  updateControls(); renderSummary(); renderStatus(); renderCharts(); renderVerticalProfile();
+  const params = {lat:selection.lat,lon:selection.lon,signal};
+  const progress = kind => ({error}) => {
+    if (id !== requestId || signal.aborted) return;
+    const note = `${error.status ? `Zdroj odpověděl HTTP ${error.status}` : 'Spojení se zdrojem selhalo'}; automaticky opakuji požadavek jednou…`;
+    if (kind === 'main') { forecastProgress = note; renderStatus(); }
+    else { compareProgress = note; renderComparison(); }
+  };
+  const retain = (data,error) => data ? {...data,transport:{...data.transport,status:'stale',cached:true,stale:true,error:{message:error?.message || 'Obnova nebyla potvrzena.',code:error?.code || 'network',status:error?.status || null,retryAt:error?.retryAt || null}}} : null;
+  const deadline = outcome => Date.parse(outcome.status === 'rejected' ? outcome.reason?.retryAt : outcome.value?.transport?.error?.retryAt) || 0;
+  const results = await settleForecastPair({
+    main: () => fetchForecast({...params,model:selection.model,force,onRetry:progress('main')}),
+    comparison: selection.compare ? () => fetchForecast({...params,model:selection.compare,force:force || comparisonOnly,onRetry:progress('comparison')}) : null,
+    onSettled: (kind,outcome) => {
+      if (id !== requestId) return;
+      if (kind === 'main') {
+        loading = false; forecastProgress = ''; forecastRetryAt = deadline(outcome);
+        if (outcome.status === 'fulfilled') forecast = outcome.value;
+        else if (outcome.reason?.name !== 'AbortError') { loadError = outcome.reason?.message || 'Zdroj není dostupný.'; forecast = retain(forecast,outcome.reason); }
+      } else {
+        comparisonLoading = false; compareProgress = ''; compareRetryAt = deadline(outcome);
+        if (outcome.status === 'fulfilled') comparison = outcome.value;
+        else if (outcome.reason?.name !== 'AbortError') { compareError = outcome.reason?.message || 'Porovnání není dostupné.'; comparison = retain(comparison,outcome.reason); }
+      }
+      renderContext();
+    },
+  });
+  if (id !== requestId || signal.aborted) return {cancelled:true};
+  return forecastPairOutcome(results,{comparisonRequested:Boolean(selection.compare)});
 }
 
 const NATIVE_CEILING_SOURCE = 'https://source.coop/dynamical/dwd-icon-grib/icon-eu/icosahedral';
@@ -751,7 +777,7 @@ async function saveCurrentBriefing() {
   if (preparing) return;
   const returnFocus = document.activeElement;
   stopRadar();
-  if (loading || aviationLoading || cloudLoading || processedCeiling.busy() || imagery.busy()) { $('archive-status').textContent = 'Předpověď nebo letecké zdroje se právě obnovují. Počkej na dokončení a potom připrav briefing.'; return; }
+  if (loading || comparisonLoading || aviationLoading || cloudLoading || processedCeiling.busy() || imagery.busy()) { $('archive-status').textContent = 'Předpověď nebo letecké zdroje se právě obnovují. Počkej na dokončení a potom připrav briefing.'; return; }
   const radar = radarProduct || aviation?.radar;
   const frame = radarFrames()[radarIndex];
   const imageMatches = radar?.imageFetchStatus === 'ok' && radar.imageObservedAt === (frame?.observedAt || radar.observedAt) && radar.imageUrl === (frame?.url || radar.url);
@@ -810,6 +836,7 @@ function tickFreshness(nowMs, status) {
   });
   if (!liveMode || document.activeElement === $('inspection-time')) renderSatellitePanel();
   renderReportFreshness();
+  renderStatus(); renderComparison();
   if (aviation) { renderSigmets(); renderRadar(); }
   const minutes = status.nextRefreshAt === null ? null : Math.max(0, Math.ceil((status.nextRefreshAt - nowMs) / 60000));
   $('freshness-meta').textContent = !status.online ? 'Offline · automatické požadavky jsou pozastavené. Zobrazená data si uchovávají původní časy.' : !status.visible ? 'Automatická kontrola se obnoví po návratu na stránku.' : status.refreshing ? 'Obnovuji data přímo u poskytovatelů…' : `Přímé zdroje · předpověď po 10 min · pozorování po 5 min · další kontrola ${minutes === 0 ? 'nyní' : `za ${minutes ?? '—'} min`}${status.products.forecast.error || status.products.aviation.error ? ' · poslední obnova měla chybu; časy zdrojů zůstávají původní' : ''}.`;
@@ -834,7 +861,7 @@ function selectTime(iso, follow = false) {
   state.time = new Date(iso).toISOString();
   renderContext();
   const selectedCard=activeChart?$('charts').querySelector(`[data-chart-card="${activeChart}"]`):null;
-  $('selection-announcement').textContent = selectedCard ? `${selectedCard.querySelector('.chart-title').textContent}: ${selectedCard.querySelector('.chart-value').textContent}. ${selectedCard.querySelector('.chart-sample').textContent}.` : `${definition().label}, čas přehledu ${fullTime(state.time)}, ${follow?'živě':'připnuto'}.`;
+  $('selection-announcement').textContent = selectedCard ? `${selectedCard.querySelector('.chart-title').textContent}: ${selectedCard.querySelector('.chart-value').textContent}. ${selectedCard.querySelector('.chart-sample')?.textContent || $('summary-context').textContent}.` : `${definition().label}, čas přehledu ${fullTime(state.time)}, ${follow?'živě':'připnuto'}.`;
 }
 
 function choosePlace(lat, lon, name, place = 'custom') {
@@ -880,6 +907,8 @@ $('horizon').addEventListener('click', (event) => { const hours = Number(event.t
 $('compare').addEventListener('change', (event) => { state.compare = event.target.value; loadForecast(); });
 $('zone').addEventListener('click', () => { state.timezone = state.timezone === 'UTC' ? 'Europe/Prague' : 'UTC'; renderContext(); if (aviation) { renderReports(); renderHistory(); } });
 $('refresh').addEventListener('click', () => { void monitor.refresh('manual'); });
+$('forecast-retry').addEventListener('click', () => { if (!loading && Date.now() >= forecastRetryAt) { void loadForecast(true); $('weather-status').tabIndex=-1; $('weather-status').focus({preventScroll:true}); } });
+$('comparison').addEventListener('click', event => { if (event.target.closest('[data-comparison-retry]') && !comparisonLoading && Date.now() >= compareRetryAt) { void loadForecast(false,null,true); $('comparison').focus({preventScroll:true}); } });
 function syncThemeControl(){
  const dark=document.documentElement.dataset.theme==='dark';
  $('theme').setAttribute('aria-pressed',String(dark));
@@ -1008,7 +1037,7 @@ window.addEventListener('focus', () => { scheduleNativeClouds(); void monitor.wa
 window.addEventListener('online', () => { scheduleNativeClouds(); void monitor.wake('online'); });
 window.addEventListener('offline', () => { clearTimeout(cloudTimer); cloudController?.abort(); cloudSelectionKey = ''; void monitor.wake('offline'); });
 window.addEventListener('pagehide', () => { stopRadar(); clearTimeout(cloudTimer); cloudController?.abort(); cloudSelectionKey = ''; ceilingClient.stop(); monitor.stop(); routeWorkspace.stop(); });
-window.addEventListener('pageshow', () => { if (!monitor.getState().active) { monitor.start(); void monitor.wake('pageshow'); void routeWorkspace.refresh(); } scheduleNativeClouds(); });
+window.addEventListener('pageshow', () => { if (!monitor.getState().active) { monitor.start(); void monitor.wake('pageshow'); if (!forecast || state.compare && !comparison) void loadForecast(); void routeWorkspace.refresh(); } scheduleNativeClouds(); });
 
 let resizeTimer;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { renderCharts(); renderClouds(); renderAstronomy(); if (aviation) renderHistory(); map?.invalidateSize(); }, 180); });

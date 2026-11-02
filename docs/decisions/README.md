@@ -38,6 +38,8 @@ The next [further browser recovery](0016-further-browser-source-recovery.md) add
 
 The [evidence-first workspace refinement](0017-evidence-first-workspace.md) implements the subsequent v0.8 UI/UX pass; publication, source completeness and intended-pilot acceptance remain separate checks.
 
+The [forecast failure recovery](0018-forecast-failure-recovery.md) implements the v0.8.1 response to transient 503s, shared quotas and comparison blocking, with bounded same-model requests and honest cached evidence.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |
