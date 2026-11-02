@@ -15,11 +15,12 @@ import { summarizeMetar } from './reports.js';
 import { observationSeries } from './observations.js';
 import { createMonitor } from './monitor.js';
 import { queryClouds, CLOUD_STATUS_LABELS } from './clouds.js';
-import { fetchAviation } from './aviation-source.js';
+import { fetchBrowserAviation } from './aviation-source.js';
 import { readAviationCache, writeAviationCache } from './aviation-cache.js';
 import { fetchSatellite } from './satellite-source.js';
 import { fetchRadar } from './radar-source.js';
 import { createBriefingSnapshot, renderBriefingHtml, renderBriefingText, briefingFilename, saveBriefing, listBriefings, loadBriefing, deleteBriefing } from './archive.js';
+import { reportProviderName } from './handoff.js';
 
 const $ = (id) => document.getElementById(id);
 const plotWidth = (id, offset = 32) => Math.max(320, Math.min(1000, ($(id)?.clientWidth || 720) - offset));
@@ -278,7 +279,7 @@ function renderReportFreshness() {
   $('reports-meta').textContent = `${aviation.sourceName || 'ČHMÚ MET-SWIM'} · METAR stažen ${aviation.metar?.retrievedAt?fullTime(aviation.metar.retrievedAt):'neuvedeno'} · TAF stažen ${aviation.taf?.retrievedAt?fullTime(aviation.taf.retrievedAt):'neuvedeno'}. Přímá obnova po 5 min; rozhoduje čas a platnost zprávy.`;
   const alerts=feeds.filter(([,feed])=>!feed||!feed.retrievedAt||Date.now()-Date.parse(feed.retrievedAt)>3600000||['stale','unavailable'].includes(feed.status)||feed.transportStatus==='partial');
   const coverage=feeds.filter(([,feed])=>feed?.missingStations?.length).map(([name,feed])=>`<p class="source-coverage"><strong>${name} · neúplné pokrytí</strong> · zdroj neposkytl ${esc(feed.missingStations.join(', '))}. Stanice zůstávají v přehledu; dostupnost ověř u původního zdroje.</p>`).join('');
-  $('reports-status').innerHTML=(aviationLoading?'<p class="source-coverage">Obnovuji zprávy přímo u ČHMÚ…</p>':'')+(aviationLoadError?`<p class="feed-error">Obnova zpráv nebyla potvrzena: ${esc(aviationLoadError)}. Zachovány jsou původní časy.</p>`:'')+alerts.map(([name,feed])=>`<p class="feed-error"><strong>${name} · ${!feed||feed.status==='unavailable'?'zdroj nedostupný':'obnova není úplná / zachována starší data'}</strong> · ${feed?.retrievedAt?`staženo ${esc(fullTime(feed.retrievedAt))}`:'čas stažení chybí'}. ${esc(feed?.error||'Ověř původní zprávy u zdroje.')}</p>`).join('')+coverage+(historyCacheError?`<p class="source-coverage">Místní historie: ${esc(historyCacheError)}. Aktuální zprávy zůstávají dostupné.</p>`:'');
+  $('reports-status').innerHTML=(aviationLoading?'<p class="source-coverage">Obnovuji zprávy přímo u poskytovatelů…</p>':'')+(aviationLoadError?`<p class="feed-error">Obnova zpráv nebyla potvrzena: ${esc(aviationLoadError)}. Zachovány jsou původní časy.</p>`:'')+alerts.map(([name,feed])=>`<p class="feed-error"><strong>${name} · ${!feed||feed.status==='unavailable'?'zdroj nedostupný':'obnova není úplná / zachována starší data'}</strong> · ${feed?.retrievedAt?`staženo ${esc(fullTime(feed.retrievedAt))}`:'čas stažení chybí'}. ${esc(feed?.error||'Ověř původní zprávy u zdroje.')}</p>`).join('')+coverage+(aviation.supplementWarning?`<p class="section-note">${esc(aviation.supplementWarning)}</p>`:'')+(historyCacheError?`<p class="source-coverage">Místní historie: ${esc(historyCacheError)}. Aktuální zprávy zůstávají dostupné.</p>`:'');
 }
 
 function renderNearbyObservations() {
@@ -321,7 +322,7 @@ function renderReports() {
     const validity = type === 'TAF' && item.validFrom && item.validTo ? ` · platnost ${fullTime(item.validFrom)}–${fullTime(item.validTo)}` : '';
     const retained = item.transportStatus === 'stale' || item.restoredFromCache ? '<p class="feed-error">Zachovaná zpráva z místní paměti / po chybě obnovy; její původní čas zůstává uveden.</p>' : '';
     const summary = type === 'METAR' ? renderMetarSummary(item, { timezone: state.timezone, compact:true }) : renderTafPeriods(item, { selectedTime: state.time, timezone: state.timezone, compact:true });
-    return `<div class="report-block report-block--${type.toLowerCase()}"><div class="report-block-header"><span class="source-badge">${type}</span><span class="tag" data-report-status="${type}" data-report-id="${esc(item.id)}" data-tone="${esc(status.tone)}">${esc(type === 'METAR' && status.tone === 'neutral' ? 'Pozorování' : status.label)}${type === 'TAF' ? ' · pro čas přehledu' : ''}</span></div><p class="station-meta">${instant ? esc(fullTime(instant)) : 'Čas zprávy nedostupný'}${instant ? ` · <span data-age="${esc(instant)}">${esc(ageLabel(instant))}</span>` : ''}${esc(validity)}</p>${retained}<div${reportView === 'raw' ? ' hidden' : ''}>${summary}</div><pre class="report-raw"${reportView === 'summary' ? ' hidden' : ''}>${esc(item.raw || 'Zdroj neposkytl originální text.')}</pre></div>`;
+    return `<div class="report-block report-block--${type.toLowerCase()}"><div class="report-block-header"><span class="source-badge">${type}</span><span class="tag" data-report-status="${type}" data-report-id="${esc(item.id)}" data-tone="${esc(status.tone)}">${esc(type === 'METAR' && status.tone === 'neutral' ? 'Pozorování' : status.label)}${type === 'TAF' ? ' · pro čas přehledu' : ''}</span></div><p class="station-meta">${esc(reportProviderName({aviation},type.toLowerCase(),item))} · ${instant ? esc(fullTime(instant)) : 'Čas zprávy nedostupný'}${instant ? ` · <span data-age="${esc(instant)}">${esc(ageLabel(instant))}</span>` : ''}${esc(validity)}</p>${retained}<div${reportView === 'raw' ? ' hidden' : ''}>${summary}</div><pre class="report-raw"${reportView === 'summary' ? ' hidden' : ''}>${esc(item.raw || 'Zdroj neposkytl originální text.')}</pre></div>`;
   };
   $('reports').innerHTML = STATIONS.map(station => {
     const metar = aviation.metar?.items?.find(item => item.station === station.id);
@@ -349,7 +350,8 @@ function renderHistory() {
   }
   const series = observationSeries(aviation, historyStation);
   const station = STATIONS.find(item => item.id === historyStation);
-  $('history-meta').textContent = `${historyStation} · ${num(haversineKm(state.lat, state.lon, station.lat, station.lon))} km od vybraného bodu · ${series.times.length} pozorování · ${section.historyMethod === 'browser-observed' ? 'částečná historie zachycená tímto prohlížečem' : 'historie zdroje'} · poslední příjem ${fullTime(section.historyRetrievedAt)}${section.historyStatus === 'stale' ? ' · obnova selhala, starší historie' : ''}${section.historyError ? ` · ${section.historyError.replace(/[.!?]\s*$/,'')}` : ''}${section.historyLimitReached ? ' · zdroj dosáhl limitu odpovědi; rozsah nemusí být úplný' : ''}. Jde o počasí na stanici, nikoli měření ve vybraném bodě.`;
+  const historyOrigin = section.historyMethod === 'source-archive-and-browser' ? 'archiv MET Norway + místní pozorování · pokrytí není úplné' : section.historyMethod === 'browser-observed' ? 'částečná historie zachycená tímto prohlížečem' : 'historie zdroje';
+  $('history-meta').textContent = `${historyStation} · ${num(haversineKm(state.lat, state.lon, station.lat, station.lon))} km od vybraného bodu · ${series.times.length} pozorování · ${historyOrigin} · poslední příjem ${fullTime(section.historyRetrievedAt)}${section.historyStatus === 'stale' ? ' · obnova selhala, starší historie' : ''}${section.historyError ? ` · ${section.historyError.replace(/[.!?]\s*$/,'')}` : ''}${section.historyLimitReached ? ' · zdroj dosáhl limitu odpovědi; rozsah nemusí být úplný' : ''}. Jde o počasí na stanici, nikoli měření ve vybraném bodě.`;
   $('observation-history').innerHTML = [
     { title: 'Pozorovaná dohlednost', values: series.visibility.map(value => value === null ? null : value / 1000), unit: 'km', color: 'var(--chart-cyan)', note: 'Body jsou skutečná pozorování, bez spojování intervalů. 9999 a CAVOK jsou dolní mez ≥10 km, v grafu umístěná na 10 km; další meze podle originálu.' },
     { title: 'Pozorovaný ceiling / VV', values: series.ceiling, unit: 'ft AGL', color: 'var(--chart-amber)', note: 'Nejnižší uvedená BKN/OVC nebo vertikální dohlednost VV. Mezery zahrnují zprávy bez číselného ceilingu; neznamenají 0 ft.' },
@@ -370,6 +372,7 @@ function renderSigmets() {
   $('significant-status').textContent = future ? 'SIGMET · budoucí stav nelze určit' : uncertain ? 'SIGMET · ověřit aktuálnost' : active.length ? `SIGMET · ${active.length} pro čas přehledu` : 'SIGMET · 0 v balíčku pro tento čas';
   $('significant-status').dataset.tone = uncertain || future || active.length ? 'warn' : 'neutral';
   $('sigmets').innerHTML = status + (active.length ? active.map((item) => `<details class="report-details" data-sigmet-id="${esc(item.id || `${item.fir}:${item.validFrom}`)}" open><summary>${esc(item.fir || 'SIGMET')} · ${esc(fullTime(item.validTo))}</summary><pre class="report-raw">${esc(item.raw)}</pre></details>`).join('') : `<p class="muted">Načtené soubory neobsahují SIGMET s platností pro vybraný čas. Pokrytí FIR LKAA / LOVV / EDMM / LZBB není úplné. Ověř aktuální zdroj; nejde o potvrzení bez výstrah.</p>`) + ((section.items || []).some(item => !active.includes(item)) ? `<details class="report-details"><summary>Další zprávy zdroje · mimo vybranou platnost nebo neznámý čas</summary>${(section.items || []).filter(item=>!active.includes(item)).map(item=>`<p class="station-meta">${esc(item.fir || 'SIGMET')} · ${item.validFrom?esc(fullTime(item.validFrom)):'počátek neuveden'}–${item.validTo?esc(fullTime(item.validTo)):'konec neuveden'} · ${esc(reportState(item,Date.parse(state.time)).label)}</p><pre class="report-raw">${esc(item.raw)}</pre>`).join('')}</details>` : '') + (unknown ? `<p class="feed-error">${unknown} zpráv má neznámou platnost; nelze určit překryv.</p>` : '') + (Date.parse(state.time) > Date.now() + 3600000 ? '<p class="chart-caption">Aktuální balíček nepředpovídá, jaké výstrahy budou vydány v budoucnu.</p>' : '') + `<p class="chart-caption">SIGMET stažen ${section.retrievedAt ? esc(fullTime(section.retrievedAt)) : '—'}.</p>`;
+  $('sigmets').insertAdjacentHTML('beforeend','<p class="chart-caption"><a href="https://meteo.rlp.cz/sigmetmap.png" target="_blank" rel="noopener noreferrer">ŘLP · původní mapa SIGMET / AIREP ↗</a> · samostatný online zdroj; ověř čas aktualizace v mapě. Její otevření nepotvrzuje úplnost načtených zpráv.</p>');
   for(const node of $('sigmets').querySelectorAll('[data-sigmet-id]')) { if(openStates.has(node.dataset.sigmetId)) node.open=openStates.get(node.dataset.sigmetId); if(node.dataset.sigmetId===focusedId) node.querySelector('summary')?.focus({preventScroll:true}); }
 }
 
@@ -503,7 +506,7 @@ async function loadAviation(force = false, outerSignal = null) {
   aviationLoading=true; updateOutputAvailability(); renderReportFreshness();
   try {
     const signal = outerSignal ? AbortSignal.any([outerSignal, AbortSignal.timeout(60000)]) : AbortSignal.timeout(60000);
-    const payload = await fetchAviation({previous:aviation,signal});
+    const payload = await fetchBrowserAviation({previous:aviation,signal});
     if (id !== aviationRequestId) return { ok: true };
     payload.radar=radarProduct;
     aviation = payload;

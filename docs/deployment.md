@@ -19,6 +19,14 @@ Local validation passed **217 tests (175 JavaScript, 42 Python)**, a **42-file s
 
 The browser runtime migration for compatible sources is implemented. Whole-project professional readiness remains incomplete at the source-parity, access/licence, intended-pilot and native save/print gates in the [release checklist](release-checklist.md).
 
+## Source-gap recovery · v0.5.1 · 2 November 2026
+
+[Decision 0014](decisions/0014-browser-source-gap-recovery.md) restores original SWL display directly from its official ŘLP distributor, adds the separately identified MET Norway report/archive supplement, and adds one-action alternate viewers for the same original three cameras. No deployment-time weather collection or project data service returns. The large ceiling experiment is separate from the main runtime and excluded from the static artifact.
+
+Local checks passed **241 tests (199 JavaScript, 42 Python)** and a **44-file / approximately 788 kB static artifact**. All 37 Markdown link checks passed, including the new decision and reproducible research harness. Real desktop and 390 px responsive checks loaded the 2339 × 1654 SWL, all eight forecast graphs, LOWL/LOWW reports and a 24-observation LKCS history. Phone content/scroll width matched at 375 px. SWL enlarged in one action and returned keyboard focus when closed. Reload retained both providers as unconfirmed local cache before live refresh. Full output had matching 1306 px client/scroll width, a decoded embedded satellite and no remote image/iframe loads; SWL remained an online-only link with unverified normalized validity. Compact output retained LOWW original TAF and MET Norway source links with matching 1287 px body content/scroll width. Native file/PDF delivery and intended-pilot acceptance remain unverified.
+
+A separate actual browser experiment retrieved Source Cooperative's advertised ICON-EU run listing and real CEILING GRIB, decompressed bzip2 and decoded a matching field/sample in 1,973 ms. It used approximately 41 MB of static decoder assets and a 116 MB WASM heap. This establishes browser feasibility for the tested **ICON-EU** sample, not restored native ICON-D2 or production-ready native-grid support. See the decision for the November 30 grid transition and remaining checks.
+
 ## Historical deployment and validation records
 
 

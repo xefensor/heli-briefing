@@ -137,6 +137,7 @@ export function summarizeMetar(item) {
   if (summary.pressureHpa !== null && (summary.pressureHpa < 600 || summary.pressureHpa > 1200)) { summary.pressureHpa = null; summary.warnings.push('Neobvyklé nebo neplatné tlakové pole; ověř originál.'); }
   if (summary.ceiling.status === 'unknown' && summary.clouds.some((cloud) => ['BKN', 'OVC', 'VV', 'OVX'].includes(cloud.cover))) summary.warnings.push('Výška nejnižšího ceilingu není určitelná; některá relevantní vrstva má neznámou výšku.');
   if (summary.clouds.some(cloud => cloud.typeUnknown)) summary.warnings.push('Druh některé oblačnosti není určen (///); uvedená výška vrstvy zůstává zachována.');
+  if (item?.provider === 'metno-tafmetar' && source.reportType) summary.warnings.push(`Typ zprávy podle samostatného pole MET Norway: ${source.reportType}; původní text je zachován.`);
   if (status !== 'available') summary.warnings.push(status === 'nil' ? 'NIL: zpráva není dostupná.' : status === 'cancelled' ? 'CNL: zpráva byla zrušena.' : 'Zpráva není dostupná.');
   return summary;
 }

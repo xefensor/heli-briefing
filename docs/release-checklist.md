@@ -2,19 +2,19 @@
 
 Updated 2026-11-02. Applies to the South Bohemian **evaluation** on [GitHub Pages](https://xefensor.github.io/heli-briefing/). A completed engineering checklist is not intended-pilot acceptance or professional production access. Publication evidence is in [deployment](deployment.md).
 
-**Current runtime:** [decision 0013](decisions/0013-direct-browser-integration.md) replaces the main site's snapshot path with compatible direct browser sources and retires deployment collection. GitHub Pages now publishes code/assets only. The source-parity limits below remain unresolved.
+**Current runtime:** [decision 0013](decisions/0013-direct-browser-integration.md) replaces the main site's snapshot path with compatible direct browser sources and retires deployment collection. GitHub Pages now publishes code/assets only. [Decision 0014](decisions/0014-browser-source-gap-recovery.md) subsequently restores SWL display and supplemental reports/history. The source-parity limits below remain unresolved.
 
 ## Completion boundary
 
 | Area | Current delivered scope | Remaining dependency |
 | --- | --- | --- |
 | Core forecast | Eight directly visible plots, explicit model/comparison/place/time, exact values and qualified point profile. | Appropriate professional provider access and intended-pilot acceptance. |
-| Reports | Direct Czech SWIM METAR/TAF, RAW/decoded evidence, nine retained station rows and conservative SIGMET/validity states. | LKHS/foreign station gaps; complete current FIR warning coverage is not established. |
-| History | Genuine observations retained prospectively in this browser, twelve-hour/400-report and 750 kB bounds. | No complete initial twelve-hour archive was verified; gaps remain visible. |
+| Reports | Direct Czech SWIM METAR/TAF, RAW/decoded evidence, nine retained station rows and conservative SIGMET/validity states. | LKHS remains absent; MET Norway international availability has a documented SWIM transition risk. Complete current FIR warning coverage is not established. |
+| History | Genuine MET Norway archive plus browser observations, twelve-hour/400-report and 750 kB bounds. | Partial coverage and missing intervals remain visible; archive service continuity is not guaranteed. |
 | Radar/satellite | Direct observed radar display/playback and directly fetched/embedded GeoColour image. | Radar pixels cannot be embedded offline without CORS permission; provider coverage/outages remain possible. |
-| Cameras/charts/ceiling | Municipal camera viewer, separately identified; original three cameras, SWL, low-cloud and native CEILING retained as explicit source links/unsupported states. | Compatible original-source access or separately accepted alternatives. No proxy or substitute ceiling is used. |
+| Cameras/charts/ceiling | Direct original SWL display, municipal camera viewer and alternate same-camera links; original embedded cameras, low-cloud and native ICON-D2 CEILING remain unsupported. | Original camera/low-cloud access; production integration and native-grid validation of the separately researched ICON-EU CEILING option. No proxy or substitute ceiling is used. |
 | Route/light | Existing point/vertical weather, separately referenced Bpv terrain and local astronomy. | Native ceiling along the route remains unavailable; no obstacles, aircraft performance, operator minima or clearance assessment. |
-| Output | Full frozen HTML/text, compact report pack, local archive and accurate source/export limitations. Older saved imagery remains readable. | Intended-device native save/print/PDF acceptance; video/radar links require network and cannot be mistaken for captured imagery. |
+| Output | Full frozen HTML/text, compact report pack, local archive and accurate source/export limitations. Older saved imagery remains readable. | Intended-device native save/print/PDF acceptance; video/radar/SWL links require network and cannot be mistaken for captured imagery. |
 | UX | Existing rich workspace, direct navigation, responsive reports, persistent context/viewer and explicit partial coverage. | Pilot observation is still required to validate preparation usability. |
 | Access/legal | No static secrets or project data service; source attribution and dated access evidence. | Owner licence decision, professional forecast access and source-specific redistribution agreements. |
 
@@ -27,9 +27,9 @@ Use the pilot's actual desktop/tablet/phone. Record device/browser, time, task o
 1. Select the base, another saved coordinate and a terrain-sensitive off-airport point. Identify location, main model, comparison, valid hour, timezone and source retrieval time without opening settings.
 2. Compare wind/gusts, visibility, cloud information, precipitation and temperature across the same time axis. Inspect one source disagreement and one unsupported/missing field. Confirm the original station report remains recognizable.
 3. Pin a future hour, refresh, wait for a normal monitoring tick and return to Teď. Confirm the future selection is retained during refresh and the planned route departure never moves with the live clock.
-4. Open the municipal viewer and distinguish it from the original ČHMÚ sources. Identify its unverified normalized acquisition time, unsupported chart/ceiling states and an actual radar frame time. Open official source links where needed; do not treat an unavailable product as clear weather.
+4. Open the municipal viewer and distinguish it from the original ČHMÚ sources. Identify its unverified normalized acquisition time, original SWL validity in its UTC image header, unsupported low-cloud/ceiling states and an actual radar frame time. Open official source links where needed; do not treat an unavailable product as clear weather.
 5. Plan a simple route with explicit leg minutes. Inspect a route column, a below-terrain masked pressure level, the Bpv terrain datum and an outside-domain gap. Change model and verify the section changes without relabelling independent products.
-6. Add a note and prepare a full briefing. Check exact context, coverage/source warnings, graphics, original bulletins, route and embedded satellite imagery. Radar/video remain labelled source links. Download, reopen with network disabled, then save PDF through the normal browser print dialog and inspect every page for clipping/missing content. Verify compact METAR/TAF output and copy/manual-copy behavior separately.
+6. Add a note and prepare a full briefing. Check exact context, coverage/source warnings, graphics, original bulletins, route and embedded satellite imagery. Radar/SWL/video remain labelled source links. Download, reopen with network disabled, then save PDF through the normal browser print dialog and inspect every page for clipping/missing content. Verify compact METAR/TAF output and copy/manual-copy behavior separately.
 7. Reopen a saved briefing after changing the live workspace. Confirm the captured values/notes/time do not change. Check archive quota feedback, delete a disposable briefing copy, and verify saved-point/route undo separately.
 
 These are prepared tasks, not completed pilot validation. Record results against this checklist before claiming acceptance.

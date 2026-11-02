@@ -1,11 +1,11 @@
 import { createBrowserCameras, renderCameras, MUNICIPAL_CAMERA } from './cameras.js';
-import { createBrowserCharts, renderAviationCharts, selectedLowCloud, captureCharts } from './aviation-charts.js';
+import { createBrowserCharts, fetchBrowserCharts, renderAviationCharts, selectedLowCloud, captureCharts } from './aviation-charts.js';
 import { formatTime } from './briefing.js';
 
 export function mountImagery({ getContext, onLowCloud }) {
   const $ = id => document.getElementById(id);
   let cameras = createBrowserCameras(), charts = createBrowserCharts(), mapActive = false;
-  let renderedKey = '', dialogReturnFocus = null;
+  let renderedKey = '', dialogReturnFocus = null, chartRequest = null;
   const imageErrors = new Set();
   // This is an ordinary cross-origin provider page. Load it only on request,
   // and keep its DOM outside the repeatedly rendered camera/source summaries.
@@ -84,7 +84,7 @@ export function mountImagery({ getContext, onLowCloud }) {
     if (!item) return;
     dialogReturnFocus = focusToken(trigger);
     $('imagery-title').textContent = title; $('imagery-context').textContent = subtitle;
-    const image = document.createElement('img'); image.src = item.imageDataUrl || item.imagePath; image.alt = title; image.width = item.width; image.height = item.height;
+    const image = document.createElement('img'); image.src = item.imageDataUrl || item.imagePath || item.imageUrl; image.alt = title; image.width = item.width; image.height = item.height;
     $('imagery-large').replaceChildren(image); $('imagery-dialog').showModal();
   }
   $('imagery-close').addEventListener('click', () => $('imagery-dialog').close());
@@ -99,7 +99,15 @@ export function mountImagery({ getContext, onLowCloud }) {
   });
   $('aviation-chart-content').addEventListener('click', event => {
     const kind = event.target.closest('[data-chart-enlarge]')?.dataset.chartEnlarge;
-    if (kind) { const item = kind === 'swl' ? charts?.swl : selectedLowCloud(charts, getContext().time); if (item?.imagePath) showImage(item, kind === 'swl' ? 'SWL · původní mapa ČHMÚ' : 'Nízká oblačnost · ČHMÚ', kind === 'swl' ? `Platnost ${formatTime(item.validFrom,'UTC',true)} – ${formatTime(item.validTo,'UTC',true)} UTC · původní velikost; posuň mapu vodorovně.` : `Platnost ${formatTime(item.validAt,'UTC',true)} UTC · vydání neposkytnuto.`, event.target.closest('[data-chart-enlarge]')); }
+    if (kind) {
+      const item = kind === 'swl' ? charts?.swl : selectedLowCloud(charts, getContext().time);
+      if (item?.imagePath || item?.imageUrl || item?.imageDataUrl) {
+        const subtitle = kind !== 'swl' ? `Platnost ${formatTime(item.validAt,'UTC',true)} UTC · vydání neposkytnuto.`
+          : item.displayOnly ? 'ČHMÚ / ŘLP · vydání a platnost čti v záhlaví mapy (UTC). Mapa není svázána s časem přehledu.'
+          : `Platnost ${formatTime(item.validFrom,'UTC',true)} – ${formatTime(item.validTo,'UTC',true)} UTC · původní velikost; posuň mapu vodorovně.`;
+        showImage(item, kind === 'swl' ? 'SWL · původní mapa ČHMÚ' : 'Nízká oblačnost · ČHMÚ', subtitle, event.target.closest('[data-chart-enlarge]'));
+      }
+    }
     if (event.target.closest('#lowcloud-map')) { mapActive = !mapActive; onLowCloud(mapActive ? selectedLowCloud(charts, getContext().time) : null, mapActive); render(); }
   });
   $('cameras').addEventListener('error', event => { const id = event.target.dataset?.cameraImage; if (id && cameras) { cameras = { ...cameras, items: cameras.items.map(item => item.id === id ? { ...item, status:'unavailable', imageDataUrl:null, error:'Snímek nelze zobrazit.' } : item) }; render(true); } }, true);
@@ -107,8 +115,20 @@ export function mountImagery({ getContext, onLowCloud }) {
   render(true);
   return { sync: render, hideLowCloud() { mapActive = false; onLowCloud(null); render(); }, snapshotCameras: () => structuredClone(cameras),
     async capture(time) { return { cameras: this.snapshotCameras(), charts: await captureCharts(charts, time) }; },
-    // Known browser capability limits are metadata, not transport failures to
-    // retry every minute. No deployment-generated weather file is requested.
-    async refresh() { render(true); return { ok: true, supported: false, reason: 'browser-cors' }; },
+    async refresh(_force = false, signal) {
+      if (chartRequest) return chartRequest;
+      const work = (async () => {
+        try {
+          charts = await fetchBrowserCharts({ previous: charts, signal });
+          if (charts.swl.status === 'ok') imageErrors.clear();
+          render(true);
+          return { ok: charts.swl.status === 'ok', error: charts.swl.error };
+        } catch (error) {
+          return { ok: false, error: error.message };
+        }
+      })();
+      chartRequest = work;
+      try { return await work; } finally { if (chartRequest === work) chartRequest = null; }
+    },
   };
 }

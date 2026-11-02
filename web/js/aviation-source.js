@@ -2,6 +2,8 @@
  * API/CORS checked 2026-11-02: https://swim.chmi.cz/SWIM_API_reference.pdf
  * This is not a complete international report archive or SIGMET inventory.
  */
+import { fetchMetnoAviation, METNO_PROVIDER, METNO_WARNING, metnoSourceUrl } from './metno-source.js';
+
 export const AVIATION_API = 'https://swim.chmi.cz/api.php';
 export const AVIATION_STATIONS = Object.freeze(['LKCS', 'LKHS', 'LKPR', 'LKKB', 'LKPD', 'LKTB', 'LKKV', 'LOWL', 'LOWW']);
 export const AVIATION_FIRS = Object.freeze(['LKAA', 'LOVV', 'EDMM', 'LZBB']);
@@ -91,8 +93,8 @@ export function parseTacReport({ kind, raw, filename, updated, sourceUrl, retrie
 }
 
 function rank(item) {
-  return [instant(item.observedAt ?? item.issuedAt ?? item.validFrom) ?? -Infinity,
-    instant(item.sourceUpdatedAt) ?? -Infinity, instant(item.retrievedAt) ?? -Infinity, item.corrected ? 1 : 0];
+  return [instant(item.observedAt ?? item.issuedAt ?? item.validFrom) ?? -Infinity, item.corrected ? 1 : 0,
+    instant(item.sourceUpdatedAt) ?? -Infinity, instant(item.retrievedAt) ?? -Infinity];
 }
 function newer(a, b) {
   const left = rank(a), right = rank(b);
@@ -104,7 +106,7 @@ export function mergeObservationHistory(previous = [], current = [], nowMs = Dat
   if (!Number.isFinite(nowMs)) throw new TypeError('Čas historie není platný.');
   const reports = new Map();
   for (const item of [...(Array.isArray(previous) ? previous : []), ...(Array.isArray(current) ? current : [])]) {
-    if (!own(item) || !AVIATION_STATIONS.includes(item.station) || typeof item.raw !== 'string' || !/^(?:METAR|SPECI)\b/.test(item.raw) || item.nil || item.cancelled || /\b(?:NIL|CNL)\b/.test(item.raw)) continue;
+    if (!own(item) || !AVIATION_STATIONS.includes(item.station) || typeof item.raw !== 'string' || (!/^(?:METAR|SPECI)\b/.test(item.raw) && !(item.provider === METNO_PROVIDER && new RegExp(`^${item.station}\\s+(?:\\d{6}Z|NIL)\\b`).test(item.raw))) || item.nil || item.cancelled || /\b(?:NIL|CNL)\b/.test(item.raw)) continue;
     const at = instant(item.observedAt);
     if (at === null || at < nowMs - 12 * HOUR || at > nowMs) continue;
     const key = `${item.station}:${item.observedAt}`, old = reports.get(key);
@@ -125,10 +127,10 @@ function ownReports(items) {
   return Array.isArray(items) ? items.filter(item => own(item) && item.provider === PROVIDER) : [];
 }
 function unavailable(kind, previous, attemptedAt, error) {
-  const items = ownReports(previous?.items);
+  const items = ownReports(previous?.items).map(item => ({ ...item, transportStatus: 'stale', refreshError: error }));
   return {
     ...previous, status: items.length ? 'stale' : 'unavailable', transportStatus: 'unavailable',
-    retrievedAt: items.length ? previous?.retrievedAt ?? null : null, attemptedAt, items,
+    retrievedAt: items.map(item => item.retrievedAt).filter(value => instant(value) !== null).sort().at(-1) ?? null, attemptedAt, items,
     sourceUrl: `${AVIATION_API}?action=list&format=txt`, provider: PROVIDER,
     error, coverageComplete: false, coverageStatus: 'unknown',
     ...(kind === 'sigmet' ? { firScope: [...AVIATION_FIRS], missingFirs: [...AVIATION_FIRS] }
@@ -234,7 +236,7 @@ export async function fetchAviation({ fetcher = globalThis.fetch, now = () => Da
       provider: PROVIDER, items: selected, sourceUrl: `${AVIATION_API}?action=list&format=txt`,
       status: !successful.length ? selected.length ? 'stale' : 'unavailable' : failed.length || missing.length || kind === 'sigmet' ? 'partial' : 'ok',
       transportStatus: successful.length ? failed.length ? 'partial' : 'ok' : 'unavailable',
-      retrievedAt: successful.length ? successful.map(result => result.retrievedAt).sort().at(-1) : previous?.[kind]?.provider === PROVIDER ? previous[kind].retrievedAt ?? null : null,
+      retrievedAt: successful.length ? successful.map(result => result.retrievedAt).sort().at(-1) : selected.length ? selected.map(item => item.retrievedAt).filter(value => instant(value) !== null).sort().at(-1) ?? null : null,
       attemptedAt, error: error || null, coverageComplete: !failed.length && !missing.length && kind !== 'sigmet',
       coverageStatus: kind === 'sigmet' ? 'unknown' : missing.length || failed.length ? 'partial' : 'complete',
       ...(kind === 'sigmet' ? { firScope: [...AVIATION_FIRS], missingFirs: missing, currentMessageCount: currentSigmets.length }
@@ -242,4 +244,60 @@ export async function fetchAviation({ fetcher = globalThis.fetch, now = () => Da
     };
   }
   return retainHistory(snapshot, previous, finished);
+}
+
+
+/** Combine primary Czech TAC with an explicitly identified, dated supplement.
+ * SWIM reports always win their station row, including old CNL/retained reports.
+ * MET Norway adds missing rows and actual historical samples, never SIGMET.
+ */
+export async function fetchBrowserAviation(options = {}) {
+  const { previous = null, now = Date.now } = options;
+  const primaryTask = fetchAviation(options);
+  const supplementTask = fetchMetnoAviation(options);
+  const [snapshot, supplement] = await Promise.all([primaryTask, supplementTask]);
+  const nowMs = clock(now), provider = 'chmi-swim+metno';
+  Object.assign(snapshot, {
+    provider, sourceName: 'ČHMÚ MET-SWIM + MET Norway · přímé požadavky prohlížeče',
+    attribution: 'ČHMÚ · Aeronautical Meteorological Service; doplňková data MET Norway (CC BY 4.0 / NLOD 2.0). Původní vydávající autority zůstávají ve zprávách.',
+    licenceStatus: 'chmi-redistribution-unconfirmed;metno-cc-by-4.0-nlod-2.0-low-volume-cors',
+    supplementWarning: METNO_WARNING,
+    supplementDocumentationUrl: 'https://api.met.no/weatherapi/tafmetar/1.0/documentation',
+    supplementLicenceUrl: 'https://api.met.no/doc/License',
+    supplementTermsUrl: 'https://api.met.no/doc/TermsOfService',
+  });
+  const latestTime = values => { const times = values.map(instant).filter(value => value !== null); return times.length ? iso(Math.max(...times)) : null; };
+  for (const kind of ['metar', 'taf']) {
+    const feed = snapshot[kind], extra = supplement[kind], primaryItems = feed.items;
+    const selected = new Map(primaryItems.map(item => [item.station, item])), latest = new Map();
+    for (const item of extra.items) if (!latest.has(item.station) || newer(item, latest.get(item.station))) latest.set(item.station, item);
+    for (const [station, item] of latest) if (!selected.has(station)) selected.set(station, item);
+    const missing = AVIATION_STATIONS.filter(station => !selected.has(station));
+    const primarySucceeded = feed.transportStatus === 'ok', supplementSucceeded = extra.transportStatus === 'ok';
+    const items = AVIATION_STATIONS.filter(station => selected.has(station)).map(station => selected.get(station));
+    Object.assign(feed, {
+      provider, items, supplementSourceUrl: metnoSourceUrl(kind),
+      retrievedAt: latestTime([feed.retrievedAt, extra.retrievedAt]),
+      transportStatus: primarySucceeded && supplementSucceeded ? 'ok' : primarySucceeded || supplementSucceeded ? 'partial' : 'unavailable',
+      // Coverage and transport remain distinct, and expected gaps stay explicit.
+      status: !items.length ? 'unavailable' : !primarySucceeded && !supplementSucceeded ? 'stale' : missing.length || !primarySucceeded || !supplementSucceeded ? 'partial' : 'ok',
+      missingStations: missing, requestedStations: [...AVIATION_STATIONS],
+      coverageComplete: !missing.length && primarySucceeded && supplementSucceeded,
+      coverageStatus: missing.length || !primarySucceeded || !supplementSucceeded ? 'partial' : 'complete',
+      error: [!primarySucceeded ? feed.error : '', !supplementSucceeded ? extra.error : '', missing.length ? `Dostupné zdroje nepokrývají: ${missing.join(', ')}.` : '',
+        items.some(item => item.provider === METNO_PROVIDER) ? 'Doplňkové zprávy MET Norway mají vlastní zdroj a původní časy; zprávy ČHMÚ se nepřepisují.' : ''].filter(Boolean).join(' '),
+    });
+  }
+  const feed = snapshot.metar, archive = supplement.metar;
+  feed.history = mergeObservationHistory([...(previous?.metar?.history || []), ...feed.history, ...archive.items], feed.items, nowMs);
+  const hasArchive = feed.history.some(item => item.provider === METNO_PROVIDER);
+  Object.assign(feed, {
+    historyStatus: feed.history.length ? feed.transportStatus === 'unavailable' ? 'stale' : 'partial' : 'unavailable',
+    historyMethod: hasArchive ? 'source-archive-and-browser' : 'browser-observed', historyPartial: true,
+    historyRetrievedAt: latestTime([feed.historyRetrievedAt, archive.retrievedAt]),
+    historyAttemptedAt: snapshot.generatedAt, historySourceUrl: hasArchive ? metnoSourceUrl('metar') : feed.sourceUrl,
+    historyLimitReached: feed.history.length >= HISTORY_LIMIT,
+    historyError: [hasArchive ? 'Skutečné dostupné zprávy z archivu MET Norway a pozorování zachycená tímto prohlížečem; zobrazeno nejvýše dvanáct hodin a 400 záznamů. Chybějící stanice/časy se nedoplňují.' : 'Pouze skutečná pozorování zachycená tímto prohlížečem; doplňkový archiv se nepodařilo potvrdit.', archive.error].filter(Boolean).join(' '),
+  });
+  return snapshot;
 }

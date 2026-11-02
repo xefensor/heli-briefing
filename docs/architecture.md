@@ -1,21 +1,23 @@
 # Architecture and runtime constraint
 
-**Current implementation: ordinary-browser runtime, v0.5.** [Decision 0013](decisions/0013-direct-browser-integration.md) implements the owner-confirmed target: GitHub Pages hosts code/assets, and the browser requests compatible data directly. No extension, native app, project data backend/proxy or build-time weather collector is required.
+**Current implementation: ordinary-browser runtime, v0.5.1.** [Decision 0013](decisions/0013-direct-browser-integration.md) implements the owner-confirmed target: GitHub Pages hosts code/assets, and the browser requests compatible data directly. No extension, native app, project data backend/proxy or build-time weather collector is required.
+
+[Decision 0014](decisions/0014-browser-source-gap-recovery.md) adds direct SWL display and an explicitly identified report/history supplement. Its separate ceiling experiment is not a production adapter.
 
 ## Current data path
 
 | Component | Current responsibility |
 | --- | --- |
 | Forecast/terrain adapters | Direct bounded Open-Meteo and ČÚZK requests with explicit model, time, datum and missing values. |
-| Aviation adapter | Direct allowlisted ČHMÚ SWIM TAC catalogue/files, maximum two requests at once; partial station/FIR coverage and original report dates. |
-| Local report cache | At most 750 kB / 400 genuine observations over twelve hours. Restored reports remain unconfirmed until refreshed; no invented historical archive. |
+| Aviation adapter | Direct allowlisted ČHMÚ SWIM TAC catalogue/files plus two bounded MET Norway XML requests for missing rows and real archive history; original provider/date identities and incomplete SIGMET coverage. |
+| Local report cache | At most 750 kB / 400 genuine observations over twelve hours. Actual source-archive and browser observations; restored reports remain unconfirmed until refreshed, with no invented history. |
 | Satellite adapter | Direct EUMETSAT capabilities and actual advertised GeoColour frame, bounded validated PNG bytes and retained original image time. |
 | Radar adapter | Normal image loads confirm candidate UTC frames. Four-image current check; up to 24 observed frames on playback. No CORS pixel read or false offline image capture. |
-| Camera/maps/ceiling | Municipal provider-controlled viewer on request; original blocked products retain explicit unavailable states and source links. No source or meteorological quantity is silently substituted. |
+| Camera/maps/ceiling | Municipal provider-controlled viewer on request, original SWL through normal ŘLP image loading and alternate same-camera links; low-cloud, embedded ČHMÚ cameras and native ICON-D2 ceiling remain unsupported. No source or meteorological quantity is silently substituted. |
 | Browser workspace/output | Existing graphs, controls, route, astronomy, local notes/archive and frozen HTML/text; all source and export limitations remain visible. |
 | Static build/deploy | Copy/version code/assets only. Exclude all weather snapshots, publish on code changes or manual dispatch; no data schedule or ingestion dependencies. |
 
-The [source feasibility record](browser-only-feasibility-2026-11-02.md) retains actual endpoint and CORS/browser evidence. Full foreign-station history, complete current SIGMET coverage and original camera/chart/native-ceiling parity remain external source dependencies. Native download/PDF and intended-pilot acceptance remain separately unverified.
+The [source feasibility record](browser-only-feasibility-2026-11-02.md) retains actual endpoint and CORS/browser evidence. Complete station/time history, current SIGMET coverage and original camera/low-cloud/native-D2 parity remain source dependencies. The investigated ICON-EU archive and WASM decoder need separate production integration and native-grid checks. Native download/PDF and intended-pilot acceptance remain separately unverified.
 
 ## Historical proposed responsibilities
 

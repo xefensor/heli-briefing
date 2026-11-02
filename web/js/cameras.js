@@ -13,9 +13,9 @@ export const MUNICIPAL_CAMERA = Object.freeze({
   note: 'Samostatný městský pohled; přehrávač tomuto přehledu nepředává samostatný čas snímku. Video se do zachyceného briefingu neukládá.',
 });
 const browserCameras = [
-  { id: 'ceske_budejovice', name: 'České Budějovice', direction: 'Z', lat: 48.952085, lon: 14.46982, pageUrl: 'https://www.chmi.cz/namerena-data/webkamera/ceske_budejovice-ceske-budejovice' },
-  { id: 'churanov', name: 'Churáňov', direction: 'SV', lat: 49.068229, lon: 13.614786, pageUrl: 'https://www.chmi.cz/w/churanov-churanov' },
-  { id: 'kocelovice', name: 'Kocelovice', direction: 'S–SZ', lat: 49.467246, lon: 13.837805, pageUrl: 'https://www.chmi.cz/w/kocelovice-kocelovice' },
+  { id: 'ceske_budejovice', name: 'České Budějovice', direction: 'Z', lat: 48.952085, lon: 14.46982, pageUrl: 'https://www.chmi.cz/namerena-data/webkamera/ceske_budejovice-ceske-budejovice', alternatePageUrl: 'https://www.in-pocasi.cz/webkamery/jihocesky/ceske-budejovice-186428055/' },
+  { id: 'churanov', name: 'Churáňov', direction: 'SV', lat: 49.068229, lon: 13.614786, pageUrl: 'https://www.chmi.cz/w/churanov-churanov', alternatePageUrl: 'https://www.in-pocasi.cz/webkamery/jihocesky/churanov-855413202/' },
+  { id: 'kocelovice', name: 'Kocelovice', direction: 'S–SZ', lat: 49.467246, lon: 13.837805, pageUrl: 'https://www.chmi.cz/w/kocelovice-kocelovice', alternatePageUrl: 'https://www.in-pocasi.cz/webkamery/jihocesky/kocelovice-533216231/' },
 ];
 
 /** Known source capability, not a failed request or a timestamped observation. */
@@ -35,6 +35,7 @@ export function validateCameras(data) {
   if (!data || data.schemaVersion !== 1 || !Array.isArray(data.items) || data.items.length > 3 || new Set(data.items.map(item => item.id)).size !== data.items.length) throw new Error('Neplatný kamerový balíček.');
   for (const item of data.items) {
     if (!ids.has(item.id) || !Number.isFinite(item.lat) || Math.abs(item.lat) > 90 || !Number.isFinite(item.lon) || Math.abs(item.lon) > 180) throw new Error('Neznámá kamera.');
+    if (item.alternatePageUrl !== undefined && item.alternatePageUrl !== browserCameras.find(camera => camera.id === item.id)?.alternatePageUrl) throw new Error('Neplatný alternativní odkaz kamery.');
     if (item.imageDataUrl && (!/^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/\r\n]*={0,2}$/.test(item.imageDataUrl) || item.imageDataUrl.length > 900_000 || !Number.isInteger(item.width) || !Number.isInteger(item.height) || item.width < 100 || item.height < 100 || item.width > 4096 || item.height > 4096 || !Number.isFinite(Date.parse(item.observedAt)) || !Number.isFinite(Date.parse(item.retrievedAt)))) throw new Error('Kamera nemá ověřitelný snímek a čas.');
   }
   if (data.onlineViewer && (data.onlineViewer.id !== MUNICIPAL_CAMERA.id || data.onlineViewer.viewerUrl !== MUNICIPAL_CAMERA.viewerUrl || data.onlineViewer.pageUrl !== MUNICIPAL_CAMERA.pageUrl || data.onlineViewer.observedAt !== null || data.onlineViewer.captured !== false)) throw new Error('Neplatný odkaz městské kamery.');
@@ -48,9 +49,13 @@ export function cameraState(item, now = Date.now()) {
 export function renderCameras(data, { lat, lon, timezone = 'Europe/Prague', now = Date.now(), error = null, interactive = false } = {}) {
   const items = [...(data?.items || [])].sort((a, b) => haversineKm(lat, lon, a.lat, a.lon) - haversineKm(lat, lon, b.lat, b.lon));
   if (data?.delivery === 'browser-direct') {
-    const cards = items.map(item => `<article class="camera-card source-unavailable"><h3>${esc(item.name)} · pohled ${esc(item.direction)}</h3><p>${formatNumber(haversineKm(lat, lon, item.lat, item.lon), 1)} km od vybraného bodu · ${item.lat.toFixed(5)}°, ${item.lon.toFixed(5)}°</p><p class="route-attention">Snímek přímo v přehledu není dostupný.</p><p>${esc(item.error)}</p><p class="camera-credit">ČHMÚ · čas snímku a jeho stáří nejsou načteny.</p><a href="${esc(browserCameras.find(camera => camera.id === item.id)?.pageUrl || 'https://www.chmi.cz/namerena-data/webkamery')}" target="_blank" rel="noopener noreferrer">Otevřít původní kameru ↗</a></article>`).join('');
+    const cards = items.map(item => {
+      const source = browserCameras.find(camera => camera.id === item.id);
+      const alternate = source?.alternatePageUrl ? `<p class="camera-credit"><a href="${esc(source.alternatePageUrl)}" target="_blank" rel="noopener noreferrer">Stejný pohled u In-počasí ↗</a></p>` : '';
+      return `<article class="camera-card source-unavailable"><h3>${esc(item.name)} · pohled ${esc(item.direction)}</h3><p>${formatNumber(haversineKm(lat, lon, item.lat, item.lon), 1)} km od vybraného bodu · ${item.lat.toFixed(5)}°, ${item.lon.toFixed(5)}°</p><p class="route-attention">Snímek přímo v přehledu není dostupný.</p><p>${esc(item.error)}</p><p class="camera-credit">ČHMÚ · čas snímku a jeho stáří nejsou načteny.</p><a href="${esc(source?.pageUrl || 'https://www.chmi.cz/namerena-data/webkamery')}" target="_blank" rel="noopener noreferrer">Otevřít původní kameru ↗</a>${alternate}</article>`;
+    }).join('');
     const online = !interactive && data.onlineViewer ? `<article class="municipal-camera"><h3>${esc(MUNICIPAL_CAMERA.name)} · městská kamera</h3><p>${esc(MUNICIPAL_CAMERA.note)}</p><p class="route-attention">Pouze online odkaz; žádný snímek videa nebyl zachycen.</p><a href="${MUNICIPAL_CAMERA.viewerUrl}" target="_blank" rel="noopener noreferrer">Otevřít oficiální přehrávač ↗</a> · <a href="${MUNICIPAL_CAMERA.pageUrl}" target="_blank" rel="noopener noreferrer">Zdroj: město České Budějovice ↗</a></article>` : '';
-    return `<p class="section-note">Původní kamery ČHMÚ se v tomto přehledu nenačítají. Aktuální obraz otevřeš přímo u zdroje.</p><div class="camera-grid">${cards}</div>${online}<p class="section-note">Kamera ukazuje jedno místo a směr pohledu; neurčuje dohlednost ani ceiling celé oblasti. Městský pohled je samostatný zdroj, nikoli náhrada některé z kamer ČHMÚ.</p>`;
+    return `<p class="section-note">Původní kamery ČHMÚ se v tomto přehledu nenačítají. Obraz otevřeš přímo u zdroje nebo v alternativním zobrazení In-počasí; jeho aktualizaci a stáří snímků tento přehled neověřuje.</p><div class="camera-grid">${cards}</div>${online}<p class="section-note">Kamera ukazuje jedno místo a směr pohledu; neurčuje dohlednost ani ceiling celé oblasti. Městský pohled je samostatný zdroj, nikoli náhrada některé z kamer ČHMÚ.</p>`;
   }
   return `${error ? `<p class="feed-error">${esc(error)}</p>` : ''}<div class="camera-grid">${items.map(item => {
     const state = cameraState(item, now);

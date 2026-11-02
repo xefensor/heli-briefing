@@ -166,3 +166,10 @@ SWIM TAC list/get currently permits CORS from Pages and supplied fresh Czech MET
 ## Production direct-browser integration · 2026-11-02
 
 [Decision 0013](../decisions/0013-direct-browser-integration.md) now uses the verified direct SWIM, EUMETSAT and radar routes in the main workspace. It adds bounded local report history and the separately identified municipal viewer. The build excludes all generated weather data and runs no collectors. The source restrictions and rights in the feasibility record remain unchanged; integration does not make SWIM a complete regional warning/history service or grant new professional access. Original blocked products remain source links.
+
+
+## Recovered browser sources · 2026-11-02
+
+[Decision 0014](../decisions/0014-browser-source-gap-recovery.md) records current, bounded source checks and integration. The original ČHMÚ SWL can display as a normal PNG from its documented official distributor, `https://meteo.rlp.cz/swlmap.png`, without pixel access. Its issue/validity remain in the source header, not inferred from loading. MET Norway's official Tafmetar XML endpoint permits simple CORS requests and supplies missing Austrian reports, LKKV TAF and real initial history; the documented national-SWIM transition remains an explicit availability risk. Both providers retain independent report identities and original dates. Camera cards link the same original views on In-počasí without unsupported hotlinking or invented age.
+
+The same decision records an actual browser fetch/decompression/decoding proof for ICON-EU CEILING through Source Cooperative. This is a different model, not restored ICON-D2. It requires a large lazy-loaded WASM decoder and production validation of the advertised native-grid route before integration. Low-cloud imagery, original embedded cameras and complete current warning coverage remain unresolved.

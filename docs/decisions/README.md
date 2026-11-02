@@ -29,6 +29,8 @@ The subsequent [professional workspace redesign](0011-professional-briefing-work
 
 The owner's subsequent ordinary-browser runtime constraint and tested source prototype are recorded in [decision 0012](0012-browser-only-runtime.md). This supersedes the earlier backend/collector target. [Decision 0013](0013-direct-browser-integration.md) now integrates the compatible sources into the main workspace and retires deployment-time weather collection.
 
+The next [source-gap recovery](0014-browser-source-gap-recovery.md) restores SWL and supplemental reports/history, adds camera-viewer links and records a separate browser ceiling decoding proof.
+
 ## Proposed
 
 | Proposal | Reason and unresolved dependency |

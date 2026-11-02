@@ -1,22 +1,40 @@
 import { escapeHtml as esc } from './charts.js';
 import { formatTime } from './briefing.js';
+import { fetchSwl, isAllowedSwlImageUrl, SWL_IMAGE_URL, SWL_DOCUMENTATION_URL } from './swl-source.js';
 const pathPattern = /^\.\/data\/charts\/(?:swl|lowcloud)-\d{12}-[a-f0-9]{12}\.png$/;
 const validTime = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
 const stamp = (value, zone) => validTime(value) ? `${formatTime(value, zone, true)} ${zone === 'UTC' ? 'UTC' : 'CZ'}` : 'čas neposkytnut';
 const SWL_PAGE = 'https://www.chmi.cz/letectvi/predpovedi-pro-letani/swl-mapa';
 const LOW_CLOUD_PAGE = 'https://www.chmi.cz/letectvi/predpovedi-pro-letani/predpoved-nizke-oblacnosti';
 
-/** The direct browser cannot read these products; this is not a dated forecast. */
+/** Initial capability state. The SWL image is confirmed separately by an actual image load. */
 export function createBrowserCharts() {
   return {
-    schemaVersion: 1, delivery: 'browser-direct', status: 'unsupported', retrievedAt: null,
-    swl: { status: 'unsupported', reason: 'cors', pageUrl: SWL_PAGE, issuedAt: null, validFrom: null, validTo: null, retrievedAt: null, imagePath: null, error: 'Zdroj nepovoluje přímé čtení SWL z této stránky (CORS).' },
+    schemaVersion: 1, delivery: 'browser-direct', status: 'not-loaded', retrievedAt: null,
+    swl: { status: 'not-loaded', reason: 'not-loaded', pageUrl: SWL_PAGE, sourceUrl: SWL_IMAGE_URL, documentationUrl: SWL_DOCUMENTATION_URL, displayOnly: true, issuedAt: null, validFrom: null, validTo: null, retrievedAt: null, imageUrl: null, imagePath: null, error: 'Obraz SWL zatím nebyl načten.' },
     lowCloud: { status: 'unsupported', reason: 'cors', pageUrl: LOW_CLOUD_PAGE, frames: [], error: 'Zdroj nepovoluje přímé čtení map nízké oblačnosti z této stránky (CORS).' },
   };
 }
 
+/** SWL display and the separate low-cloud limitation retain their own identities. */
+export async function fetchBrowserCharts(options = {}) {
+  const data = createBrowserCharts();
+  data.swl = await fetchSwl({ ...options, previous: options.previous?.swl });
+  data.status = data.swl.status;
+  data.checkedAt = data.swl.checkedAt;
+  data.retrievedAt = data.swl.retrievedAt;
+  return data;
+}
+
 export function validateCharts(data, { captured = false } = {}) {
   if (!data || data.schemaVersion !== 1 || !data.swl || !data.lowCloud || !Array.isArray(data.lowCloud.frames || []) || (data.lowCloud.frames || []).length > 32) throw new Error('Neplatný balíček leteckých map.');
+  if (data.swl.imageUrl) {
+    const item = data.swl;
+    if (data.delivery !== 'browser-direct' || !isAllowedSwlImageUrl(item.imageUrl) || item.displayOnly !== true || item.confirmedBy !== 'image-load' || !validTime(item.retrievedAt) || !Number.isInteger(item.width) || !Number.isInteger(item.height) || item.width < 100 || item.height < 100 || item.width > 4096 || item.height > 4096 || item.issuedAt !== null || item.validFrom !== null || item.validTo !== null) throw new Error('Neplatný přímý obraz SWL.');
+    if (captured) throw new Error('Vzdálený obraz SWL není vložený offline snímek.');
+  }
+  if (data.swl.displayOnly === true && (data.swl.issuedAt !== null || data.swl.validFrom !== null || data.swl.validTo !== null || data.swl.imagePath || data.swl.imageDataUrl)) throw new Error('SWL pouze pro zobrazení nesmí předstírat ověřenou platnost ani vložený obraz.');
+  if (data.swl.onlineImageUrl && (data.delivery !== 'browser-direct' || !isAllowedSwlImageUrl(data.swl.onlineImageUrl) || data.swl.displayOnly !== true || data.swl.onlineOnly !== true || data.swl.confirmedBy !== 'image-load' || !validTime(data.swl.retrievedAt) || !Number.isInteger(data.swl.width) || !Number.isInteger(data.swl.height) || data.swl.width < 100 || data.swl.height < 100 || data.swl.width > 4096 || data.swl.height > 4096)) throw new Error('Neplatný online odkaz SWL.');
   for (const item of [data.swl, ...(data.lowCloud.frames || []), data.selectedLow].filter(Boolean)) {
     if (item.imagePath && !pathPattern.test(item.imagePath)) throw new Error('Neplatná cesta snímku mapy.');
     if (item.imageDataUrl && (!/^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(item.imageDataUrl) || item.imageDataUrl.length > 2_700_000)) throw new Error('Neplatný PNG mapy.');
@@ -46,7 +64,10 @@ function geography(lat, lon) {
 }
 export function renderAviationCharts(data, { time, timezone = 'Europe/Prague', lat, lon, error = null, interactive = false, imageErrors = new Set() } = {}) {
   if (data?.delivery === 'browser-direct') {
-    return `<article class="aviation-chart source-unavailable"><h3>SWL · významné počasí mezi zemí a FL100</h3><p class="route-attention">Mapa není přímo v přehledu dostupná.</p><p>${esc(data.swl.error)}</p><p class="section-note">Platnost, vydání ani obraz nebyly načteny. Otevři původní SWL a zkontroluj její vlastní platnost, legendu a aktuální SIGMET; časy v mapě jsou UTC.</p><a href="${SWL_PAGE}" target="_blank" rel="noopener noreferrer">Otevřít původní SWL a legendu ↗</a></article><article class="aviation-chart source-unavailable"><h3>Nízká oblačnost · ČHMÚ</h3><p class="route-attention" id="lowcloud-browser-note">Mapa není přímo v přehledu dostupná.</p><p>${esc(data.lowCloud.error)}</p><p class="section-note">Obraz ani jeho platnost nebyly načteny. Původní produkt ČHMÚ zachovává vlastní výškové reference a legendu; nejde o ceiling z vybraného modelu.</p>${interactive ? '<button class="button button-quiet" type="button" id="lowcloud-map" aria-pressed="false" aria-describedby="lowcloud-browser-note" disabled>Nízká oblačnost v regionální mapě · nedostupná</button>' : ''}<a href="${LOW_CLOUD_PAGE}" target="_blank" rel="noopener noreferrer">Otevřít původní mapu a vysvětlení ↗</a></article><p class="section-note">Zdroj: Český hydrometeorologický ústav. Tyto odkazy otevírají online zdroj; žádný starý obraz z nasazení se nevydává za aktuální mapu.</p>`;
+    const swl = data.swl, direct = interactive && swl.confirmedBy === 'image-load' && isAllowedSwlImageUrl(swl.imageUrl) && !imageErrors.has(swl.imageUrl);
+    const online = isAllowedSwlImageUrl(swl.onlineImageUrl || swl.imageUrl) ? swl.onlineImageUrl || swl.imageUrl : SWL_IMAGE_URL;
+    const swlContent = direct ? `<p class="${swl.status === 'stale' ? 'route-attention' : 'section-note'}">${swl.status === 'stale' ? 'Obnova selhala · ' : ''}Načtení obrazu potvrzeno ${esc(stamp(swl.retrievedAt, timezone))}.</p><p class="route-attention">Platnost ověř v záhlaví mapy v UTC. Mapa není svázána s časem přehledu.</p><div class="aviation-chart-image"><img src="${esc(swl.imageUrl)}" data-chart-path="${esc(swl.imageUrl)}" width="${swl.width}" height="${swl.height}" loading="lazy" referrerpolicy="no-referrer" alt="Původní SWL ČHMÚ distribuovaná ŘLP ČR; vydání a platnost čti v záhlaví mapy v UTC"></div><button type="button" class="button button-quiet" data-chart-enlarge="swl">Zvětšit původní SWL</button>` : `<p class="route-attention">${interactive && swl.imageUrl ? 'Obraz SWL se v tomto zobrazení nepodařilo načíst; otevři původní mapu.' : swl.onlineOnly || swl.imageUrl ? 'SWL · pouze online; obraz nebyl vložen do zachyceného briefingu.' : 'Mapa není přímo v přehledu dostupná.'}</p>${swl.retrievedAt ? `<p class="section-note">Původní načtení obrazu potvrzeno ${esc(stamp(swl.retrievedAt, timezone))}.</p>` : ''}<p class="section-note">Vydání a platnost nejsou strojově ověřeny; zkontroluj je v záhlaví původní mapy v UTC.</p>`;
+    return `<article class="aviation-chart${direct ? '' : ' source-unavailable'}"><h3>SWL · významné počasí mezi zemí a FL100</h3>${swlContent}${swl.error ? `<p class="${swl.status === 'stale' ? 'feed-error' : 'section-note'}">${esc(swl.error)}</p>` : ''}<p class="section-note">ČHMÚ · distribuce ŘLP ČR · <a href="https://www.chmi.cz/vylou%C4%8Den%C3%AD-odpov%C4%9Bdnosti" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Výšky a hladina mrazu podle původní legendy v hFT AMSL. Zkontroluj také aktuální SIGMET. Vzdálený obraz se nevkládá do offline briefingu.</p><p><a href="${esc(online)}" target="_blank" rel="noopener noreferrer">Původní SWL ↗</a> · <a href="${SWL_DOCUMENTATION_URL}" target="_blank" rel="noopener noreferrer">Legenda a dokumentace ↗</a> · <a href="${SWL_PAGE}" target="_blank" rel="noopener noreferrer">ČHMÚ ↗</a></p></article><article class="aviation-chart source-unavailable"><h3>Nízká oblačnost · ČHMÚ</h3><p class="route-attention" id="lowcloud-browser-note">Mapa není přímo v přehledu dostupná.</p><p>${esc(data.lowCloud.error)}</p><p class="section-note">Obraz ani jeho platnost nebyly načteny. Původní produkt ČHMÚ zachovává vlastní výškové reference a legendu; nejde o ceiling z vybraného modelu.</p>${interactive ? '<button class="button button-quiet" type="button" id="lowcloud-map" aria-pressed="false" aria-describedby="lowcloud-browser-note" disabled>Nízká oblačnost v regionální mapě · nedostupná</button>' : ''}<a href="${LOW_CLOUD_PAGE}" target="_blank" rel="noopener noreferrer">Otevřít původní mapu a vysvětlení ↗</a></article><p class="section-note">Zdroj: Český hydrometeorologický ústav. Produkty zachovávají vlastního autora, výškové reference a platnost. Načtení obrazu samo nepotvrzuje aktuálnost předpovědi.</p>`;
   }
   const swl = data?.swl, low = data?.selectedLow || selectedLowCloud(data, time), current = Date.parse(time), swlValid = swl && current >= Date.parse(swl.validFrom) && current < Date.parse(swl.validTo);
   const image = (item, alt, key) => item && (item.imageDataUrl || item.imagePath) && !imageErrors.has(item.imagePath) ? `<div class="aviation-chart-image"><img src="${esc(item.imageDataUrl || item.imagePath)}" data-chart-path="${esc(item.imagePath || '')}" width="${item.width}" height="${item.height}" loading="${interactive ? 'lazy' : 'eager'}" alt="${alt}">${key === 'lowCloud' ? geography(lat,lon) : ''}</div>${interactive ? `<button type="button" class="button button-quiet" data-chart-enlarge="${key}">Zvětšit původní mapu</button>` : ''}` : '<p class="route-attention">Snímek není dostupný. Platný čas sám nepotvrzuje načtení obrazu.</p>';
@@ -56,7 +77,16 @@ export function renderAviationCharts(data, { time, timezone = 'Europe/Prague', l
 
 export async function captureCharts(data, time, { fetcher = (...args) => fetch(...args) } = {}) {
   if (!data) return null;
-  if (data.delivery === 'browser-direct') return { ...structuredClone(data), selectedLow: null };
+  if (data.delivery === 'browser-direct') {
+    const snapshot = structuredClone(data);
+    const swl = snapshot.swl;
+    if (swl.imageUrl) {
+      swl.onlineImageUrl = isAllowedSwlImageUrl(swl.imageUrl) ? swl.imageUrl : SWL_IMAGE_URL;
+      swl.onlineOnly = true;
+    }
+    swl.imageUrl = null; swl.imagePath = null; swl.imageDataUrl = null;
+    return { ...snapshot, selectedLow: null };
+  }
   const snapshot = structuredClone(data), low = selectedLowCloud(data, time);
   snapshot.lowCloud = { ...snapshot.lowCloud, frames: [] }; snapshot.selectedLow = low ? structuredClone(low) : null;
   for (const item of [snapshot.swl, snapshot.selectedLow].filter(Boolean)) {

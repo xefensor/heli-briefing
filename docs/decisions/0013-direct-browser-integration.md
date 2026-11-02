@@ -2,6 +2,8 @@
 
 Date: 2026-11-02. Status: implemented and published; current deployment and live evidence recorded in [deployment](../deployment.md).
 
+**Subsequent recovery:** [decision 0014](0014-browser-source-gap-recovery.md) restores SWL display and supplemental reports/history. The source limitations below describe this initial migration checkpoint.
+
 ## Owner instruction and study review
 
 The owner authorized replacing everything feasible in the main GitHub website after the [browser-source prototype](../browser-only-feasibility-2026-11-02.md). The ordinary-browser/no-extension/no-project-backend constraint remains in force. This is an implementation decision under that authorization; remaining source limits are not claimed as accepted operational capability.

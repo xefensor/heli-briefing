@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createBriefingSnapshot, renderBriefingHtml, renderBriefingText } from '../web/js/archive.js';
-import { sourceReview, reportProviderName, reportSources } from '../web/js/handoff.js';
+import { sourceReview, reportProviderName, reportSources, observationHistoryInfo, renderAviationAttribution } from '../web/js/handoff.js';
 import { createBrowserCameras } from '../web/js/cameras.js';
 import { createBrowserCharts } from '../web/js/aviation-charts.js';
 
@@ -147,4 +147,128 @@ test('new municipal video remains online-only and original blocked products reta
   assert.match(text, /přesný čas pořízení není poskytován; video není v uloženém souboru/);
   assert.equal(snapshot.cameras.onlineViewer.observedAt, null);
   assert.equal(snapshot.cameras.onlineViewer.captured, false);
+});
+
+function metnoReport(){
+  return {
+    ...report(),id:'metar:LOWL:2026-11-02T10:00:00Z',provider:'metno-tafmetar',station:'LOWL',
+    raw:'LOWL 021000Z AUTO VRB02KT 9999 OVC035 09/06 Q1026=',
+    sourceUrl:'https://api.met.no/weatherapi/tafmetar/1.0/metar.xml?icao=LOWL',
+    sourceFilename:null,sourceUpdatedAt:null,source:{reportType:'AUTO'},
+  };
+}
+
+test('MET Norway supplemental reports keep exact raw text and distinct provider identity without duplicate footer names',()=>{
+  const value=input();
+  value.aviation.provider='chmi-swim+metno';
+  value.aviation.sourceName='ČHMÚ MET-SWIM + MET Norway · přímé požadavky prohlížeče';
+  value.aviation.metar.provider='chmi-swim+metno';
+  value.aviation.taf.provider='chmi-swim+metno';
+  value.aviation.metar.items.push(metnoReport());
+  value.aviation.metar.supplementSourceUrl=metnoReport().sourceUrl;
+  value.aviation.metar.missingStations=['LKHS','LOWW'];
+  value.aviation.supplementWarning='MET Norway · informace poskytovatele zachovaná z adaptéru.';
+  value.aviation.attribution='ČHMÚ · Aeronautical Meteorological Service; doplňková data MET Norway (CC BY 4.0 / NLOD 2.0).';
+  value.aviation.supplementDocumentationUrl='https://api.met.no/weatherapi/tafmetar/1.0/documentation';
+  value.aviation.supplementLicenceUrl='https://api.met.no/doc/License';
+  value.aviation.supplementTermsUrl='https://api.met.no/doc/TermsOfService';
+  const snapshot=createBriefingSnapshot(value);
+  assert.equal(reportProviderName(snapshot,'metar',snapshot.aviation.metar.items[0]),'ČHMÚ MET-SWIM');
+  assert.equal(reportProviderName(snapshot,'metar',snapshot.aviation.metar.items[1]),'MET Norway');
+  assert.equal(reportProviderName(snapshot,'metar'),'ČHMÚ MET-SWIM + MET Norway');
+  assert.equal(reportSources(snapshot),'ČHMÚ MET-SWIM / MET Norway');
+  const html=renderBriefingHtml(snapshot),compact=renderBriefingHtml(snapshot,{mode:'reports'}),text=renderBriefingText(snapshot);
+  for(const output of [html,compact,text]){
+    assert.match(output,/MET Norway/);
+    assert.match(output,/LOWL 021000Z AUTO VRB02KT/);
+    assert.doesNotMatch(output,/METAR LOWL 021000Z/);
+    assert.match(output,/informace poskytovatele zachovaná z adaptéru/);
+  }
+  for(const output of [html,compact]){
+    assert.match(output,/href="https:\/\/api\.met\.no\/weatherapi\/tafmetar\/1\.0\/metar\.xml\?icao=LOWL"/);
+    assert.match(output,/MET Norway \(CC BY 4\.0 \/ NLOD 2\.0\)/);
+    for(const url of [value.aviation.supplementDocumentationUrl,value.aviation.supplementLicenceUrl,value.aviation.supplementTermsUrl])assert.equal(output.split(`href="${url}"`).length-1,1,`${url} is linked once`);
+  }
+  assert.equal(snapshot.aviation.metar.items[1].observedAt,'2026-11-02T10:00:00.000Z');
+});
+
+test('captured provider credit escapes markup and removes unsafe link schemes and credentials',()=>{
+  const html=renderAviationAttribution({aviation:{
+    attribution:'MET Norway <img src=x onerror=alert(1)>',
+    supplementDocumentationUrl:'javascript:alert(1)',
+    supplementLicenceUrl:'https://name:secret@api.met.no/doc/License?api_key=private&version=4',
+    supplementTermsUrl:'https://api.met.no/doc/TermsOfService',
+  }});
+  assert.match(html,/&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.match(html,/href="https:\/\/api\.met\.no\/doc\/License\?version=4"/);
+  assert.doesNotMatch(html,/<img|href="javascript:|secret|private|name:|api_key/);
+  assert.match(html,/rel="noopener noreferrer"/);
+});
+
+test('source archive plus browser history is partial but does not claim the archive is unavailable',()=>{
+  const value=input();
+  Object.assign(value.aviation.metar,{
+    provider:'chmi-swim+metno',history:[{...metnoReport(),id:'metar:LOWL:older',observedAt:'2026-11-02T09:00:00Z'}],
+    historyMethod:'source-archive-and-browser',historyPartial:true,historyHours:12,historyStatus:'partial',historyRetrievedAt:NOW,
+    historyError:'Archiv poskytovatele a pozorování prohlížeče mohou mít mezery.',
+  });
+  const snapshot=createBriefingSnapshot(value),info=observationHistoryInfo(snapshot),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot);
+  assert.equal(info.kind,'combined');assert.equal(info.partial,true);
+  assert.match(html,/Historie METAR · archiv zdroje a zachycení prohlížeče/);
+  assert.match(html,/Skutečné archivní zprávy poskytovatele/);
+  assert.match(text,/Pokrytí stanic a časů může být neúplné/);
+  assert.doesNotMatch(html,/Zdroj neposkytuje počáteční dvanáctihodinový archiv/);
+  assert.doesNotMatch(text,/pouze skutečné zprávy zachycené tímto prohlížečem/);
+  assert.match(html,/2\.11\.2026 09:00 UTC/);
+  assert.match(html,/Archiv poskytovatele a pozorování prohlížeče mohou mít mezery/);
+  assert.equal(sourceReview(snapshot).find(row=>row.name==='Historie METAR').tone,'warn');
+});
+
+function directSwl(){
+  const charts=createBrowserCharts();
+  charts.status='ok';charts.retrievedAt='2026-11-02T10:05:00Z';
+  charts.swl={status:'ok',imageUrl:'https://meteo.rlp.cz/swlmap.png?t=1762077900000',sourceUrl:'https://meteo.rlp.cz/swlmap.png',pageUrl:'https://www.chmi.cz/letectvi/predpovedi-pro-letani/swl-mapa',documentationUrl:'https://meteo.rlp.cz/swldoc.pdf',attribution:'ČHMÚ · distribuce ŘLP ČR',displayOnly:true,confirmedBy:'image-load',retrievedAt:'2026-11-02T10:05:00Z',checkedAt:NOW,attemptedAt:NOW,issuedAt:null,validFrom:null,validTo:null,validityStatus:'unverified',timeEvidence:'image-heading',imagePath:null,imageDataUrl:null,width:1800,height:1200,error:null};
+  return charts;
+}
+
+test('display-only SWL captures a link and genuine load time without remote loads or invented forecast validity',()=>{
+  const value=input();value.charts=directSwl();
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),text=renderBriefingText(snapshot),review=sourceReview(snapshot).find(row=>row.name==='SWL ČHMÚ');
+  assert.equal(snapshot.charts.swl.imageUrl,null);
+  assert.equal(snapshot.charts.swl.onlineImageUrl,value.charts.swl.imageUrl);
+  assert.equal(snapshot.charts.swl.onlineOnly,true);
+  assert.equal(snapshot.charts.swl.imageDataUrl,null);
+  assert.equal(snapshot.charts.swl.issuedAt,null);assert.equal(snapshot.charts.swl.validFrom,null);assert.equal(snapshot.charts.swl.validTo,null);
+  assert.equal(snapshot.charts.swl.retrievedAt,'2026-11-02T10:05:00Z');
+  assert.equal(value.charts.swl.imageUrl,'https://meteo.rlp.cz/swlmap.png?t=1762077900000');
+  assert.equal(review.tone,'warn');
+  assert.match(review.text,/ČHMÚ · distribuce ŘLP ČR/);
+  assert.match(review.text,/čti v záhlaví mapy v UTC/);
+  assert.doesNotMatch(review.text,/pokrývá čas přehledu/);
+  assert.match(html,/href="https:\/\/meteo\.rlp\.cz\/swlmap\.png\?t=1762077900000"/);
+  assert.doesNotMatch(html,/<img[^>]+src="https?:|<iframe|<script/);
+  assert.match(text,/tento čas není vydáním ani platností/);
+  assert.match(text,/vztah k času přehledu není strojově ověřen/);
+});
+
+test('SWL snapshot rejects forged normalized time, embedded bytes and arbitrary remote image URLs',()=>{
+  let value=input();value.charts=directSwl();value.charts.swl.issuedAt=NOW;
+  assert.throws(()=>createBriefingSnapshot(value),/SWL|platnost|Neplatný/);
+  value=input();value.charts=directSwl();value.charts.swl.validFrom='2026-11-02T10:00:00Z';value.charts.swl.validTo='2026-11-02T11:00:00Z';
+  assert.throws(()=>createBriefingSnapshot(value),/SWL|platnost|Neplatný/);
+  value=input();value.charts=directSwl();value.charts.swl.imageDataUrl=png;
+  assert.throws(()=>createBriefingSnapshot(value),/SWL|vložen|obraz/);
+  value=input();value.charts=directSwl();value.charts.swl.imageUrl='https://meteo.rlp.cz.evil.example/swlmap.png';
+  assert.throws(()=>createBriefingSnapshot(value),/SWL|Neplatný/);
+});
+
+test('legacy embedded SWL retains its actual issue and validity interval',()=>{
+  const value=input();
+  value.charts={schemaVersion:1,swl:{status:'ok',issuedAt:'2026-11-02T09:00:00Z',validFrom:'2026-11-02T10:00:00Z',validTo:'2026-11-02T11:00:00Z',retrievedAt:'2026-11-02T10:05:00Z',imageDataUrl:png,width:100,height:100},lowCloud:{status:'empty',frames:[]}};
+  const snapshot=createBriefingSnapshot(value),html=renderBriefingHtml(snapshot),review=sourceReview(snapshot).find(row=>row.name==='SWL ČHMÚ');
+  assert.equal(snapshot.charts.swl.issuedAt,'2026-11-02T09:00:00Z');
+  assert.equal(snapshot.charts.swl.validFrom,'2026-11-02T10:00:00Z');
+  assert.equal(review.tone,'neutral');
+  assert.match(review.text,/Vložená mapa pokrývá čas přehledu/);
+  assert.ok(html.includes(`src="${png}"`));
 });

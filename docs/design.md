@@ -108,3 +108,8 @@ The owner requested a substantial review and a more professional interface after
 ## Direct browser source integration · 2 November 2026
 
 [Decision 0013](decisions/0013-direct-browser-integration.md) integrates the owner-authorized compatible sources without removing the eight core plots or station rows. Partial source coverage stays close to reports, with links for unsupported stations. The SIGMET overview remains explicitly uncertain when the catalogue is incomplete. Prospective local history is labelled as partial rather than a complete imported archive. Original camera/chart identities remain compact source cards, and the municipal viewer is separate and opt-in. Its iframe survives age ticks, source changes and data refresh, then closes explicitly. Frozen output identifies embedded satellite data versus online-only radar/video and unsupported products. These are usability choices under the three studies, not pilot acceptance.
+
+
+## Source-gap recovery · 2 November 2026
+
+[Decision 0014](decisions/0014-browser-source-gap-recovery.md) restores the original SWL inline, with one-action enlargement, intact legend and a visible instruction to verify UTC validity in the header. The image is independent of the forecast clock. Supplemental Austrian reports show their actual provider beside their time. Initial history now contains genuine archive observations instead of waiting for the browser to encounter each future report; partial coverage remains visible. The original camera cards add direct same-view alternatives without inventing acquisition times. No additional setup steps or decoder download are added to the main weather workflow. The separate CEILING experiment is research, not a hidden model substitution or new production panel.

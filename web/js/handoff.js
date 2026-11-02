@@ -10,18 +10,22 @@ const value=(number,unit='',digits=0)=>finite(number)?`${formatNumber(number,dig
 const stamp=(time,zone)=>time&&Number.isFinite(Date.parse(time))?`${formatTime(time,zone,true).replace(' ',`${new Intl.DateTimeFormat('cs-CZ',{timeZone:zone,year:'numeric'}).format(new Date(time))} `)} ${zone==='UTC'?'UTC':'CZ'}`:'čas neuveden';
 const array=value=>Array.isArray(value)?value:[];
 
-/** Provider identity belongs to the captured product, including legacy files. */
-export function reportProviderName(snapshot,key,item=null) {
+function providerNames(snapshot,key,item=null) {
  const feed=snapshot.aviation?.[key];
  for(const source of [item,feed,snapshot.aviation]){
   const identity=[source?.provider,source?.sourceName].filter(Boolean).join(' '),url=source?.sourceUrl||'';
-  if(/swim|čhmú|chmi/i.test(identity)||/https?:\/\/swim\.chmi\.cz\//i.test(url))return 'ČHMÚ MET-SWIM';
-  if(/awc|noaa|aviationweather/i.test(identity)||/https?:\/\/aviationweather\.gov\//i.test(url))return 'NOAA Aviation Weather Center';
+  const names=[];
+  if(/swim|čhmú|chmi/i.test(identity)||/https?:\/\/swim\.chmi\.cz\//i.test(url))names.push('ČHMÚ MET-SWIM');
+  if(/metno|met\s*norway/i.test(identity)||/https?:\/\/api\.met\.no\//i.test(url))names.push('MET Norway');
+  if(/awc|noaa|aviationweather/i.test(identity)||/https?:\/\/aviationweather\.gov\//i.test(url))names.push('NOAA Aviation Weather Center');
+  if(names.length)return names;
  }
- return feed?.sourceName||snapshot.aviation?.sourceName||'poskytovatel neuveden';
+ return [feed?.sourceName||snapshot.aviation?.sourceName||'poskytovatel neuveden'];
 }
+/** Keep each actual delivery provider, including mixed and legacy archives. */
+export function reportProviderName(snapshot,key,item=null) {return providerNames(snapshot,key,item).join(' + ');}
 export function reportSources(snapshot) {
- const names=['metar','taf','sigmet'].filter(key=>snapshot.aviation?.[key]).flatMap(key=>[reportProviderName(snapshot,key),...array(snapshot.aviation[key].items).map(item=>reportProviderName(snapshot,key,item))]);
+ const names=['metar','taf','sigmet'].filter(key=>snapshot.aviation?.[key]).flatMap(key=>[...providerNames(snapshot,key),...array(snapshot.aviation[key].items).flatMap(item=>providerNames(snapshot,key,item)),...(key==='metar'?array(snapshot.aviation[key].history).flatMap(item=>providerNames(snapshot,key,item)):[])]);
  return [...new Set(names)].join(' / ')||'poskytovatel zpráv neuveden';
 }
 export function reportTransportNote(item) {
@@ -39,12 +43,29 @@ export function reportCoverageNotes(snapshot,key) {
  if(feed.coverageComplete===false||['unknown','partial'].includes(feed.coverageStatus))notes.push(key==='sigmet'?'Úplnost aktuálního inventáře SIGMET není prokázána. Přítomnost, stáří ani prázdný výpis nepotvrzují nepřítomnost výstrah.':'Zdroj nepotvrzuje úplné pokrytí požadovaných zpráv.');
  return notes;
 }
-const directHistory=snapshot=>snapshot.aviation?.metar?.historyMethod==='browser-observed'||snapshot.aviation?.metar?.historyPartial===true;
+export function observationHistoryInfo(snapshot){
+ const history=snapshot.aviation?.metar;
+ if(history?.historyMethod==='source-archive-and-browser')return {kind:'combined',partial:history.historyPartial!==false,title:'Historie METAR · archiv zdroje a zachycení prohlížeče',text:'Skutečné archivní zprávy poskytovatele doplněné pozorováními zachycenými tímto prohlížečem, nejvýše za posledních 12 h. Pokrytí stanic a časů může být neúplné; mezery se nedoplňují.'};
+ if(history?.historyMethod==='browser-observed')return {kind:'browser',partial:true,title:'Pozorování METAR zachycená prohlížečem · neúplná historie',text:'Neúplná historie: pouze skutečné zprávy zachycené tímto prohlížečem během posledních nejvýše 12 h. Zdroj neposkytuje počáteční dvanáctihodinový archiv.'};
+ if(history?.historyPartial===true)return {kind:'partial',partial:true,title:'Neúplná historie pozorování METAR',text:'Historická data nemají potvrzené úplné pokrytí požadovaných stanic a časů. Mezery nejsou doplněny.'};
+ return null;
+}
+const displayOnlySwl=swl=>swl?.displayOnly===true;
 const displayOnlyRadar=radar=>radar?.displayOnly===true||radar?.imageFetchStatus==='unsupported-cors';
 const confirmedRadar=radar=>typeof radar?.url==='string'&&Number.isFinite(Date.parse(radar.observedAt));
+function sourceAnchor(value,label){
+ if(typeof value!=='string')return '';
+ try{const url=new URL(value);if(!['https:','http:'].includes(url.protocol))return '';url.username='';url.password='';for(const key of [...url.searchParams.keys()])if(/token|password|signature|credential|api[-_]?key|^key$|^sig$/i.test(key))url.searchParams.delete(key);return `<a href="${esc(url.href)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;}catch{return '';}
+}
+/** Preserve the captured provider credit and terms without loading remote content. */
+export function renderAviationAttribution(snapshot){
+ const source=snapshot.aviation,text=typeof source?.attribution==='string'?source.attribution:'';
+ const links=[['supplementDocumentationUrl','MET Norway · dokumentace'],['supplementLicenceUrl','MET Norway · licence'],['supplementTermsUrl','MET Norway · podmínky']].map(([key,label])=>sourceAnchor(source?.[key],label)).filter(Boolean);
+ return text||links.length?`<p class="small aviation-attribution">${esc(text)}${text&&links.length?' · ':''}${links.join(' · ')}</p>`:'';
+}
 function sourceLinks(snapshot){
- const urls=[...new Set(['metar','taf','sigmet'].map(key=>snapshot.aviation?.[key]?.sourceUrl).filter(Boolean))];
- return urls.map(value=>{try{const url=new URL(value);if(!['https:','http:'].includes(url.protocol))return '';url.username='';url.password='';for(const key of [...url.searchParams.keys()])if(/token|password|signature|credential|api[-_]?key|^key$|^sig$/i.test(key))url.searchParams.delete(key);return `<a href="${esc(url.href)}" target="_blank" rel="noopener noreferrer">Původní zdroj zpráv ↗</a>`;}catch{return '';}}).filter(Boolean).join(' · ');
+ const urls=[...new Set(['metar','taf','sigmet'].flatMap(key=>[snapshot.aviation?.[key]?.sourceUrl,snapshot.aviation?.[key]?.supplementSourceUrl,...array(snapshot.aviation?.[key]?.items).map(item=>item.sourceUrl)]).filter(Boolean))];
+ return urls.map(value=>sourceAnchor(value,'Původní zdroj zpráv')).filter(Boolean).join(' · ');
 }
 
 /** Readiness describes captured evidence, never flight permission. */
@@ -69,20 +90,22 @@ export function sourceReview(snapshot,{mode='full'}={}) {
   if(other){const i=nearestTimeIndex(other.times,snapshot.state.time);rows.push({name:`Porovnání ${other.label}`,tone:i<0||other.transport?.stale?'warn':'neutral',text:i<0?'Pro vybraný čas není vzorek':`${stamp(other.times[i],snapshot.state.timezone)}${other.transport?.stale?' · starší data po chybě obnovy':''}`});}
   const cloud=snapshot.clouds;
   rows.push({name:'ICON-D2 CEILING',tone:cloud?.status==='available'&&!cloud.stale?'neutral':'warn',text:cloud?.status==='available'?`${value(cloud.valueMsl,'m MSL')}${cloud.stale?' · starší běh / obnova nepotvrzena':''}`:`Pro bod/čas není hodnota dostupná${cloud?.error?' · '+String(cloud.error):''}`});
-  if(directHistory(snapshot))rows.push({name:'Historie METAR',tone:'warn',text:'Neúplná historie: pouze skutečné zprávy zachycené tímto prohlížečem během posledních nejvýše 12 h. Zdroj neposkytuje počáteční dvanáctihodinový archiv.'});
+  const history=observationHistoryInfo(snapshot);
+  if(history)rows.push({name:'Historie METAR',tone:history.partial?'warn':'neutral',text:history.text});
   const radar=snapshot.aviation?.radar;
   if(radar)rows.push({name:'Radar ČHMÚ',tone:displayOnlyRadar(radar)||!snapshot.radarImageDataUrl||radar.status==='stale'?'warn':'neutral',text:displayOnlyRadar(radar)?`${confirmedRadar(radar)?`Pozorování ${stamp(radar.observedAt,snapshot.state.timezone)}`:'Radarový obraz nebyl potvrzeně načten'} · zobrazení pouze online; CORS neumožňuje vložit obraz do offline briefingu. Uloženy dostupné časy a odkaz.`:snapshot.radarImageDataUrl?`Vložený snímek ${stamp(radar.imageObservedAt||radar.observedAt,snapshot.state.timezone)}${radar.status==='stale'?' · starší snímek':''}`:'Obraz není vložen; zachovány dostupné časy a zdroj.'});
   const cameras=array(snapshot.cameras?.items), good=cameras.filter(item=>cameraState(item,now)==='available').length;
   rows.push({name:'Kamery ČHMÚ',tone:good===3&&!snapshot.cameras?.transportError?'neutral':'warn',text:snapshot.cameras?.delivery==='browser-direct'?`Původní tři pohledy nejsou přímo dostupné pro vložení v prohlížeči; zachovány odkazy na oficiální zdroje.`:`${good} / 3 aktuálních rámců · nezávislé na budoucím čase${snapshot.cameras?.transportError?' · obnova nepotvrzena':''}`});
   if(snapshot.cameras?.onlineViewer)rows.push({name:'Městská kamera · Radnice',tone:'warn',text:'Samostatný městský pohled, nikoli náhrada kamery ČHMÚ. Pouze online; přesný čas pořízení není poskytován a video není zachyceno v souboru.'});
   const swl=snapshot.charts?.swl, swlValid=Boolean(swl?.imageDataUrl)&&selected>=Date.parse(swl.validFrom)&&selected<Date.parse(swl.validTo);
-  rows.push({name:'SWL ČHMÚ',tone:swlValid&&swl.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:snapshot.charts?.delivery==='browser-direct'&&!swl?.imageDataUrl?'Automatické vložení v prohlížeči není dostupné; zachován odkaz na oficiální produkt.':swlValid?`Vložená mapa pokrývá čas přehledu${swl.status==='stale'?' · obnova nepotvrzena':''}`:'Vložená mapa není dostupná nebo nepokrývá čas přehledu'});
+  rows.push({name:'SWL ČHMÚ',tone:!displayOnlySwl(swl)&&swlValid&&swl.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:displayOnlySwl(swl)?`ČHMÚ · distribuce ŘLP ČR · ${swl.confirmedBy==='image-load'?`původní obraz načten ${stamp(swl.retrievedAt,snapshot.state.timezone)}`:'načtení obrazu nepotvrzeno'}${swl.status==='stale'?' · obnova selhala':''}. Obraz je pouze online, není vložen. Vydání a platnost čti v záhlaví mapy v UTC; pro čas přehledu nejsou strojově ověřeny.`:snapshot.charts?.delivery==='browser-direct'&&!swl?.imageDataUrl?'Obraz není vložen; zachován odkaz na oficiální produkt.':swlValid?`Vložená mapa pokrývá čas přehledu${swl.status==='stale'?' · obnova nepotvrzena':''}`:'Vložená mapa není dostupná nebo nepokrývá čas přehledu'});
   const low=snapshot.charts?.selectedLow;
   rows.push({name:'Nízká oblačnost ČHMÚ',tone:low?.imageDataUrl&&snapshot.charts?.lowCloud?.status!=='stale'&&!snapshot.charts?.transportError?'neutral':'warn',text:snapshot.charts?.delivery==='browser-direct'&&!low?.imageDataUrl?'Automatické vložení v prohlížeči není dostupné; zachován odkaz na oficiální produkt.':low?.imageDataUrl?`Mapa ${stamp(low.validAt,snapshot.state.timezone)} · vydání neposkytnuto`:'Pro vybraný čas není vložená mapa'});
   if(snapshot.route?.section){const section=snapshot.route.section, missing=section.rows.filter(row=>!row.validAt||row.stale||row.error||row.profile.status!=='available').length;rows.push({name:'Řez / terén',tone:missing||section.terrain.status!=='available'?'warn':'neutral',text:`${section.rows.length} sloupců${missing?` · ${missing} neúplných / starších`:''} · terén ${section.terrain.values.filter(finite).length} / ${section.terrain.values.length} · m Bpv, oddělený od MSL`});}
   const sat=satelliteState(snapshot.satellite,now);
   rows.push({name:'Satelit',tone:sat.status==='available'?'neutral':'warn',text:sat.image?`${stamp(snapshot.satellite.observedAt,snapshot.state.timezone)}${sat.status==='stale'?' · starší snímek':''}`:'Snímek není dostupný'});
  }
+ if(typeof snapshot.aviation?.supplementWarning==='string'&&snapshot.aviation.supplementWarning)rows.push({name:'MET Norway · informace poskytovatele',tone:'warn',text:snapshot.aviation.supplementWarning});
  for(const [name,error]of Object.entries(snapshot.sourceErrors||{}))if(error&&(mode==='full'||name==='aviation'))rows.push({name,tone:'warn',text:String(error)});
  return rows;
 }
@@ -127,7 +150,7 @@ export function formatBriefingText(snapshot,{mode='full'}={}){
   const viewer=snapshot.cameras?.onlineViewer;
   if(viewer)lines.push('MĚSTSKÁ KAMERA · SAMOSTATNÝ POHLED',`${viewer.provider||'Město České Budějovice'} · ${viewer.name||'Radnice'} · pouze online; přesný čas pořízení není poskytován; video není v uloženém souboru.`,viewer.viewerUrl||viewer.pageUrl||'https://www.c-budejovice.cz/webove-kamery');
   const swl=snapshot.charts?.swl, low=snapshot.charts?.selectedLow;
-  lines.push(`SWL ČHMÚ: ${stamp(swl?.validFrom,zone)} – ${stamp(swl?.validTo,zone)} · vydáno ${stamp(swl?.issuedAt,zone)} · obraz ${swl?.imageDataUrl?'vložen v HTML':'nedostupný'}${swl?.pageUrl?' · zdroj '+swl.pageUrl:''}`,`Nízká oblačnost ČHMÚ: ${stamp(low?.validAt,zone)} · čas vydání neposkytnut · obraz ${low?.imageDataUrl?'vložen v HTML':'nedostupný'}${snapshot.charts?.lowCloud?.pageUrl?' · zdroj '+snapshot.charts.lowCloud.pageUrl:''}`);
+  lines.push(displayOnlySwl(swl)?`SWL ČHMÚ · distribuce ŘLP ČR: pouze online, obraz není vložen. ${swl.confirmedBy==='image-load'?`Původní obraz načten ${stamp(swl.retrievedAt,zone)}; tento čas není vydáním ani platností.`:'Načtení obrazu nebylo potvrzeno.'} Vydání a platnost ověř v záhlaví původní mapy v UTC; vztah k času přehledu není strojově ověřen. Zdroj ${swl.onlineImageUrl||swl.sourceUrl||swl.pageUrl||'neuveden'}`:`SWL ČHMÚ: ${stamp(swl?.validFrom,zone)} – ${stamp(swl?.validTo,zone)} · vydáno ${stamp(swl?.issuedAt,zone)} · obraz ${swl?.imageDataUrl?'vložen v HTML':'nedostupný'}${swl?.pageUrl?' · zdroj '+swl.pageUrl:''}`,`Nízká oblačnost ČHMÚ: ${stamp(low?.validAt,zone)} · čas vydání neposkytnut · obraz ${low?.imageDataUrl?'vložen v HTML':'nedostupný'}${snapshot.charts?.lowCloud?.pageUrl?' · zdroj '+snapshot.charts.lowCloud.pageUrl:''}`);
   const radar=snapshot.aviation?.radar;
   if(radar)lines.push(`RADAR ČHMÚ · ${confirmedRadar(radar)?stamp(radar.observedAt,zone):'obraz nebyl potvrzeně načten'} · ${displayOnlyRadar(radar)?'pouze online, obraz kvůli CORS není vložen; zachován čas a odkaz':snapshot.radarImageDataUrl?'obraz vložen v HTML':'obraz nebyl zachycen'}`,radar.url||radar.sourceUrl||'Zdrojový odkaz není dostupný.');
  }

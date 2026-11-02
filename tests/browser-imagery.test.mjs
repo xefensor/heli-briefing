@@ -45,3 +45,37 @@ test('frozen browser briefing retains original camera identities and municipal o
   invalid.onlineViewer.viewerUrl = 'https://example.com/untrusted-viewer';
   assert.throws(() => validateCameras(invalid), /městské kamery/);
 });
+
+test('alternate original-camera links preserve provenance without implying retrieved images', () => {
+  const cameras = createBrowserCameras();
+  const urls = [
+    'https://www.in-pocasi.cz/webkamery/jihocesky/ceske-budejovice-186428055/',
+    'https://www.in-pocasi.cz/webkamery/jihocesky/churanov-855413202/',
+    'https://www.in-pocasi.cz/webkamery/jihocesky/kocelovice-533216231/',
+  ];
+  assert.deepEqual(cameras.items.map(item => item.alternatePageUrl), urls);
+  const snapshot = createBriefingSnapshot({ state: context, cameras, createdAt: context.time });
+  assert.deepEqual(snapshot.cameras.items.map(item => item.alternatePageUrl), urls);
+  const live = renderCameras(cameras, { ...context, interactive: true });
+  const frozen = renderBriefingHtml(snapshot);
+  for (const url of urls) {
+    assert.ok(live.includes(`href="${url}" target="_blank" rel="noopener noreferrer"`));
+    assert.ok(frozen.includes(`href="${url}"`));
+  }
+  assert.equal((live.match(/Stejný pohled u In-počasí/g) || []).length, 3);
+  assert.match(live, /aktualizaci a stáří snímků tento přehled neověřuje/);
+  assert.doesNotMatch(live, /<img|<iframe|<video/);
+  for (const item of snapshot.cameras.items) {
+    assert.equal(item.observedAt, null);
+    assert.equal(item.retrievedAt, null);
+    assert.equal(item.imageDataUrl, null);
+  }
+  for (const url of ['https://example.com/camera', urls[1], `${urls[0]}?redirect=elsewhere`]) {
+    const invalid = structuredClone(cameras);
+    invalid.items[0].alternatePageUrl = url;
+    assert.throws(() => validateCameras(invalid), /alternativní odkaz/);
+  }
+  const legacy = structuredClone(cameras);
+  for (const item of legacy.items) delete item.alternatePageUrl;
+  assert.doesNotThrow(() => validateCameras(legacy));
+});

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ICON-EU ceiling · isolated browser experiment</title>
+<style>
+body{font:16px/1.55 system-ui;max-width:900px;margin:30px auto;padding:20px;color:#18333e}
+button{font:inherit;padding:12px;cursor:pointer}button:disabled{opacity:.6;cursor:wait}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#eef4f6;padding:20px}
+.warning{border-left:4px solid #a56b18;padding-left:16px}a{color:#126878}
+</style>
+<main>
+<h1>ICON-EU CEILING · browser experiment</h1>
+<p class="warning">Research only. This is a different model from the main briefing’s original ICON-D2 product. It is not integrated into a flight briefing.</p>
+<p>The test fetches actual advertised forecast data directly from the public Source Cooperative bucket and decodes one ceiling field in a browser worker. It needs no extension, proxy or weather collector. Its legacy regular grid is due to be withdrawn after 30 November 2026.</p>
+<p>Running loads about 41 MB of static decoder assets and one forecast file. The tested decoder used about 116 MB of WebAssembly memory; device requirements can differ. WebAssembly memory64 support is required. A failure stays visible.</p>
+<p>The fixed public test point is LKCS: 48.9464° N, 14.4275° E. Heights remain metres above mean sea level. No local AGL conversion, observed ceiling, regional map or history is implied.</p>
+<p><a href="https://source.coop/dynamical/dwd-icon-grib" target="_blank" rel="noopener">Dataset documentation and licence</a> · <a href="LICENSES.txt">Decoder notices</a></p>
+<button id="test" type="button">Test actual browser fetch and decode</button>
+<p id="status" role="status">Ready.</p>
+<pre id="result" aria-label="Actual source and decoder result"></pre>
+</main>
+<script>
+const button = document.getElementById('test');
+const status = document.getElementById('status');
+const result = document.getElementById('result');
+button.addEventListener('click', () => {
+  button.disabled = true;
+  result.textContent = '';
+  status.textContent = 'Starting the isolated research worker…';
+  let worker;
+  try { worker = new Worker('./worker.js'); }
+  catch (error) { status.textContent = `Worker failed: ${error.message}`; button.disabled = false; return; }
+  const finish = () => { button.disabled = false; worker.terminate(); };
+  worker.onmessage = ({ data }) => {
+    status.textContent = data.stage;
+    if (data.result) result.textContent = JSON.stringify(data.result, null, 2);
+    if (data.done) finish();
+  };
+  worker.onerror = event => { status.textContent = `Worker failed: ${event.message}`; finish(); };
+  worker.postMessage({ lat: 48.9464, lon: 14.4275 });
+});
+</script>
+</html>
