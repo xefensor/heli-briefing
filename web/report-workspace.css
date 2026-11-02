@@ -1,0 +1,100 @@
+/* Report reading only; shared theme and source/status tokens come from styles.css. */
+#reports-panel .report-guide{display:block;padding:12px 20px;background:var(--surface-alt);border-bottom:1px solid var(--line)}
+#reports-panel .report-guide-key{display:flex;flex-wrap:wrap;gap:5px 18px;margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+#reports-panel .report-guide-key strong{color:var(--text)}
+#reports-panel .report-guide-details{margin-top:4px}
+#reports-panel .report-guide-details summary,#reports-panel .report-interpretation summary{display:list-item;min-height:36px;padding:7px 0;color:var(--teal);font-size:12px;font-weight:600;cursor:pointer}
+#reports-panel .report-guide-details summary::marker,#reports-panel .report-interpretation summary::marker{color:var(--teal)}
+#reports-panel .report-guide-content{display:grid;grid-template-columns:1fr 1.35fr;gap:20px;padding:8px 0 4px}
+#reports-panel .report-guide-content p,#reports-panel .report-interpretation p{margin:0;font-size:13px;line-height:1.65;color:var(--muted)}
+#reports-panel .station-card{padding:18px 20px}
+#reports-panel .station-title{padding-bottom:10px}
+#reports-panel .station-bulletins{grid-template-columns:minmax(240px,.85fr) minmax(0,1.6fr);gap:24px}
+#reports-panel .report-block{min-width:0}
+#reports-panel .report-block-header{align-items:center;gap:8px;flex-wrap:wrap}
+#reports-panel .station-meta{margin:6px 0 10px;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+#reports-panel .report-raw{margin:10px 0 0;padding:10px 12px;border-left:2px solid var(--line-strong);font:12px/1.65 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+#reports-panel .metar-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px;margin:10px 0 0}
+#reports-panel .metar-metric{min-width:0}
+#reports-panel .metar-metric dt{font-size:12px;line-height:1.4}
+#reports-panel .metar-metric dd{margin:4px 0 0;font-size:14px;line-height:1.5;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#reports-panel .metar-metric--clouds{grid-column:1/-1;padding-top:8px;border-top:1px solid var(--line)}
+#reports-panel .metar-metric--clouds dd{font-size:13px;font-weight:400}
+#reports-panel .metar-metric--temperature{grid-column:span 2}
+#reports-panel .metar-metric--temperature dd,#reports-panel .metar-metric--pressure dd{font-size:13px}
+#reports-panel .metar-weather{margin:10px 0 0;font-size:13px}
+#reports-panel .report-warnings{margin:9px 0;padding-left:18px;color:var(--amber);font-size:12px;line-height:1.6}
+#reports-panel .report-warnings li+li{margin-top:4px}
+#reports-panel .report-observation{margin:10px 0 0;color:var(--muted);font-size:12px}
+#reports-panel .report-interpretation{margin-top:8px;border-top:1px solid var(--line)}
+#reports-panel .report-interpretation p{padding:4px 0 8px}
+#reports-panel .taf-scope-note{margin:9px 0 7px;color:var(--muted);font-size:12px;line-height:1.6}
+#reports-panel .taf-table-wrap{overflow-x:auto;max-width:100%}
+#reports-panel .taf-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px}
+#reports-panel .taf-table th,#reports-panel .taf-table td{padding:9px 10px;vertical-align:top;border-bottom:1px solid var(--line)}
+#reports-panel .taf-table thead th{font-size:12px;line-height:1.5;font-weight:600;color:var(--muted)}
+#reports-panel .taf-table thead th:nth-child(1){width:21%}
+#reports-panel .taf-table thead th:nth-child(2){width:26%}
+#reports-panel .taf-period>th{font-weight:400}
+#reports-panel .taf-period[data-selected="true"]{background:var(--teal-soft);box-shadow:inset 2px 0 var(--teal)}
+#reports-panel .taf-period-label{display:block;margin:4px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}
+#reports-panel .taf-selected-label{display:table;margin-top:6px;font-size:11px;line-height:1.35;white-space:normal}
+#reports-panel .taf-period-time{min-width:0;font-size:12px;font-variant-numeric:tabular-nums;line-height:1.6}
+#reports-panel .taf-time-start{display:block}
+#reports-panel .taf-time-end{display:inline}
+#reports-panel .taf-time-separator{display:inline;margin-right:4px;color:var(--muted)}
+#reports-panel .taf-mobile-label{display:none}
+#reports-panel .taf-condition-list{display:flex;flex-wrap:wrap;gap:5px 14px;margin:0}
+#reports-panel .taf-condition{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 7px;min-width:0}
+#reports-panel .taf-condition dt{font-size:12px;line-height:1.5;color:var(--muted)}
+#reports-panel .taf-condition dd{margin:0;font-size:13px;line-height:1.55;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#reports-panel .taf-condition--clouds,#reports-panel .taf-condition--weather{flex-basis:100%}
+#reports-panel .taf-empty-conditions{margin:0;font-size:13px;color:var(--muted)}
+#reports-panel .taf-unknown{margin:7px 0 0;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+#reports-panel .taf-unknown code{font-family:var(--mono);font-size:12px;color:var(--text)}
+@media(max-width:1100px){
+ #reports-panel .station-bulletins{grid-template-columns:1fr;gap:16px}
+ #reports-panel .report-block+.report-block{padding-top:14px;border-top:1px solid var(--line)}
+ #reports-panel .metar-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #reports-panel .metar-metric--clouds{grid-column:1/-1}
+ #reports-panel .metar-metric--temperature{grid-column:span 2}
+}
+@media(max-width:650px){
+ #reports-panel .report-guide{padding:10px 16px}
+ #reports-panel .report-guide-key{display:block;font-size:12px}
+ #reports-panel .report-guide-key>span{display:block;margin:3px 0}
+ #reports-panel .report-guide-content{grid-template-columns:1fr;gap:12px}
+ #reports-panel .report-guide-details summary,#reports-panel .report-interpretation summary{min-height:44px;padding:11px 0}
+ #reports-panel .station-card{padding:16px}
+ #reports-panel .metar-metrics{gap:10px 12px}
+ #reports-panel .metar-metric--wind{grid-column:span 2}
+ #reports-panel .metar-metric--ceiling{grid-column:1/-1}
+ #reports-panel .metar-metric--ceiling dd{font-size:15px}
+ #reports-panel .taf-table,#reports-panel .taf-table tbody,#reports-panel .taf-table tr,#reports-panel .taf-table th,#reports-panel .taf-table td{display:block;width:100%;min-width:0}
+ #reports-panel .taf-table thead{display:table-header-group;position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap}
+ #reports-panel .taf-table tr{padding:10px 0;border-top:1px solid var(--line);border-bottom:0}
+ #reports-panel .taf-table th,#reports-panel .taf-table td{padding:4px 10px;border:0}
+ #reports-panel .taf-period>th{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
+ #reports-panel .taf-period-label,#reports-panel .taf-selected-label{margin:0}
+ #reports-panel .taf-period-time{display:flex!important;align-items:baseline;flex-wrap:wrap;gap:3px 6px}
+ #reports-panel .taf-time-start,#reports-panel .taf-time-end,#reports-panel .taf-time-separator{display:inline}
+ #reports-panel .taf-mobile-label{display:inline;color:var(--muted);margin-right:2px}
+ #reports-panel .taf-condition-list{gap:5px 16px}
+ #reports-panel .taf-condition{flex-basis:100%}
+}
+@media print{
+ #reports-panel .station-card{padding:10px 12px;break-inside:auto}
+ #reports-panel .station-bulletins{display:block}
+ #reports-panel .report-block+.report-block{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+ #reports-panel .report-guide{padding:8px 12px}
+ #reports-panel .report-guide-key{font-size:10px}
+ #reports-panel .report-guide-details,#reports-panel .report-interpretation{display:none}
+ #reports-panel .metar-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px}
+ #reports-panel .metar-metric dt,#reports-panel .metar-metric dd,#reports-panel .report-warnings,#reports-panel .taf-scope-note{font-size:10px}
+ #reports-panel .report-raw{font-size:10px;line-height:1.5}
+ #reports-panel .taf-table-wrap{overflow:visible}
+ #reports-panel .taf-table{font-size:10px}
+ #reports-panel .taf-table th,#reports-panel .taf-table td{padding:6px}
+ #reports-panel .taf-condition dt,#reports-panel .taf-condition dd,#reports-panel .taf-period-label,#reports-panel .taf-period-time{font-size:10px}
+ #reports-panel .taf-period{break-inside:avoid}
+}

@@ -60,7 +60,7 @@ test('an absent explicit model run stays unknown rather than adopting the provid
   validateProcessedCeiling(data);
   assert.equal(data.runTime, null); assert.ok(data.series.frames.every(frame => frame.runTime === null));
   const html = renderProcessedCeiling(data, { timezone: 'UTC' });
-  assert.match(html, /běh modelu neuvedeno/);
+  assert.match(html, /<dt>Běh modelu<\/dt><dd>neuvedeno<\/dd>/);
   assert.match(html, /časová základna katalogu 2\.11\. 11:00 UTC/);
   const forged = structuredClone(data); forged.runTime = data.providerReferenceTime;
   assert.throws(() => validateProcessedCeiling(forged), /běh modelu/);
@@ -117,4 +117,29 @@ test('stale-context readings remain withheld and provider error strings cannot b
   const html = renderProcessedCeiling(data);
   assert.match(html, /&lt;img src=&quot;https:\/\/untrusted\.test/);
   assert.doesNotMatch(html, /<img|onerror="|<script|<iframe/);
+});
+
+test('live source workspace keeps value, clocks, uncertainty and both visuals outside secondary disclosures', async () => {
+  const data = await fixture({ fail: [3], runs: false });
+  const html = renderProcessedCeiling(data, { timezone: 'UTC', width: 1000, interactive: true });
+  const core = html.replace(/<details\b[\s\S]*?<\/details>/g, '');
+  assert.match(core, /<strong>100<\/strong> <span>ft AGL/);
+  assert.match(core, /<dt>Běh modelu<\/dt><dd>neuvedeno<\/dd>/);
+  assert.match(core, /Použitý terén a podrobnosti převodu poskytovatel nepopisuje/);
+  assert.match(core, /Chybějící výška nepotvrzuje jasno/);
+  assert.match(core, /class="processed-ceiling-plot"/);
+  assert.match(core, /data-processed-time-chart tabindex="0" role="group"/);
+  assert.match(core, /data-processed-cell="0"/);
+  assert.match(core, /href="https:\/\/d34ooj23crdzyh\.cloudfront\.net\/viewers\//);
+  assert.match(html, /processed-ceiling-visuals--paired/);
+  assert.match(html, /viewBox="0 0 486 260"/);
+  assert.match(html, /Chybějící hodnoty: 1\./);
+  assert.doesNotMatch(html, /data-source-detail="[^"]+" open/);
+  assert.equal((html.match(/data-source-detail=/g) || []).length, 2);
+  const frozen = renderProcessedCeiling(data, { timezone: 'UTC' });
+  assert.equal((frozen.match(/data-source-detail="[^"]+" open/g) || []).length, 2);
+  assert.doesNotMatch(frozen, /data-processed-time-chart/);
+  const mobile = renderProcessedCeiling(data, { timezone: 'UTC', width: 350, interactive: true });
+  assert.doesNotMatch(mobile, /processed-ceiling-visuals--paired/);
+  assert.match(mobile, /viewBox="0 0 350 260"/);
 });

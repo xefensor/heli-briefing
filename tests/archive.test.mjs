@@ -262,6 +262,18 @@ test('full text keeps the comparison model and its stale state separate',()=>{
  assert.doesNotMatch(renderBriefingText(createBriefingSnapshot(input),{mode:'reports'}),/POROVNÁVACÍ MODEL/);
 });
 
+test('frozen chart readings expose both models and keep parameter colours across solid and dashed series',()=>{
+ const input=base();input.state.time=times[1];
+ input.comparison.hourly.wind[1]=17;input.comparison.hourly.visibility[1]=0;
+ const html=renderBriefingHtml(createBriefingSnapshot(input));
+ assert.match(html,/ALADIN · plná čára:<\/strong> Vítr: 5,0 kt/);
+ assert.match(html,/ICON-D2 · přerušovaná:<\/strong> Vítr: 17,0 kt/);
+ assert.match(html,/Dohlednost: 0,0 km/);
+ assert.match(html,/stroke="#287b8c"[^>]*stroke-dasharray="5 4"/);
+ assert.match(html,/stroke="#a16a19"[^>]*stroke-dasharray="5 4"/);
+ assert.match(html,/stroke="#866aa3"[^>]*stroke-dasharray="5 4"/);
+});
+
 
 test('database archive keeps a complete image-rich snapshot beyond localStorage and prunes atomically',()=>{
  const large=createBriefingSnapshot({...base(),notes:'x'.repeat(3_000_000)});

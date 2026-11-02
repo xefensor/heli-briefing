@@ -18,7 +18,9 @@ http.createServer(async (request, response) => {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       const requestedWidth = Number(new URL(request.url, 'http://localhost').searchParams.get('width') || 390);
       const width = [320, 390, 768, 1024].includes(requestedWidth) ? requestedWidth : 390;
-      response.end(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Responsive QA · ${width} px</title><style>body{margin:0;background:#c8cccc;display:flex;justify-content:center}iframe{border:0;width:${width}px;height:100vh;background:white}</style><iframe title="${width} pixel responsive preview" src="/"></iframe></html>`);
+      const requestedHeight = Number(new URL(request.url, 'http://localhost').searchParams.get('height'));
+      const height = [360, 420, 600].includes(requestedHeight) ? `${requestedHeight}px` : '100vh';
+      response.end(`<!doctype html><html lang="en"><meta charset="utf-8"><title>Responsive QA · ${width} px</title><style>body{margin:0;background:#c8cccc;display:flex;justify-content:center}iframe{border:0;width:${width}px;height:${height};background:white}</style><iframe title="${width} pixel responsive preview" src="/"></iframe></html>`);
       return;
     }
     let target = path.resolve(root, `.${pathname}`);

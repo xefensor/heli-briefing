@@ -3,11 +3,12 @@ import { createBrowserCharts, fetchBrowserCharts, renderAviationCharts, selected
 import { formatTime } from './briefing.js';
 import { parseLowCloudFiles } from './lowcloud-file-source.js';
 import { chartImageKey } from './browser-chart-views.js';
+import { captureSourceDetailState, restoreSourceDetailState } from './view-state.js';
 
 export function mountImagery({ getContext, onLowCloud, onChange = () => {} }) {
   const $ = id => document.getElementById(id);
   let cameras = createBrowserCameras(), charts = createBrowserCharts(), mapActive = false;
-  let renderedKey = '', dialogReturnFocus = null, chartRequest = null, importing = false;
+  let renderedKey = '', dialogReturnFocus = null, chartRequest = null, importing = false, sourceViewState = {};
   const imageErrors = new Set();
   // This is an ordinary cross-origin provider page. Load it only on request,
   // and keep its DOM outside the repeatedly rendered camera/source summaries.
@@ -73,7 +74,8 @@ export function mountImagery({ getContext, onLowCloud, onChange = () => {} }) {
     const state = getContext();
     const key = JSON.stringify([state.lat, state.lon, state.timezone, selectedLowCloud(charts,state.time)?.validAt, Date.parse(state.time)>=Date.parse(charts?.swl?.validFrom)&&Date.parse(state.time)<Date.parse(charts?.swl?.validTo), Math.floor(Date.now()/60000), mapActive]);
     if (!force && renderedKey === key) return;
-    const focusedControl = focusToken(document.activeElement);
+    const focusedControl = document.activeElement?.closest?.('details[data-source-detail]') ? null : focusToken(document.activeElement);
+    sourceViewState = captureSourceDetailState($('aviation-chart-content'), sourceViewState);
     renderedKey = key;
     $('cameras').innerHTML = renderCameras(cameras, { ...state, interactive: true });
     $('aviation-chart-content').innerHTML = renderAviationCharts(charts, { ...state, interactive: true, imageErrors });
@@ -83,6 +85,7 @@ export function mountImagery({ getContext, onLowCloud, onChange = () => {} }) {
     if (importButton) { importButton.disabled = importing; if (importing) importButton.textContent = 'Kontroluji místní soubory…'; }
     if ($('lowcloud-clear')) $('lowcloud-clear').disabled = importing;
     if (mapActive) onLowCloud((low?.imageDataUrl || low?.imagePath) && !imageErrors.has(chartImageKey(low)) ? low : null);
+    restoreSourceDetailState($('aviation-chart-content'), sourceViewState);
     restoreFocus(focusedControl);
   }
   function showImage(item, title, subtitle, trigger) {

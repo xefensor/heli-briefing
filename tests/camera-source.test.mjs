@@ -96,7 +96,7 @@ test('inline images preserve source/time uncertainty while captured cameras rema
   const data = await fetchBrowserCameras({ now, loadImage: async () => full });
   const live = renderCameras(data, { ...context, interactive: true });
   assert.equal((live.match(/data-camera-image=/g) || []).length, 3);
-  assert.match(live, /Čas pořízení ověř v obrazu/); assert.match(live, /distribuce In-počasí \/ Ventusky/);
+  assert.match(live, /Čas pořízení není ověřen; čti ho v obrazu/); assert.match(live, /distribuce In-počasí \/ Ventusky/);
   assert.doesNotMatch(live, /<iframe|crossorigin|před \d+ min/);
   assert.throws(() => validateCameras(data, { captured: true }), /offline snímek/);
   const captured = captureCameras(data);

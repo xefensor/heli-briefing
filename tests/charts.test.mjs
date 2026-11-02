@@ -97,3 +97,17 @@ test('narrow charts retain the full horizon with fewer legible time ticks and ma
   assert.equal(indexFromPointer({clientX:322},mock,times),47);
   assert.equal(indexFromPointer({clientX:48},mock,times),0);
 });
+
+test('phone plots and empty states use the actual inner width instead of shrinking wide labels',()=>{
+ const times=hours('2026-11-01T00:00:00Z',48);
+ const svg=renderChart({width:250,times,series:[{values:times.map((_,index)=>index)}]});
+ assert.match(svg,/viewBox="0 0 250 190"/);
+ assert.equal((svg.match(/class="chart-tick"/g)||[]).length,3);
+ assert.match(svg,/data-index="47"/);
+ const mock={getBoundingClientRect:()=>({left:0,width:250}),viewBox:{baseVal:{width:250}},dataset:{plotLeft:'48',plotRight:'232'}};
+ assert.equal(indexFromPointer({clientX:232},mock,times),47);
+ const empty=renderChart({width:250,times,series:[{values:times.map(()=>null)}]});
+ assert.match(empty,/viewBox="0 0 250 190"/);
+ assert.match(empty,/<text x="125"/);
+ assert.doesNotMatch(empty,/chart-line/);
+});

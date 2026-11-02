@@ -63,7 +63,7 @@ test('alternate original-camera links preserve provenance without implying retri
     assert.ok(frozen.includes(`href="${url}"`));
   }
   assert.equal((live.match(/Stejný pohled u In-počasí/g) || []).length, 3);
-  assert.match(live, /aktualizaci a stáří snímků tento přehled neověřuje/);
+  assert.match(live, /Čas pořízení a stáří nejsou ověřeny/);
   assert.doesNotMatch(live, /<img|<iframe|<video/);
   for (const item of snapshot.cameras.items) {
     assert.equal(item.observedAt, null);

@@ -15,7 +15,9 @@ test('versioned build keeps HTML assets and the full module graph resolvable', a
     const { assetVersion: version } = await buildStaticSite({ source: join(root, 'web'), output: site, temporary: join(temporary, 'stage') });
     const html = await readFile(join(site, 'index.html'), 'utf8');
     const assets = [...html.matchAll(/(?:src|href)=["'](\.\/assets\/[^"']+)["']/g)].map(match => match[1]);
-    assert.equal(assets.length, 7);
+    const sourceHtml = await readFile(join(root, 'web/index.html'), 'utf8');
+    const sourceAssets = [...sourceHtml.matchAll(/(?:src|href)=["'](\.\/[^"']+\.(?:css|js|svg|html))["']/g)];
+    assert.equal(assets.length, sourceAssets.length, 'every entry-point asset must be versioned');
     for (const asset of assets) { assert.ok(asset.startsWith(`./assets/${version}/`)); await readFile(join(site, asset)); }
     const probe = await readFile(join(site, 'assets', version, 'browser-sources.html'), 'utf8');
     for (const match of probe.matchAll(/\bfrom\s*['"](\.\/js\/[^'"]+)['"]/g)) await readFile(resolve(site, 'assets', version, match[1]));

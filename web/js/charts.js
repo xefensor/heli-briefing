@@ -86,8 +86,8 @@ function valueLabel(value) {
   return new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 2 }).format(value);
 }
 
-function emptySvg(height, message, label) {
-  return `<svg class="weather-chart chart-svg" viewBox="0 0 ${WIDTH} ${height}" role="img" aria-label="${escapeHtml(label || message)}"><text x="${WIDTH / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty" fill="currentColor">${escapeHtml(message)}</text></svg>`;
+function emptySvg(height, message, label, width = WIDTH) {
+  return `<svg class="weather-chart chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label || message)}"><text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty" fill="currentColor">${escapeHtml(message)}</text></svg>`;
 }
 
 /**
@@ -100,19 +100,19 @@ export function renderChart({
   times = [], series = [], selectedTime = null, timezone = 'Europe/Prague',
   width = 720, height = 190, yLabel = '', min, max,
 } = {}) {
-  const WIDTH = finite(width) ? Math.max(320, Math.min(1000, width)) : 720;
+  const WIDTH = finite(width) ? Math.max(240, Math.min(1000, width)) : 720;
   height = finite(height) ? Math.max(140, Math.min(600, height)) : 190;
   const instants = times.map((time) => Date.parse(time));
-  if (!instants.length) return emptySvg(height, 'Pro zvolené období nejsou data.', yLabel);
+  if (!instants.length) return emptySvg(height, 'Pro zvolené období nejsou data.', yLabel, WIDTH);
   if (instants.some((time, index) => !Number.isFinite(time) || (index && time <= instants[index - 1]))) {
-    return emptySvg(height, 'Časovou osu nelze zobrazit.', yLabel);
+    return emptySvg(height, 'Časovou osu nelze zobrazit.', yLabel, WIDTH);
   }
   const allValues = series.flatMap((item) => (item.values || []).slice(0, times.length)).filter(finite);
-  if (!allValues.length) return emptySvg(height, 'Pro zvolené období nejsou data.', yLabel);
+  if (!allValues.length) return emptySvg(height, 'Pro zvolené období nejsou data.', yLabel, WIDTH);
 
   let low = finite(min) ? min : Math.min(...allValues);
   let high = finite(max) ? max : Math.max(...allValues);
-  if (high < low) return emptySvg(height, 'Neplatný rozsah grafu.', yLabel);
+  if (high < low) return emptySvg(height, 'Neplatný rozsah grafu.', yLabel, WIDTH);
   if (low === high) {
     const padding = Math.abs(low) * 0.05 || 1;
     if (!finite(min)) low -= padding;
@@ -130,7 +130,7 @@ export function renderChart({
   const x = (time) => rounded(LEFT + (start === end ? 0.5 : (time - start) / (end - start)) * plotWidth);
   const y = (value) => rounded(TOP + (high - value) / (high - low) * plotHeight);
   const grid = niceTicks(low, high).map((value) => `<g class="chart-grid"><line x1="${LEFT}" y1="${y(value)}" x2="${WIDTH - RIGHT}" y2="${y(value)}" stroke="currentColor" opacity="0.12"/><text x="${LEFT - 9}" y="${y(value) + 4}" text-anchor="end" fill="currentColor">${escapeHtml(valueLabel(value))}</text></g>`).join('');
-  const ticks = buildTimeTicks(times, timezone, WIDTH < 480 ? 4 : 7).map((tick) => {
+  const ticks = buildTimeTicks(times, timezone, WIDTH < 340 ? 3 : WIDTH < 480 ? 4 : 7).map((tick) => {
     const tickX = x(instants[tick.index]);
     const anchor = tick.index === 0 ? 'start' : tick.index === times.length - 1 ? 'end' : 'middle';
     return `<g class="chart-tick"><line x1="${tickX}" y1="${TOP}" x2="${tickX}" y2="${height - BOTTOM}" stroke="currentColor" opacity="0.07"/><text x="${tickX}" y="${height - 22}" text-anchor="${anchor}" fill="currentColor">${escapeHtml(tick.label)}</text>${tick.dateLabel ? `<text x="${tickX}" y="${height - 7}" text-anchor="${anchor}" fill="currentColor" opacity="0.6">${escapeHtml(tick.dateLabel)}</text>` : ''}</g>`;
