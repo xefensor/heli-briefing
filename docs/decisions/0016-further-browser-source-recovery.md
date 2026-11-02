@@ -2,7 +2,7 @@
 
 Date: 2026-11-02
 
-Status: implemented locally for the v0.7 evaluation, with the scoped source and browser checks below. Final full-suite, output and publication evidence belongs in [deployment](../deployment.md). This extends [decision 0015](0015-native-browser-recovery.md) and the [browser feasibility record](../browser-only-feasibility-2026-11-02.md); it does not establish complete source coverage or professional readiness.
+Status: published as the v0.7 evaluation in application commit `63a927d424865ef93534729b50637a98e0cb5be4`, with the scoped source and browser checks below. Final full-suite, output and public HTTPS evidence is recorded in [deployment](../deployment.md). This extends [decision 0015](0015-native-browser-recovery.md) and the [browser feasibility record](../browser-only-feasibility-2026-11-02.md); it does not establish complete source coverage or professional readiness.
 
 ## Context and three-study review
 
@@ -71,7 +71,7 @@ Checks on 2 November 2026 distinguish source requests, decoder comparison and ac
 | Processed TIFF decoding | All **918,750 pixels** of a real raster matched an independent Pillow decode. Live RUC, D2 and EU samples were separately checked through the adapter. This validates the tested encoding and sampled data path, not forecast accuracy or every future file. |
 | Local processed-AGL UI | The browser displayed **4,084 ft AGL** for **13:45 Czech time**, with the RUC run labelled **12:00 Czech time** and retrieval **13:49 Czech time**. Six hourly rows and two SVGs rendered; the regional plot showed **1,434 actual centres from a 12,900-pixel crop**. The native MSL product remained separately visible. A pinned 3 November 03:00 CZ selection subsequently displayed actual ICON-D2 at 2,683 ft AGL, with its own 2 November 10:00 CZ run, while the main model was ECMWF and native ICON-EU separately displayed 1,279 m MSL. |
 
-Deterministic tests cover source allowlists, image-load proof and failure cleanup, strict local files, filename-clock limits, TIFF bounds/georeferencing/missing values, catalogue/run separation, field failures and processed-output validation. The final combined suite, responsive/output checks, source commit and published build must be recorded in [deployment](../deployment.md); this decision does not claim those release checks have already passed.
+Deterministic tests cover source allowlists, image-load proof and failure cleanup, strict local files, filename-clock limits, TIFF bounds/georeferencing/missing values, catalogue/run separation, field failures and processed-output validation. The **325-test** combined suite passed. Responsive/output checks, source commit and the verified published build are recorded in [deployment](../deployment.md), including the distinction between successful local import and the declined public browser file-selection approval.
 
 **The whole project remains incomplete.** Automatic original low-cloud access, complete current warning scope, authoritative LKHS report coverage, relevant provider/redistribution agreements, intended-pilot acceptance and target-browser native save/print checks remain concrete dependencies. See the [release checklist](../release-checklist.md).
 

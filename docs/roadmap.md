@@ -4,7 +4,7 @@ The repository began with documentation and now has a published evaluation appli
 
 ## Current delivery status
 
-The current evaluation scope is implemented: coordinated forecast and comparison graphs; point/route vertical weather profiles; separate ČÚZK terrain; genuine regional reports/history; radar/satellite; three timestamped cameras; SWL/low-cloud charts; astronomy; saved places; notes and frozen full/compact output. See [decision 0010](decisions/0010-route-section-and-visual-evidence.md), the [release checklist](release-checklist.md) and [deployment evidence](deployment.md).
+The current evaluation provides coordinated forecast and comparison graphs; point/route vertical weather profiles; separate ČÚZK terrain; genuine regional reports/history; radar/satellite; three original camera views with unverified exposure times; direct SWL and SIGMET/AIREP imagery; optional local original low-cloud maps; separate native MSL and processed AGL ceiling products; astronomy; saved places; notes and frozen full/compact output. Automatic original low-cloud retrieval and complete structured warning coverage remain unresolved. See [decision 0010](decisions/0010-route-section-and-visual-evidence.md), [browser source recovery](decisions/0016-further-browser-source-recovery.md), the [release checklist](release-checklist.md) and [deployment evidence](deployment.md).
 
 - [x] Build the complete bounded evaluation scope, with source/datum/time validation and honest failures.
 - [x] Preserve substantial graphs and original evidence while refining readable desktop/mobile controls.
